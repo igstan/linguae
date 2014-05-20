@@ -59,10 +59,10 @@ and binOp e1 binop e2 t =
     val (v2, t2) = interpExp e2 t1
   in
     case binop of
-      Plus  => ((v1 + v2), t2)
-    | Minus => ((v1 - v2), t2)
-    | Times => ((v1 * v2), t2)
-    | Div   => ((v1 div v2), t2)
+      Plus  => (v1 + v2, t2)
+    | Minus => (v1 - v2, t2)
+    | Times => (v1 * v2, t2)
+    | Div   => (v1 div v2, t2)
   end
 
 and printArgs t exps =
