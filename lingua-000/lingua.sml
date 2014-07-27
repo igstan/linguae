@@ -38,7 +38,7 @@ struct
     let fun loop count []             = count
           | loop count (top :: stack) =
               case top of
-                PrintStm args                 => loop (Int.max (count, length(args))) stack
+                PrintStm args                 => loop (Int.max (count, length args)) stack
               | CompoundStm (a, b)            => loop count (a :: b :: stack)
               | AssignStm (_, EseqExp (a, _)) => loop count (a :: stack)
               | AssignStm _                   => loop count stack
