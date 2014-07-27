@@ -2,7 +2,7 @@
 # =====
 #
 all:
-	mkdir -p build && mlton -output build/lingua-000 lingua-000.mlb
+	@mkdir -p build && mlton -output build/lingua-000 lingua-000.mlb
 
 run:
 	@./build/lingua-000
@@ -11,7 +11,7 @@ run:
 # =====
 #
 # all:
-# 	mkdir -p build && ml-build sources.cm Main.main build/lingua-000
+# 	@mkdir -p build && ml-build sources.cm Main.main build/lingua-000
 #
 # run:
 # 	@sml @SMLload build/lingua-000.x86-darwin
