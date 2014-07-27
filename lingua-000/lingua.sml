@@ -87,5 +87,6 @@ struct
       (#1 result) before print "\n"
     end
 
+  (* Exercise 2, page 11. *)
   fun interp stm: unit = ignore <| interpStm stm []
 end
