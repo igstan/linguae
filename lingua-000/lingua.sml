@@ -1,6 +1,12 @@
 structure Lingua =
 struct
 
+  (* Low precedence function application. Useful to avoid parentheses. *)
+  infixr 1 <| fun f <| x = f x
+
+  (* Function composition. The built-in `o` operator is pretty hard to spot. *)
+  infixr 9 <> fun f <> g = fn (x) => f (g x)
+
   type id = string
 
   type table = (id * int) list
@@ -45,7 +51,7 @@ struct
 
   fun interpStm statement t =
     case statement of
-      CompoundStm (s1, s2) => interpStm s2 (interpStm s1 t)
+      CompoundStm (s1, s2) => interpStm s2 <| interpStm s1 t
     | AssignStm (id, e)    => let val (v, t') = interpExp e t in (id, v) :: t' end
     | PrintStm exps        => printArgs t exps
 
@@ -54,7 +60,7 @@ struct
       IdExp id              => (lookup id t, t)
     | NumExp n              => (n, t)
     | OpExp (e1, binop, e2) => binOp e1 binop e2 t
-    | EseqExp (s, e)        => interpExp e (interpStm s t)
+    | EseqExp (s, e)        => interpExp e <| interpStm s t
 
   and binOp e1 binop e2 t =
     let
@@ -80,6 +86,5 @@ struct
       (#1 result) before print "\n"
     end
 
-  fun interp stm: unit = ignore (interpStm stm [])
-
+  fun interp stm: unit = ignore <| interpStm stm []
 end
