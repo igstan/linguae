@@ -32,6 +32,7 @@ struct
         )),
         PrintStm[IdExp "b"]))
 
+  (* Exercise 1, page 11. *)
   (* http://stackoverflow.com/a/9323417/58808  *)
   (* http://stackoverflow.com/a/21205572/58808 *)
   fun maxargs (s: stm): int =
