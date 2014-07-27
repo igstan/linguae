@@ -1,3 +1,4 @@
-fun main () = print "Compiled using MLton.\n"
+val main: unit -> unit =
+  fn () => Lingua.interp Lingua.prog
 
 val _ = main ()
