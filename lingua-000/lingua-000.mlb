@@ -1,4 +1,6 @@
 $(SML_LIB)/basis/basis.mlb
 
+lang.sml
+tree.sml
 lingua.sml
 main-mlton.sml

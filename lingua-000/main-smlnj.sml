@@ -2,7 +2,7 @@ structure Main =
 struct
   fun main (name, args) =
     let
-      val _ = Lingua.interp Lingua.prog
+      val _ = Tree.main ()
     in
       0
     end

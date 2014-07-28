@@ -1,11 +1,6 @@
 structure Lingua =
 struct
-
-  (* Low precedence function application. Useful to avoid parentheses. *)
-  infixr 1 <| fun f <| x = f x
-
-  (* Function composition. The built-in `o` operator is pretty hard to spot. *)
-  infixr 9 <> fun f <> g = fn (x) => f (g x)
+  open Lang
 
   type id = string
 
