@@ -4,8 +4,8 @@ struct
 
   type key = string
 
-  datatype tree = LEAF
-                | TREE of tree * key * tree
+  datatype 'a tree = LEAF
+                   | TREE of 'a tree * key * 'a * 'a tree
 
   val empty = LEAF
 
@@ -18,7 +18,7 @@ struct
     end
 
   fun showDepth LEAF depth = "LEAF"
-    | showDepth (TREE(l, k, r)) depth =
+    | showDepth (TREE(l, k, v, r)) depth =
       let
         val prefix = repeat " " 12
       in
@@ -40,20 +40,26 @@ struct
    *)
   fun show tree = (showDepth tree 0) ^ "\n"
 
-  fun insert key LEAF = TREE(LEAF, key, LEAF)
-    | insert key (TREE(l, k, r)) =
-      if key < k then TREE(insert key l, k, r) else
-      if key > k then TREE(l, k, insert key r) else TREE(l, k, r)
+  fun insert LEAF key value = TREE(LEAF, key, value, LEAF)
+    | insert (TREE(l, k, v, r)) key value =
+      if key < k then TREE(insert l key value, k, v, r) else
+      if key > k then TREE(l, k, v, insert r key value) else TREE(l, k, v, r)
 
   (* Exercise 1.1 a., page 12. *)
-  fun member key LEAF = false
-    | member key (TREE(l, k, r)) =
-      if key < k then member key l else
-      if key > k then member key r else true
+  fun member LEAF key = false
+    | member (TREE(l, k, _, r)) key =
+      if key < k then member l key else
+      if key > k then member r key else true
+
+  (* Exercise 1.1 b., page 12. *)
+  fun lookup LEAF key = NONE
+    | lookup (TREE(l, k, v, r)) key =
+      if key < k then lookup l key else
+      if key > k then lookup r key else SOME(v)
 
   fun main () =
     let
-      val folder = fn (c, tree) => insert (Char.toString c) tree
+      val folder = fn (c, tree) => insert tree (Char.toString c) (Char.toString c)
       val tree1 = List.foldl folder LEAF (String.explode "tspipfbst")
       val tree2 = List.foldl folder LEAF (String.explode "abcdefghi")
     in
