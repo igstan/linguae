@@ -28,8 +28,10 @@ struct
     let
       val venv0 = Symbol.empty
       val venv1 = Symbol.set venv0 (Symbol.symbol "print") (FunEntry { formals = [Types.STRING], result = Types.UNIT })
+      val venv2 = Symbol.set venv1 (Symbol.symbol "q") (VarEntry { ty = quux })
+      val venv3 = Symbol.set venv2 (Symbol.symbol "arr") (VarEntry { ty = Types.ARRAY(Types.STRING, ref ()) })
     in
-      venv1
+      venv3
     end
 
 end

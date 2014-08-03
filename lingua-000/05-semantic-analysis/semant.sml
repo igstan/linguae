@@ -194,6 +194,19 @@ struct
         in
           loop exprs { exp = (), ty = Types.UNIT }
         end
+
+      fun typecheckAssignExp var exp pos =
+        let
+          val { exp = _, ty = tvar } = translateVar venv tenv var
+          val { exp = _, ty = texp } = translateExp venv tenv exp
+        in
+          if Types.areEqual (tvar, texp) then
+            { exp = (), ty = Types.UNIT }
+          else
+            error pos ("type mismatch in assignment\n"
+                     ^ "  required: "^ Syntax.showType tvar ^"\n"
+                     ^ "     found: "^ Syntax.showType texp ^"\n")
+        end
     in
       case ast of
         Ast.VarExp(var) => translateVar venv tenv var
@@ -204,7 +217,7 @@ struct
       | Ast.OpExp { left, oper, right, pos } => typecheckOpExp left oper right pos
       | Ast.RecordExp { fields, name, pos } => typecheckRecordExp fields name pos
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
-      | Ast.AssignExp { var, exp, pos } => dummyExpty
+      | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => dummyExpty
       | Ast.WhileExp { test, body, pos } => dummyExpty
       | Ast.ForExp { var, escape, lo, hi, body, pos } => dummyExpty
