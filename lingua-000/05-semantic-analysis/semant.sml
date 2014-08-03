@@ -84,7 +84,7 @@ struct
           case tfunc of
             SOME(Env.FunEntry { formals, result }) =>
               let
-                val mismatched = List.filter (not <> Types.areEqual) (ListPair.zip (formals, targs))
+                val mismatched = List.filter (not >< Types.areEqual) (ListPair.zip (formals, targs))
                 fun detail (formal, actual) =
                   "argument mismatch\n"
                 ^ "  required: "^ (Syntax.showType actual) ^"\n"
@@ -150,7 +150,7 @@ struct
                     name1 = name2 andalso Types.areEqual (typ1, typ2)
                 | (NONE, _) => false
                 |(_, NONE) => false
-              val mismatched = List.filter (not <> equalFields) zipped
+              val mismatched = List.filter (not >< equalFields) zipped
 
               fun showDefined field =
                 case field of
