@@ -13,42 +13,62 @@ struct
 
   val dummyExpty = { exp = (), ty = Types.NIL }
 
-  val translateVar : venv -> tenv -> Ast.var -> expty =
-    fn venv => fn tenv => fn ast => dummyExpty
-
-  fun translateExp venv tenv ast =
+  fun translateVar venv tenv var =
     let
-      fun typecheckVarExp venv tenv var =
-        case var of
-          Ast.SimpleVar(id, pos) =>
-            (case Symbol.get venv id of
-              SOME(Env.VarEntry { ty }) => { exp = (), ty = ty }
-            | SOME(Env.FunEntry { ... }) => error pos "impossible: a VarExp cannot contain a FunEntry"
-            | NONE => error pos ("undefined variable: " ^ Symbol.name id))
-          | Ast.FieldVar(var, id, pos) => error pos "TODO"
-          | Ast.SubscriptVar(var, exp, pos) => error pos "TODO"
+      fun simpleVar name pos =
+        case Symbol.get venv name of
+          SOME(Env.VarEntry { ty }) => { exp = (), ty = ty }
+        | SOME(Env.FunEntry { ... }) => error pos ("undefined variable: " ^ Symbol.name name)
+        | NONE => error pos ("undefined variable: " ^ Symbol.name name)
 
-      fun equalTypes types =
+      fun fieldVar var name pos =
         let
-          open Types
+          val { exp, ty = tvar } = translateVar venv tenv var
+          fun typecheckRecord fields =
+            let
+              val field = List.find (fn (sym, ty) => sym = name) fields
+            in
+              case field of
+                SOME((_, ty)) => { exp = (), ty = ty }
+              | NONE => error pos ("no such field on record\n"
+                                 ^ "   field: "^ Symbol.name name ^"\n"
+                                 ^ "  record: "^ Syntax.showType tvar ^"\n")
+            end
         in
-          case types of
-            (NIL, NIL) => true
-          | (NIL, RECORD(_, _)) => true (* page 113: "In Tiger, the expression `nil` belongs to any record type." *)
-          | (RECORD(_, _), NIL) => true
-          | (INT, INT) => true
-          | (UNIT, UNIT) => true
-          | (STRING, STRING) => true
-          | (NAME(name1, ty1), NAME(name2, ty2)) =>
-              if not ((Symbol.name name1) = (Symbol.name name2)) then
-                false
-              else
-                equalTypes (Option.valOf (!ty1), Option.valOf (!ty2))
-          | (ARRAY(_, uniq1), ARRAY(_, uniq2)) => uniq1 = uniq2
-          | (RECORD(_, uniq1), RECORD(_, uniq2)) => uniq1 = uniq2
-          | _ => false
+          case tvar of
+            Types.RECORD(fields, _) => typecheckRecord fields
+          | t => error pos ("field access on non-record type\n"
+                          ^ "  actual type: " ^ Syntax.showType t ^"\n"
+                          ^ "        field: " ^ Symbol.name name ^"\n")
         end
 
+      fun subscriptVar var exp pos =
+        let
+          val { exp = _, ty = tvar } = translateVar venv tenv var
+          val { exp = _, ty = texp } = translateExp venv tenv exp
+          fun typecheckArray tarray =
+            case texp of
+              Types.INT => { exp = (), ty = tarray }
+            | _ => error pos ("subscript index type mismatch\n"
+                            ^ "  required: " ^ Syntax.showType Types.INT ^"\n"
+                            ^ "     found: " ^ Syntax.showType texp ^"\n")
+        in
+          case tvar of
+            Types.ARRAY(tarray, _) => typecheckArray tarray
+          | t =>
+              (* TODO: typecheck index type here, too. *)
+              error pos ("subscript access on non-array type\n"
+                       ^ "  actual type: " ^ Syntax.showType t ^"\n")
+        end
+    in
+      case var of
+        Ast.SimpleVar(name, pos) => simpleVar name pos
+      | Ast.FieldVar(var, name, pos) => fieldVar var name pos
+      | Ast.SubscriptVar(var, exp, pos) => subscriptVar var exp pos
+    end
+
+  and translateExp venv tenv ast =
+    let
       fun typecheckCallExp func args pos =
         (*
          * 1. Obtain types of all arguments in `args`.
@@ -57,13 +77,14 @@ struct
          * 4. Return `func`'s return type.
          *)
         let
-          val targs = List.map (fn arg => case translateExp venv tenv arg of { exp, ty } => ty) args (* throws for unbound identifiers *)
+          fun translateArg arg = #ty (translateExp venv tenv arg)
+          val targs = List.map translateArg args (* throws for unbound identifiers *)
           val tfunc = Symbol.get venv func
         in
           case tfunc of
             SOME(Env.FunEntry { formals, result }) =>
               let
-                val mismatched = List.filter (not <> equalTypes) (ListPair.zip (formals, targs))
+                val mismatched = List.filter (not <> Types.areEqual) (ListPair.zip (formals, targs))
                 fun detail (formal, actual) =
                   "argument mismatch\n"
                 ^ "  required: "^ (Syntax.showType actual) ^"\n"
@@ -126,7 +147,7 @@ struct
               fun equalFields fields =
                 case fields of
                   (SOME((name1, typ1)), SOME(name2, typ2, _)) =>
-                    name1 = name2 andalso equalTypes (typ1, typ2)
+                    name1 = name2 andalso Types.areEqual (typ1, typ2)
                 | (NONE, _) => false
                 |(_, NONE) => false
               val mismatched = List.filter (not <> equalFields) zipped
@@ -175,7 +196,7 @@ struct
         end
     in
       case ast of
-        Ast.VarExp(v) => typecheckVarExp venv tenv v
+        Ast.VarExp(var) => translateVar venv tenv var
       | Ast.NilExp => { exp = (), ty = Types.NIL }
       | Ast.IntExp(i) => { exp = (), ty = Types.INT }
       | Ast.StringExp(s, pos) => { exp = (), ty = Types.STRING }
@@ -200,11 +221,12 @@ struct
     fn tenv => fn typ => Types.NIL
 
   fun translateProgram ast =
-    (
-      (
-        (translateExp Env.base_venv Env.base_tenv ast);
-        ()
-      ) handle
-        TypeError(pos, message) => print ("type error [line "^ (Int.toString pos) ^"]: "^ message ^"\n")
-    )
+    let
+      val { exp, ty } = translateExp Env.base_venv Env.base_tenv ast
+    in
+      print ("type: "^ (Syntax.showType ty) ^"\n")
+    end
+    handle
+      TypeError(pos, message) =>
+        print ("type error [line "^ (Int.toString pos) ^"]: "^ message ^"\n")
 end

@@ -33,7 +33,7 @@ struct
           | STRING => "string"
           | NAME(name, _) => Symbol.name name
           | ARRAY(ty, _) => "array of " ^ (showType ty)
-          | RECORD(fields, _) => "{"^ (join (List.map (fn (sym, ty) => (Symbol.name sym) ^" : "^ (showType ty)) fields) ", ") ^"}"
+          | RECORD(fields, _) => "{ "^ (join (List.map (fn (sym, ty) => (Symbol.name sym) ^" : "^ (showType ty)) fields) ", ") ^" }"
         end
   end
 end

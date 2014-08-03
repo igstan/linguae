@@ -19,4 +19,21 @@ struct
   | ARRAY of ty * unique
   | RECORD of (Symbol.symbol * ty) list * unique
 
+  fun areEqual types =
+    case types of
+      (NIL, NIL) => true
+    | (NIL, RECORD(_, _)) => true
+    | (RECORD(_, _), NIL) => true
+    | (INT, INT) => true
+    | (UNIT, UNIT) => true
+    | (STRING, STRING) => true
+    | (NAME(name1, ty1), NAME(name2, ty2)) =>
+        if (Symbol.name name1) <> (Symbol.name name2) then
+          false
+        else
+          areEqual (Option.valOf (!ty1), Option.valOf (!ty2))
+    | (ARRAY(_, uniq1), ARRAY(_, uniq2)) => uniq1 = uniq2
+    | (RECORD(_, uniq1), RECORD(_, uniq2)) => uniq1 = uniq2
+    | _ => false
+
 end
