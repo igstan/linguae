@@ -207,6 +207,32 @@ struct
                      ^ "  required: "^ Syntax.showType tvar ^"\n"
                      ^ "     found: "^ Syntax.showType texp ^"\n")
         end
+
+      fun typecheckIfExp tst thn els pos =
+        let
+          val { exp = _, ty = ttst } = translateExp venv tenv tst
+          val { exp = _, ty = tthn } = translateExp venv tenv thn
+          fun typecheckBranches _ =
+            case els of
+              NONE => { exp = (), ty = tthn }
+            | SOME(els) =>
+              let
+                val { exp = _, ty = tels } = translateExp venv tenv els
+              in
+                if Types.areEqual (tthn, tels) then
+                  { exp = (), ty = tthn }
+                else
+                  error pos ("branch types in if expression don't match up\n"
+                           ^ "  then type: "^ Syntax.showType tthn ^"\n"
+                           ^ "  else type: "^ Syntax.showType tels ^"\n")
+              end
+        in
+          case ttst of
+            Types.INT => typecheckBranches ()
+          | t => error pos ("type mismatch in if condition\n"
+                          ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                          ^ "     found: "^ Syntax.showType ttst ^"\n")
+        end
     in
       case ast of
         Ast.VarExp(var) => translateVar venv tenv var
@@ -218,7 +244,7 @@ struct
       | Ast.RecordExp { fields, name, pos } => typecheckRecordExp fields name pos
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
-      | Ast.IfExp { test, then', else', pos } => dummyExpty
+      | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
       | Ast.WhileExp { test, body, pos } => dummyExpty
       | Ast.ForExp { var, escape, lo, hi, body, pos } => dummyExpty
       | Ast.BreakExp(pos) => dummyExpty
