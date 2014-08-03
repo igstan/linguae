@@ -158,6 +158,21 @@ struct
           | SOME(typ) => error pos ("`"^ Symbol.name name ^"' is not a record")
           | NONE => error pos ("undefined record type: "^ Symbol.name name)
         end
+
+      fun typecheckSeqExp exprs =
+        let
+          (*
+           * We're using our hand-rolled version of `map` because we want to
+           * remember the type of the last expression in the list, which will
+           * become the type of the whole `SeqExp`.
+           *)
+          fun loop exprs result =
+            case exprs of
+              [] => result
+            | (exp, pos) :: exprs => loop exprs (translateExp venv tenv exp)
+        in
+          loop exprs { exp = (), ty = Types.UNIT }
+        end
     in
       case ast of
         Ast.VarExp(v) => typecheckVarExp venv tenv v
@@ -167,7 +182,7 @@ struct
       | Ast.CallExp { func, args, pos } => typecheckCallExp func args pos
       | Ast.OpExp { left, oper, right, pos } => typecheckOpExp left oper right pos
       | Ast.RecordExp { fields, name, pos } => typecheckRecordExp fields name pos
-      | Ast.SeqExp(exprs) => dummyExpty
+      | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => dummyExpty
       | Ast.IfExp { test, then', else', pos } => dummyExpty
       | Ast.WhileExp { test, body, pos } => dummyExpty
