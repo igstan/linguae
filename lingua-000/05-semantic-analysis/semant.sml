@@ -281,6 +281,16 @@ struct
                        ^ "  required: "^ Syntax.showType Types.INT ^"\n"
                        ^ "     found: "^ Syntax.showType t2 ^"\n")
         end
+
+      fun typecheckLetExp decs body pos =
+        let
+          val initEnvs = { venv = venv, tenv = tenv }
+          fun folder (dec, { venv, tenv }) = translateDec venv tenv dec
+          val { venv = venv2, tenv = tenv2 } = List.foldl folder initEnvs decs
+          val { exp = (), ty = tbody } = translateExp venv2 tenv2 body
+        in
+          { exp = (), ty = tbody }
+        end
     in
       case ast of
         Ast.VarExp(var) => translateVar venv tenv var
@@ -293,19 +303,108 @@ struct
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
-      | Ast.LetExp { decs, body, pos } => dummyExpty
       | Ast.WhileExp { test, body, pos } => typecheckWhileExp test body pos
       | Ast.ForExp { var, escape, lo, hi, body, pos } => typecheckForExp var escape lo hi body pos
       | Ast.BreakExp(pos) => { exp = (), ty = Types.UNIT }
+      | Ast.LetExp { decs, body, pos } => typecheckLetExp decs body pos
       | Ast.ArrayExp { typ, size, init, pos } => dummyExpty
     end
 
-  val translateDec : venv -> tenv -> Ast.dec -> { venv: venv, tenv: tenv } =
-    fn venv => fn tenv => fn dec =>
-      { venv = Symbol.empty, tenv = Symbol.empty }
+  and translateDec venv tenv dec =
+    case dec of
+      Ast.TypeDec decs =>
+        let
+          fun addTypeDec ({ name, ty, pos }, tenv) =
+            Symbol.set tenv name (translateTy tenv ty pos)
+          val newTenv = List.foldl addTypeDec tenv decs
+        in
+          { venv = venv, tenv = newTenv }
+        end
+    | Ast.FunctionDec fundecs =>
+      let
+        fun funDecMapper (Ast.FunDec { name, params, result, body, pos }) =
+          let
+            fun paramMapper (Ast.Field { name, escape, typ, pos }) =
+              case Symbol.get tenv typ of
+                  NONE => error pos ("type not found: "^ Symbol.name typ)
+                | SOME(t) => (name, t)
+            val typedParams = List.map paramMapper params
+            val tformals = List.map #2 typedParams
+            fun tresultMapper (returnType, returnPos) =
+              case Symbol.get tenv returnType of
+                  NONE => error returnPos ("type not found: "^ Symbol.name returnType)
+                | SOME(t) => t
+            val tresult = Option.map tresultMapper result
+            (* Typecheck the body in an environment augmented with the formal params. *)
+            fun addVarEntry ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
+            val bodyEnv = List.foldl addVarEntry venv typedParams
+            val { exp = _, ty = tbody } = translateExp bodyEnv tenv body
+          in
+            case tresult of
+              NONE => (name, Env.FunEntry { formals = tformals, result = tbody })
+            | SOME(tresult) =>
+              if Types.areEqual (tresult, tbody) then
+                (name, Env.FunEntry { formals = tformals, result = tbody })
+              else
+                error pos ("function declaration type mismatch\n"
+                         ^ "  required: "^ Syntax.showType tresult ^"\n"
+                         ^ "     found: "^ Syntax.showType tbody ^"\n")
+          end
+        val funEntries = List.map funDecMapper fundecs
+        val newVenv = List.foldl (fn ((name, funEntry), venv) =>
+          Symbol.set venv name funEntry) venv funEntries
+      in
+        { venv = newVenv, tenv = tenv }
+      end
+    | Ast.VarDec { name, escape, typ, init, pos } =>
+      let
+        fun tvarMapper (var, pos) =
+          case Symbol.get tenv var of
+            NONE => error pos ("type not found: "^ Symbol.name var)
+          | SOME(t) => t
+        val tvar = Option.map tvarMapper typ
+        val { exp = (), ty = tinit } = translateExp venv tenv init
+        val varEntry =
+          case tvar of
+            NONE => Env.VarEntry { ty = tinit }
+          | SOME(tvar) =>
+            if Types.areEqual (tvar, tinit) then
+              Env.VarEntry { ty = tinit }
+            else
+              error pos ("variable declaration type mismatch\n"
+                       ^ "  required: "^ Syntax.showType tvar ^"\n"
+                       ^ "     found: "^ Syntax.showType tinit ^"\n")
+        val newVenv = Symbol.set venv name varEntry
+      in
+        { venv = newVenv, tenv = tenv }
+      end
 
-  val translateTy : tenv -> Ast.ty -> Types.ty =
-    fn tenv => fn typ => Types.NIL
+  and translateTy tenv ty pos =
+    let
+      fun aliasType (alias, pos) =
+        case Symbol.get tenv alias of
+          NONE => error pos ("type not found: "^ Symbol.name alias)
+        | SOME(ty) => ty
+      fun recordType fields =
+        let
+          fun mapper (Ast.Field { name, escape, typ, pos }) =
+            case Symbol.get tenv typ of
+              NONE => error pos ("type not found: "^ Symbol.name typ)
+            | SOME(t) => (name, t)
+          val recordFields = List.map mapper fields
+        in
+          Types.RECORD(recordFields, ref ())
+        end
+      fun arrayType innerType pos =
+        case Symbol.get tenv innerType of
+          NONE => error pos ("type not found: "^ Symbol.name innerType)
+        | SOME(innerType) => Types.ARRAY(innerType, ref ())
+    in
+      case ty of
+        Ast.NameTy(alias) => aliasType alias
+      | Ast.RecordTy(fields) => recordType fields
+      | Ast.ArrayTy(innerType, pos) => arrayType innerType pos
+    end
 
   fun translateProgram ast =
     let
