@@ -4,8 +4,6 @@ $/basis.cm
 $/smlnj-lib.cm
 
 ast.sml
-showast.sig
-showast.sml
 env.sig
 env.sml
 lang.sml
@@ -13,6 +11,8 @@ pairlist.sig
 pairlist.sml
 semant.sig
 semant.sml
+showast.sig
+showast.sml
 symbol.sig
 symbol.sml
 syntax.sig
