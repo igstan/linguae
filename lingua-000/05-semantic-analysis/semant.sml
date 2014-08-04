@@ -233,6 +233,17 @@ struct
                           ^ "  required: "^ Syntax.showType Types.INT ^"\n"
                           ^ "     found: "^ Syntax.showType ttst ^"\n")
         end
+
+      fun typecheckWhileExp test body pos =
+        let
+          val { exp = _, ty = ttest } = translateExp venv tenv test
+        in
+          case ttest of
+            Types.INT => { exp = (), ty = Types.UNIT }
+          | t => error pos ("type mismatch in while condition\n"
+                          ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                          ^ "     found: "^ Syntax.showType ttest ^"\n")
+        end
     in
       case ast of
         Ast.VarExp(var) => translateVar venv tenv var
@@ -245,10 +256,10 @@ struct
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
-      | Ast.WhileExp { test, body, pos } => dummyExpty
       | Ast.ForExp { var, escape, lo, hi, body, pos } => dummyExpty
       | Ast.BreakExp(pos) => dummyExpty
       | Ast.LetExp { decs, body, pos } => dummyExpty
+      | Ast.WhileExp { test, body, pos } => typecheckWhileExp test body pos
       | Ast.ArrayExp { typ, size, init, pos } => dummyExpty
     end
 
