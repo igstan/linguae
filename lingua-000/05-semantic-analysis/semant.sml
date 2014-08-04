@@ -287,9 +287,34 @@ struct
           val initEnvs = { venv = venv, tenv = tenv }
           fun folder (dec, { venv, tenv }) = translateDec venv tenv dec
           val { venv = venv2, tenv = tenv2 } = List.foldl folder initEnvs decs
-          val { exp = (), ty = tbody } = translateExp venv2 tenv2 body
+          val { exp = _, ty = tbody } = translateExp venv2 tenv2 body
         in
           { exp = (), ty = tbody }
+        end
+
+      fun typecheckArrayExp typ size init pos =
+        let
+          val tarray = Symbol.get tenv typ
+          val { exp = _, ty = tsize } = translateExp venv tenv size
+          val { exp = _, ty = tinit } = translateExp venv tenv init
+          fun typecheckInit _ =
+            case tarray of
+              NONE => error pos ("type not found: "^ Symbol.name typ ^"\n")
+            | SOME(Types.ARRAY(innerType, uniq)) =>
+                if Types.areEqual (innerType, tinit) then
+                  { exp = (), ty = Types.ARRAY(innerType, uniq) }
+                else
+                  error pos ("array init type mismatch\n"
+                           ^ "  required: "^ Syntax.showType innerType ^"\n"
+                           ^ "     found: "^ Syntax.showType tinit ^"\n")
+            | SOME(other) =>
+                error pos ("declared type is not an array: "^ Syntax.showType other ^"\n")
+        in
+          case tsize of
+            Types.INT => typecheckInit ()
+          | t => error pos ("array size type mismatch\n"
+                          ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                          ^ "     found: "^ Syntax.showType t ^"\n")
         end
     in
       case ast of
@@ -307,7 +332,7 @@ struct
       | Ast.ForExp { var, escape, lo, hi, body, pos } => typecheckForExp var escape lo hi body pos
       | Ast.BreakExp(pos) => { exp = (), ty = Types.UNIT }
       | Ast.LetExp { decs, body, pos } => typecheckLetExp decs body pos
-      | Ast.ArrayExp { typ, size, init, pos } => dummyExpty
+      | Ast.ArrayExp { typ, size, init, pos } => typecheckArrayExp typ size init pos
     end
 
   and translateDec venv tenv dec =

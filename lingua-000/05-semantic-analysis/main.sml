@@ -7,7 +7,9 @@ struct
        *
        * let
        *   type number = int
+       *   type intArray = array of int
        *   var r : number := 42
+       *   var someArray : intArray = intArray[10] of 0
        *   function double(a : number) : number = a + a
        * in
        *   (for i := 1 to 10 do i)
@@ -20,6 +22,11 @@ struct
               name = Symbol.symbol "number",
               ty = Ast.NameTy(Symbol.symbol "int", 42),
               pos = 42
+            },
+            {
+              name = Symbol.symbol "intArray",
+              ty = Ast.ArrayTy(Symbol.symbol "int", 42),
+              pos = 42
             }
           ]),
           Ast.VarDec {
@@ -27,6 +34,18 @@ struct
             escape = ref true,
             typ = SOME(Symbol.symbol "number", 42),
             init = Ast.IntExp(15),
+            pos = 42
+          },
+          Ast.VarDec {
+            name = Symbol.symbol "someArray",
+            escape = ref true,
+            typ = SOME((Symbol.symbol "intArray", 42)),
+            init = Ast.ArrayExp {
+              typ = Symbol.symbol "intArray",
+              size = Ast.IntExp(10),
+              init = Ast.IntExp(0),
+              pos = 42
+            },
             pos = 42
           },
           Ast.FunctionDec([
