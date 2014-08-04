@@ -140,8 +140,8 @@ struct
         let
           fun typecheckFields definitionFields uniq =
             let
-              val typedFields = List.map (fn (symbol, exp, pos) => (symbol, #ty (translateExp venv tenv exp), pos)) fields
-
+              fun mapper (symbol, exp, pos) = (symbol, #ty (translateExp venv tenv exp), pos)
+              val typedFields = List.map mapper fields
               val zipped = PairList.zipOption (definitionFields, typedFields)
 
               fun equalFields fields =
