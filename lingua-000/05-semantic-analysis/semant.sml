@@ -293,10 +293,10 @@ struct
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
-      | Ast.BreakExp(pos) => dummyExpty
       | Ast.LetExp { decs, body, pos } => dummyExpty
       | Ast.WhileExp { test, body, pos } => typecheckWhileExp test body pos
       | Ast.ForExp { var, escape, lo, hi, body, pos } => typecheckForExp var escape lo hi body pos
+      | Ast.BreakExp(pos) => { exp = (), ty = Types.UNIT }
       | Ast.ArrayExp { typ, size, init, pos } => dummyExpty
     end
 
