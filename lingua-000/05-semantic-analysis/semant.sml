@@ -244,6 +244,43 @@ struct
                           ^ "  required: "^ Syntax.showType Types.INT ^"\n"
                           ^ "     found: "^ Syntax.showType ttest ^"\n")
         end
+
+      fun typecheckForExp var escape lo hi body pos =
+        let
+          val { exp = _, ty = tlo } = translateExp venv tenv lo
+          val { exp = _, ty = thi } = translateExp venv tenv hi
+          (*
+           * Typecheck the body in a value environment containing the loop
+           * variable.
+           *)
+          val bodyVenv = Symbol.set venv var (Env.VarEntry { ty = Types.INT })
+          (*
+           * We're not interested in the result, just in potential typechecking
+           * exceptions.
+           *)
+          val _ = translateExp bodyVenv tenv body
+        in
+          case (tlo, thi) of
+            (Types.INT, Types.INT) => { exp = (), ty = Types.UNIT }
+          | (t, Types.INT) =>
+              error pos ("for expression type mismatch\n"
+                       ^ "low bound\n"
+                       ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                       ^ "     found: "^ Syntax.showType t ^"\n")
+          | (Types.INT, t) =>
+              error pos ("for expression type mismatch\n"
+                       ^ "high bound\n"
+                       ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                       ^ "     found: "^ Syntax.showType t ^"\n")
+          | (t1, t2) =>
+              error pos ("for expression type mismatch\n"
+                       ^ "low bound\n"
+                       ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                       ^ "     found: "^ Syntax.showType t1 ^"\n"
+                       ^ "high bound\n"
+                       ^ "  required: "^ Syntax.showType Types.INT ^"\n"
+                       ^ "     found: "^ Syntax.showType t2 ^"\n")
+        end
     in
       case ast of
         Ast.VarExp(var) => translateVar venv tenv var
@@ -256,10 +293,10 @@ struct
       | Ast.SeqExp(exprs) => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
-      | Ast.ForExp { var, escape, lo, hi, body, pos } => dummyExpty
       | Ast.BreakExp(pos) => dummyExpty
       | Ast.LetExp { decs, body, pos } => dummyExpty
       | Ast.WhileExp { test, body, pos } => typecheckWhileExp test body pos
+      | Ast.ForExp { var, escape, lo, hi, body, pos } => typecheckForExp var escape lo hi body pos
       | Ast.ArrayExp { typ, size, init, pos } => dummyExpty
     end
 
