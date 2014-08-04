@@ -1,6 +1,5 @@
 structure Ast =
 struct
-
   type pos = int
   and symbol = Symbol.symbol
 

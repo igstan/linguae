@@ -35,5 +35,4 @@ struct
     | (ARRAY(_, uniq1), ARRAY(_, uniq2)) => uniq1 = uniq2
     | (RECORD(_, uniq1), RECORD(_, uniq2)) => uniq1 = uniq2
     | _ => false
-
 end

@@ -1,6 +1,5 @@
 structure Env : ENV =
 struct
-
   type ty = Types.ty
 
   datatype enventry =
@@ -33,5 +32,4 @@ struct
     in
       venv3
     end
-
 end

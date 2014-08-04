@@ -1,6 +1,5 @@
 signature ENV =
 sig
-
   type ty
 
   datatype enventry =
@@ -12,5 +11,4 @@ sig
 
   (* Predefined functions. *)
   val base_venv : enventry Symbol.table
-
 end

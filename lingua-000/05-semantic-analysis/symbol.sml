@@ -1,6 +1,5 @@
 structure Symbol :> SYMBOL =
 struct
-
   exception Symbol
 
   type symbol = string * int
@@ -29,5 +28,4 @@ struct
   val empty = IntBinaryMap.empty
   fun set table (_, key) value = IntBinaryMap.insert (table, key, value)
   fun get table (_, key) = IntBinaryMap.find (table, key)
-
 end
