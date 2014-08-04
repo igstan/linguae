@@ -4,14 +4,11 @@ struct
 
   exception TypeError of Ast.pos * string
 
-  fun error pos msg = raise TypeError (pos, msg)
-
   type venv = Env.enventry Symbol.table
   type tenv = Env.ty Symbol.table
-
   type expty = { exp: Translate.exp, ty: Types.ty }
 
-  val dummyExpty = { exp = (), ty = Types.NIL }
+  fun error pos msg = raise TypeError (pos, msg)
 
   fun translateVar venv tenv var =
     let
