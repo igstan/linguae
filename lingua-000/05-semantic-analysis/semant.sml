@@ -337,7 +337,14 @@ struct
       Ast.TypeDec decs =>
         let
           fun addTypeDec ({ name, ty, pos }, tenv) =
-            Symbol.set tenv name (translateTy tenv ty pos)
+            let
+              val typePlaceholder = ref NONE
+              val recursiveTenv = Symbol.set tenv name (Types.NAME(name, typePlaceholder))
+              val definedTy = translateTy recursiveTenv ty pos
+            in
+              typePlaceholder := SOME(definedTy);
+              Symbol.set tenv name definedTy
+            end
           val newTenv = List.foldl addTypeDec tenv decs
         in
           { venv = venv, tenv = newTenv }

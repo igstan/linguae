@@ -3,18 +3,36 @@ struct
   fun main () =
     let
       (*
-       * The following AST represents this Tiger program:
+       * The AST below represents this Tiger program:
        *
        * let
        *   type number = int
        *   type intArray = array of int
+       *   type list = { head: int, tail: list }
        *   var r : number := 42
        *   var someArray : intArray = intArray[10] of 0
        *   function double(a : number) : number = a + a
        * in
-       *   (for i := 1 to 10 do i)
+       *   (for i := 1 to 10 do i);
+       *   { head = 1, tail = nil }
        * end
        *)
+      val forExp = Ast.ForExp {
+        var = Symbol.symbol "i",
+        escape = ref true,
+        lo = Ast.IntExp(1),
+        hi = Ast.IntExp(10),
+        body = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "i", 42)),
+        pos = 42
+      }
+      val listRecord = Ast.RecordExp {
+        fields = [
+          (Symbol.symbol "head", Ast.IntExp(1), 42),
+          (Symbol.symbol "tail", Ast.NilExp, 42)
+        ],
+        name = Symbol.symbol "list",
+        pos = 42
+      }
       val ast = Ast.LetExp {
         decs = [
           Ast.TypeDec([
@@ -26,6 +44,24 @@ struct
             {
               name = Symbol.symbol "intArray",
               ty = Ast.ArrayTy(Symbol.symbol "int", 42),
+              pos = 42
+            },
+            {
+              name = Symbol.symbol "list",
+              ty = Ast.RecordTy([
+                Ast.Field {
+                  name = Symbol.symbol "head",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                },
+                Ast.Field {
+                  name = Symbol.symbol "tail",
+                  escape = ref true,
+                  typ = Symbol.symbol "list",
+                  pos = 42
+                }
+              ]),
               pos = 42
             }
           ]),
@@ -70,14 +106,10 @@ struct
             }
           ])
         ],
-        body = Ast.ForExp {
-          var = Symbol.symbol "i",
-          escape = ref true,
-          lo = Ast.IntExp(1),
-          hi = Ast.IntExp(10),
-          body = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "i", 42)),
-          pos = 42
-        },
+        body = Ast.SeqExp([
+          (forExp, 42),
+          (listRecord, 42)
+        ]),
         pos = 42
       };
     in
