@@ -27,11 +27,8 @@ struct
     | (INT, INT) => true
     | (UNIT, UNIT) => true
     | (STRING, STRING) => true
-    | (NAME(name1, ty1), NAME(name2, ty2)) =>
-        if (Symbol.name name1) <> (Symbol.name name2) then
-          false
-        else
-          areEqual (Option.valOf (!ty1), Option.valOf (!ty2))
+    | (NAME(_, ty1), ty2) => areEqual (Option.valOf (!ty1), ty2)
+    | (ty1, NAME(_, ty2)) => areEqual (ty1, Option.valOf (!ty2))
     | (ARRAY(_, uniq1), ARRAY(_, uniq2)) => uniq1 = uniq2
     | (RECORD(_, uniq1), RECORD(_, uniq2)) => uniq1 = uniq2
     | _ => false
