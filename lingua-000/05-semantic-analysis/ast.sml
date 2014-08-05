@@ -70,6 +70,11 @@ struct
 
   fun isComparisonOperator oper =
     case oper of
-      (EqOp | NeqOp | LtOp | LeOp | GtOp | GeOp) => true
+      EqOp => true
+    | NeqOp => true
+    | LtOp => true
+    | LeOp => true
+    | GtOp => true
+    | GeOp => true
     | _ => false
 end
