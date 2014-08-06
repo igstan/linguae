@@ -14,7 +14,7 @@ struct
     let
       fun simpleVar name pos =
         case Symbol.get venv name of
-          SOME(Env.VarEntry { ty }) => { exp = (), ty = ty }
+          SOME(Env.VarEntry { ty }) => { exp = (), ty = Types.actual ty }
         | SOME(Env.FunEntry { ... }) => error pos ("undefined variable: " ^ Symbol.name name)
         | NONE => error pos ("undefined variable: " ^ Symbol.name name)
 
@@ -171,7 +171,7 @@ struct
                 error pos ("record structure mismatch\n"^ details)
             end
         in
-          case Symbol.get tenv name of
+          case Option.map Types.actual (Symbol.get tenv name) of
             SOME(Types.RECORD(definitionFields, uniq)) => typecheckFields definitionFields uniq
           | SOME(typ) => error pos ("`"^ Symbol.name name ^"' is not a record")
           | NONE => error pos ("undefined record type: "^ Symbol.name name)
@@ -291,7 +291,7 @@ struct
 
       fun typecheckArrayExp typ size init pos =
         let
-          val tarray = Symbol.get tenv typ
+          val tarray = Option.map Types.actual (Symbol.get tenv typ)
           val { exp = _, ty = tsize } = translateExp venv tenv size
           val { exp = _, ty = tinit } = translateExp venv tenv init
           fun typecheckInit _ =
@@ -335,19 +335,27 @@ struct
   and translateDec venv tenv dec =
     case dec of
       Ast.TypeDec decs =>
+        (*
+         * 1st pass — gather type headers and augment tenv with them
+         * 2nd pass — verify type declarations using the augment tenv
+         * 3rd pass — update refs in type names gathered in 1st pass
+         *)
         let
-          fun addTypeDec ({ name, ty, pos }, tenv) =
+          fun augment ({ name, ty, pos }, tenv) = Symbol.set tenv name (Types.NAME(name, ref NONE))
+          val augmentedTenv = List.foldl augment tenv decs
+          fun processTypeDec { name, ty, pos } =
             let
-              val typePlaceholder = ref NONE
-              val recursiveTenv = Symbol.set tenv name (Types.NAME(name, typePlaceholder))
-              val definedTy = translateTy recursiveTenv ty pos
+              val typ = translateTy augmentedTenv ty pos
+              val header = Symbol.get augmentedTenv name
             in
-              typePlaceholder := SOME(definedTy);
-              Symbol.set tenv name definedTy
+              case header of
+                SOME(Types.NAME(_, tyRef)) => tyRef := SOME(typ)
+              | SOME(other) => raise Fail("impossible: type must have been a NAME, but was: "^ Syntax.showType other)
+              | NONE => raise Fail("impossible: type must have been found inside tenv: "^ Symbol.name name)
             end
-          val newTenv = List.foldl addTypeDec tenv decs
         in
-          { venv = venv, tenv = newTenv }
+          List.map processTypeDec decs;
+          { venv = venv, tenv = augmentedTenv }
         end
     | Ast.FunctionDec fundecs =>
       let

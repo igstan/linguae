@@ -9,6 +9,8 @@ struct
        *   type number = int
        *   type intArray = array of int
        *   type list = { head: int, tail: list }
+       *   type peek = { peek : int, poke : poke }
+       *   type poke = { poke : int, peek : peek }
        *   var r : number := 42
        *   var someArray : intArray = intArray[10] of 0
        *   function double(a : number) : number = a + a
@@ -31,6 +33,14 @@ struct
           (Symbol.symbol "tail", Ast.NilExp, 42)
         ],
         name = Symbol.symbol "list",
+        pos = 42
+      }
+      val peekPoke = Ast.RecordExp {
+        fields = [
+          (Symbol.symbol "peek", Ast.IntExp(1), 42),
+          (Symbol.symbol "poke", Ast.NilExp, 42)
+        ],
+        name = Symbol.symbol "peek",
         pos = 42
       }
       val ast = Ast.LetExp {
@@ -59,6 +69,42 @@ struct
                   name = Symbol.symbol "tail",
                   escape = ref true,
                   typ = Symbol.symbol "list",
+                  pos = 42
+                }
+              ]),
+              pos = 42
+            },
+            {
+              name = Symbol.symbol "peek",
+              ty = Ast.RecordTy([
+                Ast.Field {
+                  name = Symbol.symbol "peek",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                },
+                Ast.Field {
+                  name = Symbol.symbol "poke",
+                  escape = ref true,
+                  typ = Symbol.symbol "poke",
+                  pos = 42
+                }
+              ]),
+              pos = 42
+            },
+            {
+              name = Symbol.symbol "poke",
+              ty = Ast.RecordTy([
+                Ast.Field {
+                  name = Symbol.symbol "poke",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                },
+                Ast.Field {
+                  name = Symbol.symbol "peek",
+                  escape = ref true,
+                  typ = Symbol.symbol "peek",
                   pos = 42
                 }
               ]),
@@ -108,7 +154,8 @@ struct
         ],
         body = Ast.SeqExp([
           (forExp, 42),
-          (listRecord, 42)
+          (listRecord, 42),
+          (peekPoke, 42)
         ]),
         pos = 42
       };
