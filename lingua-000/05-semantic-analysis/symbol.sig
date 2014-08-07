@@ -11,4 +11,5 @@ sig
   val empty : 'a table
   val set : 'a table -> symbol -> 'a -> 'a table
   val get : 'a table -> symbol -> 'a option
+  val has : 'a table -> symbol -> bool
 end

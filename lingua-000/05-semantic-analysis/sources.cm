@@ -6,6 +6,8 @@ $/smlnj-lib.cm
 ast.sml
 env.sig
 env.sml
+freevars.sig
+freevars.sml
 lang.sml
 main.sml
 pairlist.sig
