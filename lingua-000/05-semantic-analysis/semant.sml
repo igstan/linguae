@@ -25,7 +25,7 @@ struct
           val { exp, ty = tvar } = translateVar venv tenv var
           fun typecheckRecord fields =
             let
-              val field = List.find (fn (sym, ty) => sym = name) fields
+              val field = L.find (fn (sym, ty) => sym = name) fields
             in
               case field of
                 SOME((_, ty)) => { exp = (), ty = ty }
@@ -77,20 +77,20 @@ struct
          *)
         let
           fun translateArg arg = #ty (translateExp venv tenv arg)
-          val targs = List.map translateArg args (* throws for unbound identifiers *)
+          val targs = L.map translateArg args (* throws for unbound identifiers *)
           val tfunc = Symbol.get venv func
         in
           case tfunc of
             SOME(Env.FunEntry { formals, result }) =>
               let
-                val mismatched = List.filter (not <|> Types.areEqual) (ListPair.zip (formals, targs))
+                val mismatched = L.filter (not <|> Types.areEqual) (ListPair.zip (formals, targs))
                 fun detail (formal, actual) =
                   "argument mismatch\n"
                 ^ "  required: "^ (Syntax.showType actual) ^"\n"
                 ^ "     found: "^ (Syntax.showType formal) ^"\n"
-                val details = List.foldl op^ "" (List.map detail mismatched)
+                val details = L.foldl op^ "" (L.map detail mismatched)
               in
-                if List.null mismatched then
+                if L.null mismatched then
                   { exp = (), ty = result }
                 else
                   error pos details
@@ -140,7 +140,7 @@ struct
           fun typecheckFields definitionFields uniq =
             let
               fun mapper (symbol, exp, pos) = (symbol, #ty (translateExp venv tenv exp), pos)
-              val typedFields = List.map mapper fields
+              val typedFields = L.map mapper fields
               val zipped = PairList.zipOption (definitionFields, typedFields)
 
               fun equalFields fields =
@@ -149,7 +149,7 @@ struct
                     name1 = name2 andalso Types.areEqual (typ1, typ2)
                 | (NONE, _) => false
                 |(_, NONE) => false
-              val mismatched = List.filter (not <|> equalFields) zipped
+              val mismatched = L.filter (not <|> equalFields) zipped
 
               fun showDefined field =
                 case field of
@@ -165,9 +165,9 @@ struct
                   "  required: "^ (showDefined defined) ^"\n"
                 ^ "     found: "^ (showUsed used) ^"\n"
 
-              val details = List.foldl op^ "" (List.map detail mismatched)
+              val details = L.foldl op^ "" (L.map detail mismatched)
             in
-              if List.null mismatched then
+              if L.null mismatched then
                 { exp = (), ty = Types.RECORD(definitionFields, uniq) }
               else
                 error pos ("record structure mismatch\n"^ details)
@@ -285,7 +285,7 @@ struct
         let
           val initEnvs = { venv = venv, tenv = tenv }
           fun folder (dec, { venv, tenv }) = translateDec venv tenv dec
-          val { venv = venv2, tenv = tenv2 } = List.foldl folder initEnvs decs
+          val { venv = venv2, tenv = tenv2 } = L.foldl folder initEnvs decs
           val { exp = _, ty = tbody } = translateExp venv2 tenv2 body
         in
           { exp = (), ty = tbody }
@@ -344,7 +344,7 @@ struct
          *)
         let
           fun augment ({ name, ty, pos }, tenv) = Symbol.set tenv name (Types.NAME(name, ref NONE))
-          val augmentedTenv = List.foldl augment tenv decs
+          val augmentedTenv = L.foldl augment tenv decs
           fun processTypeDec { name, ty, pos } =
             let
               val typ = translateTy augmentedTenv ty pos
@@ -356,7 +356,7 @@ struct
               | NONE => raise Fail("impossible: type must have been found inside tenv: "^ Symbol.name name)
             end
         in
-          List.map processTypeDec decs;
+          L.map processTypeDec decs;
           { venv = venv, tenv = augmentedTenv }
         end
     | Ast.FunctionDec fundecs =>
@@ -376,7 +376,7 @@ struct
             error 0 ("recursive functions need explicit return type\n"^ details)
           end
       in
-        if not (List.null recursiveWithoutReturnType) then
+        if not (L.null recursiveWithoutReturnType) then
           recursiveFunctionsNeedExplicitReturnType ()
         else
           let
@@ -386,8 +386,8 @@ struct
                   case Symbol.get tenv typ of
                     NONE => error pos ("type not found: "^ Symbol.name typ)
                   | SOME(t) => (name, t)
-                val typedParams = List.map paramMapper params
-                val tformals = List.map #2 typedParams
+                val typedParams = L.map paramMapper params
+                val tformals = L.map #2 typedParams
                 fun tresultMapper (returnType, returnPos) =
                   case Symbol.get tenv returnType of
                     NONE => error returnPos ("type not found: "^ Symbol.name returnType)
@@ -404,7 +404,7 @@ struct
                 else
                   venv
               end
-            val augmentedVenv = List.foldl augment venv fundecsExtra
+            val augmentedVenv = L.foldl augment venv fundecsExtra
             fun funDecMapper ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
               if isRecursive then
                 let
@@ -412,9 +412,9 @@ struct
                     case Symbol.get tenv typ of
                       NONE => error pos ("type not found: "^ Symbol.name typ)
                     | SOME(t) => (name, t)
-                  val typedParams = List.map paramMapper params
+                  val typedParams = L.map paramMapper params
                   fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
-                  val bodyEnv = List.foldl addParam venv typedParams
+                  val bodyEnv = L.foldl addParam venv typedParams
                   (*
                    * Nothing to store here, just typecheck the body. The
                    * function signature is already in the venv.
@@ -429,15 +429,15 @@ struct
                     case Symbol.get tenv typ of
                       NONE => error pos ("type not found: "^ Symbol.name typ)
                     | SOME(t) => (name, t)
-                  val typedParams = List.map paramMapper params
-                  val tformals = List.map #2 typedParams
+                  val typedParams = L.map paramMapper params
+                  val tformals = L.map #2 typedParams
                   fun tresultMapper (returnType, returnPos) =
                     case Symbol.get tenv returnType of
                       NONE => error returnPos ("type not found: "^ Symbol.name returnType)
                     | SOME(t) => t
                   val tresult = Option.map tresultMapper result
                   fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
-                  val bodyEnv = List.foldl addParam venv typedParams
+                  val bodyEnv = L.foldl addParam venv typedParams
                   val { exp = _, ty = tbody } = translateExp bodyEnv tenv body
                 in
                   case tresult of
@@ -450,7 +450,7 @@ struct
                                ^ "  required: "^ Syntax.showType tresult ^"\n"
                                ^ "     found: "^ Syntax.showType tbody ^"\n")
                 end
-            val newVenv = List.foldl funDecMapper augmentedVenv fundecsExtra
+            val newVenv = L.foldl funDecMapper augmentedVenv fundecsExtra
           in
             { venv = newVenv, tenv = tenv }
           end
@@ -490,7 +490,7 @@ struct
             case Symbol.get tenv typ of
               NONE => error pos ("type not found: "^ Symbol.name typ)
             | SOME(t) => (name, t)
-          val recordFields = List.map mapper fields
+          val recordFields = L.map mapper fields
         in
           Types.RECORD(recordFields, ref ())
         end
