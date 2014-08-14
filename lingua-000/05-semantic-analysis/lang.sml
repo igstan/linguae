@@ -8,4 +8,7 @@ struct
 
   (* Function composition. The built-in `o` operator is pretty hard to spot. *)
   fun f <|> g = fn (x) => f (g x)
+
+  fun const a b = a
+  fun id a = a
 end
