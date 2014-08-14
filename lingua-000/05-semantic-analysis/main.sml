@@ -14,6 +14,10 @@ struct
        *   var r : number := 42
        *   var someArray : intArray = intArray[10] of 0
        *   function double(a : number) : number = a + a
+       *   function factorial(n : int) : int =
+       *     if n = 0 then 1 else n * fact(n - 1)
+       *   function odd(n : int) : int = if n = 0 then 0 else even(n - 1)
+       *   function even(n : int) : int = if n = 0 then 1 else odd(n - 1)
        * in
        *   (for i := 1 to 10 do i);
        *   { head = 1, tail = nil }
@@ -146,6 +150,116 @@ struct
                 left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "a", 42)),
                 oper = Ast.PlusOp,
                 right = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "a", 42)),
+                pos = 42
+              },
+              pos = 42
+            },
+            Ast.FunDec {
+              name = Symbol.symbol "factorial",
+              params = [
+                Ast.Field {
+                  name = Symbol.symbol "n",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                }
+              ],
+              result = SOME(Symbol.symbol "int", 42),
+              body = Ast.IfExp {
+                test = Ast.OpExp {
+                  left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                  oper = Ast.EqOp,
+                  right = Ast.IntExp(0),
+                  pos = 42
+                },
+                then' = Ast.IntExp(1),
+                else' = SOME(Ast.OpExp {
+                  left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                  oper = Ast.TimesOp,
+                  right = Ast.CallExp {
+                    func = Symbol.symbol "factorial",
+                    args = [
+                      Ast.OpExp {
+                        left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                        oper = Ast.MinusOp,
+                        right = Ast.IntExp(1),
+                        pos = 42
+                      }
+                    ],
+                    pos = 42
+                  },
+                  pos = 42
+                }),
+                pos = 42
+              },
+              pos = 42
+            },
+            Ast.FunDec {
+              name = Symbol.symbol "odd",
+              params = [
+                Ast.Field {
+                  name = Symbol.symbol "n",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                }
+              ],
+              result = SOME(Symbol.symbol "int", 42),
+              body = Ast.IfExp {
+                test = Ast.OpExp {
+                  left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                  oper = Ast.EqOp,
+                  right = Ast.IntExp(0),
+                  pos = 42
+                },
+                then' = Ast.IntExp(1),
+                else' = SOME(Ast.CallExp {
+                  func = Symbol.symbol "even",
+                  args = [
+                    Ast.OpExp {
+                      left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                      oper = Ast.MinusOp,
+                      right = Ast.IntExp(1),
+                      pos = 42
+                    }
+                  ],
+                  pos = 42
+                }),
+                pos = 42
+              },
+              pos = 42
+            },
+            Ast.FunDec {
+              name = Symbol.symbol "even",
+              params = [
+                Ast.Field {
+                  name = Symbol.symbol "n",
+                  escape = ref true,
+                  typ = Symbol.symbol "int",
+                  pos = 42
+                }
+              ],
+              result = SOME(Symbol.symbol "int", 42),
+              body = Ast.IfExp {
+                test = Ast.OpExp {
+                  left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                  oper = Ast.EqOp,
+                  right = Ast.IntExp(0),
+                  pos = 42
+                },
+                then' = Ast.IntExp(0),
+                else' = SOME(Ast.CallExp {
+                  func = Symbol.symbol "odd",
+                  args = [
+                    Ast.OpExp {
+                      left = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "n", 42)),
+                      oper = Ast.MinusOp,
+                      right = Ast.IntExp(1),
+                      pos = 42
+                    }
+                  ],
+                  pos = 42
+                }),
                 pos = 42
               },
               pos = 42

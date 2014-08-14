@@ -2,6 +2,8 @@ structure Semant =
 struct
   open Lang
 
+  structure L = List
+
   exception TypeError of Ast.pos * string
 
   type venv = Env.enventry Symbol.table
@@ -359,39 +361,99 @@ struct
         end
     | Ast.FunctionDec fundecs =>
       let
-        fun funDecMapper (Ast.FunDec { name, params, result, body, pos }) =
+        val freeVars = FreeVars.freeVarsInDec dec
+        fun isRecursive (Ast.FunDec { name, ... }) = Symbol.has freeVars name
+        val fundecsExtra = L.map (fn fundec => (fundec, isRecursive fundec)) fundecs
+        fun hasNoReturnType (Ast.FunDec { result, ... }, isRecursive) =
+          isRecursive andalso not (Option.isSome result)
+        val recursiveWithoutReturnType = L.filter hasNoReturnType fundecsExtra
+        fun recursiveFunctionsNeedExplicitReturnType _ =
           let
-            fun paramMapper (Ast.Field { name, escape, typ, pos }) =
-              case Symbol.get tenv typ of
-                  NONE => error pos ("type not found: "^ Symbol.name typ)
-                | SOME(t) => (name, t)
-            val typedParams = List.map paramMapper params
-            val tformals = List.map #2 typedParams
-            fun tresultMapper (returnType, returnPos) =
-              case Symbol.get tenv returnType of
-                  NONE => error returnPos ("type not found: "^ Symbol.name returnType)
-                | SOME(t) => t
-            val tresult = Option.map tresultMapper result
-            (* Typecheck the body in an environment augmented with the formal params. *)
-            fun addVarEntry ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
-            val bodyEnv = List.foldl addVarEntry venv typedParams
-            val { exp = _, ty = tbody } = translateExp bodyEnv tenv body
+            fun detail ((Ast.FunDec { name, pos, ... }, _), message) =
+              message ^"  "^ Symbol.name name ^" at line "^ Int.toString pos ^"\n"
+            val details = L.foldl detail "" recursiveWithoutReturnType
           in
-            case tresult of
-              NONE => (name, Env.FunEntry { formals = tformals, result = tbody })
-            | SOME(tresult) =>
-              if Types.areEqual (tresult, tbody) then
-                (name, Env.FunEntry { formals = tformals, result = tbody })
-              else
-                error pos ("function declaration type mismatch\n"
-                         ^ "  required: "^ Syntax.showType tresult ^"\n"
-                         ^ "     found: "^ Syntax.showType tbody ^"\n")
+            error 0 ("recursive functions need explicit return type\n"^ details)
           end
-        val funEntries = List.map funDecMapper fundecs
-        val newVenv = List.foldl (fn ((name, funEntry), venv) =>
-          Symbol.set venv name funEntry) venv funEntries
       in
-        { venv = newVenv, tenv = tenv }
+        if not (List.null recursiveWithoutReturnType) then
+          recursiveFunctionsNeedExplicitReturnType ()
+        else
+          let
+            fun augment ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
+              let
+                fun paramMapper (Ast.Field { name, escape, typ, pos }) =
+                  case Symbol.get tenv typ of
+                    NONE => error pos ("type not found: "^ Symbol.name typ)
+                  | SOME(t) => (name, t)
+                val typedParams = List.map paramMapper params
+                val tformals = List.map #2 typedParams
+                fun tresultMapper (returnType, returnPos) =
+                  case Symbol.get tenv returnType of
+                    NONE => error returnPos ("type not found: "^ Symbol.name returnType)
+                  | SOME(t) => t
+                val tresult = Option.map tresultMapper result
+              in
+                if isRecursive then
+                  case tresult of
+                    NONE => raise Fail("impossible: type must have been present because this is a recursive function"^ Symbol.name name)
+                  | SOME(tresult) => Symbol.set venv name (Env.FunEntry {
+                      formals = tformals,
+                      result = tresult
+                    })
+                else
+                  venv
+              end
+            val augmentedVenv = List.foldl augment venv fundecsExtra
+            fun funDecMapper ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
+              if isRecursive then
+                let
+                  fun paramMapper (Ast.Field { name, escape, typ, pos }) =
+                    case Symbol.get tenv typ of
+                      NONE => error pos ("type not found: "^ Symbol.name typ)
+                    | SOME(t) => (name, t)
+                  val typedParams = List.map paramMapper params
+                  fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
+                  val bodyEnv = List.foldl addParam venv typedParams
+                  (*
+                   * Nothing to store here, just typecheck the body. The
+                   * function signature is already in the venv.
+                   *)
+                  val _ = translateExp bodyEnv tenv body
+                in
+                  venv
+                end
+              else
+                let
+                  fun paramMapper (Ast.Field { name, escape, typ, pos }) =
+                    case Symbol.get tenv typ of
+                      NONE => error pos ("type not found: "^ Symbol.name typ)
+                    | SOME(t) => (name, t)
+                  val typedParams = List.map paramMapper params
+                  val tformals = List.map #2 typedParams
+                  fun tresultMapper (returnType, returnPos) =
+                    case Symbol.get tenv returnType of
+                      NONE => error returnPos ("type not found: "^ Symbol.name returnType)
+                    | SOME(t) => t
+                  val tresult = Option.map tresultMapper result
+                  fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty })
+                  val bodyEnv = List.foldl addParam venv typedParams
+                  val { exp = _, ty = tbody } = translateExp bodyEnv tenv body
+                in
+                  case tresult of
+                    NONE => Symbol.set venv name (Env.FunEntry { formals = tformals, result = tbody })
+                  | SOME(tresult) =>
+                    if Types.areEqual (tresult, tbody) then
+                      Symbol.set venv name (Env.FunEntry { formals = tformals, result = tbody })
+                    else
+                      error pos ("function declaration type mismatch\n"
+                               ^ "  required: "^ Syntax.showType tresult ^"\n"
+                               ^ "     found: "^ Syntax.showType tbody ^"\n")
+                end
+            val newVenv = List.foldl funDecMapper augmentedVenv fundecsExtra
+          in
+            { venv = newVenv, tenv = tenv }
+          end
       end
     | Ast.VarDec { name, escape, typ, init, pos } =>
       let
