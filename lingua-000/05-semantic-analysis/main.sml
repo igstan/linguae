@@ -28,7 +28,8 @@ struct
         escape = ref true,
         lo = Ast.IntExp(1),
         hi = Ast.IntExp(10),
-        body = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "i", 42)),
+        (* body = Ast.VarExp(Ast.SimpleVar(Symbol.symbol "i", 42)), *)
+        body = Ast.BreakExp(42),
         pos = 42
       }
       val listRecord = Ast.RecordExp {
