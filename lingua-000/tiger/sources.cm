@@ -20,5 +20,7 @@ symbol.sig
 symbol.sml
 syntax.sig
 syntax.sml
+table.sig
+table.sml
 translate.sml
 types.sml
