@@ -9,6 +9,9 @@ struct
   (* Function composition. The built-in `o` operator is pretty hard to spot. *)
   fun f <|> g = fn (x) => f (g x)
 
+  (* Constant function. *)
   fun const a b = a
+
+  (* Identity function. *)
   fun id a = a
 end
