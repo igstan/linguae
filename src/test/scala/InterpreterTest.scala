@@ -62,4 +62,16 @@ class InterpreterTest extends FunSuite with Matchers {
       Result.Failure("If condition was not a number, but a function.")
     }
   }
+
+  test("evaluates function application") {
+    val ast = App(Fun("p", Num(1)), Num(2))
+    Interpreter.eval(ast) should be(Result.Success(Value.Num(1)))
+  }
+
+  test("rejects non-functions in function application position") {
+    val ast = App(Num(1), Num(2))
+    Interpreter.eval(ast) should be {
+      Result.Failure("Number in function application position.")
+    }
+  }
 }

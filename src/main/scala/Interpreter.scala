@@ -16,6 +16,14 @@ object Interpreter {
           Result.Failure("If condition was not a number, but a function.")
       }
     case Fun(param, body) => Result.Success(Value.Fun(param, body))
+    case App(fn, arg) =>
+      eval(fn) match {
+        case f: Result.Failure => f
+        case Result.Success(Value.Num(_)) =>
+          Result.Failure("Number in function application position.")
+        case Result.Success(Value.Fun(param, body)) =>
+          eval(body)
+      }
   }
 
   private def arith(l: Node, r: Node, op: (Int, Int) => Int): Result = {
