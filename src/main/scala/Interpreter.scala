@@ -10,5 +10,12 @@ object Interpreter {
             case Value.Num(r) => Value.Num(l + r)
           }
       }
+    case Sub(l, r) =>
+      eval(l) match {
+        case Value.Num(l) =>
+          eval(r) match {
+            case Value.Num(r) => Value.Num(l - r)
+          }
+      }
   }
 }
