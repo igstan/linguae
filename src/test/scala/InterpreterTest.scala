@@ -36,4 +36,9 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = If(Num(42), Num(1), Num(2))
     Interpreter.eval(ast) should be(Value.Num(1))
   }
+
+  test("evaluates function expressions") {
+    val ast = Fun("p", Num(1))
+    Interpreter.eval(ast) should be(Value.Fun("p", Num(1)))
+  }
 }

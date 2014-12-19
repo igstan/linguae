@@ -12,6 +12,7 @@ object Interpreter {
         case Value.Num(0) => eval(no)
         case _ => eval(yes)
       }
+    case Fun(param, body) => Value.Fun(param, body)
   }
 
   private def arith(l: Node, r: Node, op: (Int, Int) => Int): Value = {
