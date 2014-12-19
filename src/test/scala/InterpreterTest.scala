@@ -16,4 +16,14 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = Sub(Num(5), Add(Num(2), Num(1)))
     Interpreter.eval(ast) should be(Value.Num(2))
   }
+
+  test("evaluates multiplication expressions") {
+    val ast = Mul(Num(2), Num(5))
+    Interpreter.eval(ast) should be(Value.Num(10))
+  }
+
+  test("evaluates division expressions") {
+    val ast = Div(Num(10), Num(5))
+    Interpreter.eval(ast) should be(Value.Num(2))
+  }
 }

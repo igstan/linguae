@@ -5,6 +5,8 @@ object Interpreter {
     case Num(n) => Value.Num(n)
     case Add(l, r) => arith(l, r, _ + _)
     case Sub(l, r) => arith(l, r, _ - _)
+    case Mul(l, r) => arith(l, r, _ * _)
+    case Div(l, r) => arith(l, r, _ / _)
   }
 
   private def arith(l: Node, r: Node, op: (Int, Int) => Int): Value = {
