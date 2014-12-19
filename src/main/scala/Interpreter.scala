@@ -33,6 +33,9 @@ object Interpreter {
       env.get(name).map(Result.Success(_)).getOrElse {
         Result.Failure(s"Unbound identifier: $name")
       }
+    case Let(name, value, body) =>
+      val desugared = App(Fun(name, body), value)
+      eval(desugared, env)
   }
 
   private def arith(l: Node, r: Node, env: Environment, op: (Int, Int) => Int): Result = {

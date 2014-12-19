@@ -81,4 +81,9 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = App(Fun("p", Ref("p")), Num(1))
     Interpreter.eval(ast, env) should be(Result.Success(Value.Num(1)))
   }
+
+  test("evaluates let expressions") {
+    val ast = Let("a", Num(1), Add(Ref("a"), Num(2)))
+    Interpreter.eval(ast, env) should be(Result.Success(Value.Num(3)))
+  }
 }
