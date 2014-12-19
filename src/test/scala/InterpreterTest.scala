@@ -26,4 +26,14 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = Div(Num(10), Num(5))
     Interpreter.eval(ast) should be(Value.Num(2))
   }
+
+  test("evaluates if expressions: false branch") {
+    val ast = If(Num(0), Num(1), Num(2))
+    Interpreter.eval(ast) should be(Value.Num(2))
+  }
+
+  test("evaluates if expressions: true branch") {
+    val ast = If(Num(42), Num(1), Num(2))
+    Interpreter.eval(ast) should be(Value.Num(1))
+  }
 }

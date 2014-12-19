@@ -7,6 +7,11 @@ object Interpreter {
     case Sub(l, r) => arith(l, r, _ - _)
     case Mul(l, r) => arith(l, r, _ * _)
     case Div(l, r) => arith(l, r, _ / _)
+    case If(cond, yes, no) =>
+      eval(cond) match {
+        case Value.Num(0) => eval(no)
+        case _ => eval(yes)
+      }
   }
 
   private def arith(l: Node, r: Node, op: (Int, Int) => Int): Value = {
