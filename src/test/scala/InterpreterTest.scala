@@ -6,4 +6,9 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = Num(1)
     Interpreter.eval(ast) should be(Value.Num(1))
   }
+
+  test("evaluates addition expressions") {
+    val ast = Add(Num(1), Add(Num(2), Num(3)))
+    Interpreter.eval(ast) should be(Value.Num(6))
+  }
 }
