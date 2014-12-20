@@ -16,8 +16,8 @@ package object test {
         }
         MatchResult(
           matches,
-          s"$actual was not equal to $expected",
-          s"$actual was equal to $expected"
+          s"The value in $actual was not equal to $expected",
+          s"The value in $actual was equal to $expected"
         )
       }
     }
