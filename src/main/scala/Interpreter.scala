@@ -11,13 +11,15 @@ object Interpreter {
       eval(cond, env, store).flatMap {
         case Evaluation(Value.Num(0), store) => eval(no, env, store)
         case Evaluation(Value.Num(_), store) => eval(yes, env, store)
-        case Evaluation(_: Value.Fun, store) => Result.Failure("If condition was not a number, but a function.")
+        case Evaluation(_: Value.Fun, store) =>
+          Result.Failure("If condition was not a number, but a function.")
       }
     case Fun(param, body) =>
       Result.Success(Evaluation(Value.Fun(param, body, closure = env), store))
     case App(fn, arg) =>
       eval(fn, env, store).flatMap {
-        case Evaluation(Value.Num(_), store) => Result.Failure("Number in function application position.")
+        case Evaluation(Value.Num(_), store) =>
+          Result.Failure("Number in function application position.")
         case Evaluation(Value.Fun(param, body, closure), store) =>
           eval(arg, env, store).flatMap {
             case Evaluation(value, store) =>
@@ -56,11 +58,14 @@ object Interpreter {
 
   private def arith(l: Node, r: Node, env: Environment, store: Store, op: (Int, Int) => Int): Result[Evaluation] = {
     eval(l, env, store).flatMap {
-      case Evaluation(_: Value.Fun, store) => Result.Failure("Left operand is not a number")
+      case Evaluation(_: Value.Fun, store) =>
+        Result.Failure("Left operand is not a number")
       case Evaluation(Value.Num(l), store) =>
         eval(r, env, store).flatMap {
-          case Evaluation(_: Value.Fun, store) => Result.Failure("Right operand is not a number")
-          case Evaluation(Value.Num(r), store) => Result.Success(Evaluation(Value.Num(op(l, r)), store))
+          case Evaluation(_: Value.Fun, store) =>
+            Result.Failure("Right operand is not a number")
+          case Evaluation(Value.Num(r), store) =>
+            Result.Success(Evaluation(Value.Num(op(l, r)), store))
         }
     }
   }
