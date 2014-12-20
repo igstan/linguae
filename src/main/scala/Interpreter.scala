@@ -24,7 +24,11 @@ object Interpreter {
           eval(arg, env, store).flatMap {
             case Evaluation(value, store) =>
               val (location, newStore) = store.add(value)
-              eval(body, closure.set(param, location), newStore)
+              eval(body, closure.set(param, location), newStore).map {
+                case Evaluation(value, storeAfterCall) =>
+                  val collectedStore = storeAfterCall.gc(store)
+                  Evaluation(value, collectedStore)
+              }
           }
       }
     case Ref(name) =>

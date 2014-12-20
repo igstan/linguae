@@ -23,6 +23,12 @@ case class Store(bindings: Map[Int, Store.Cell], locationCount: Int) {
     val newBindings = bindings + (location -> cell)
     (location, cell, Store(newBindings, location))
   }
+
+  def gc(old: Store): Store = {
+    val oldKeys = old.bindings.keys.toSet
+    val collected = bindings.filterKeys(oldKeys.contains(_))
+    Store(collected, locationCount)
+  }
 }
 
 object Store {
@@ -31,6 +37,10 @@ object Store {
   class Cell(var value: Option[Value]) {
     def bind(value: Value): Unit = {
       this.value = Some(value)
+    }
+
+    override def toString = {
+      value.map(_.toString).getOrElse("?")
     }
   }
 

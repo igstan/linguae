@@ -198,4 +198,24 @@ class InterpreterTest extends FunSuite with Matchers {
     )
     Interpreter.eval(ast, env, store) should evaluateTo(Value.Num(120))
   }
+
+  test("performs GC on the Store") {
+    // (function (a) { a = 2; return a; })(1);
+    val ast = App(
+      Fun("a",
+        Seq(
+          Set("a", Num(2)),
+          Ref("a")
+        )
+      ),
+      Num(1)
+    )
+
+    Interpreter.eval(ast, env, store) match {
+      case f: Result.Failure => fail(s"Expected Result.Success, got $f")
+      case Result.Success(Evaluation(value, store)) =>
+        value should be(Value.Num(2))
+        store.bindings should be(Map.empty)
+    }
+  }
 }
