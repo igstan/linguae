@@ -172,4 +172,30 @@ class InterpreterTest extends FunSuite with Matchers {
     val ast = Set("a", Num(2))
     Interpreter.eval(ast, env, store) should be(Result.Failure("Unbound identifier: a"))
   }
+
+  test("evaluates recursive let expressions") {
+    // var factorial = function (n) {
+    //   if (n !== 0) {
+    //     return n * factorial(n - 1);
+    //   } else {
+    //     return 1;
+    //   }
+    // }
+    //
+    // factorial(5);
+    val ast = Let(
+      "factorial", Fun("n",
+        If(
+          Ref("n"),
+          Mul(
+            Ref("n"),
+            App(Ref("factorial"), Sub(Ref("n"), Num(1)))
+          ),
+          Num(1)
+        )
+      ),
+      App(Ref("factorial"), Num(5))
+    )
+    Interpreter.eval(ast, env, store) should evaluateTo(Value.Num(120))
+  }
 }

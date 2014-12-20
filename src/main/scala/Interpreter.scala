@@ -38,8 +38,13 @@ object Interpreter {
         Result.Failure(s"Unbound identifier: $name")
       }
     case Let(name, value, body) =>
-      val desugared = App(Fun(name, body), value)
-      eval(desugared, env, store)
+      val (location, cell, newStore) = store.addUnbound
+      val newEnv = env.set(name, location)
+      eval(value, newEnv, newStore).flatMap {
+        case Evaluation(value, store) =>
+          cell.bind(value)
+          eval(body, newEnv, store)
+      }
     case Seq(a, b) =>
       eval(a, env, store).flatMap {
         case Evaluation(_, store) => eval(b, env, store)
