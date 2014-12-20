@@ -1,12 +1,12 @@
 package toy
 
-case class Environment(bindings: Map[String, Value]) {
-  def get(name: String): Option[Value] = {
+case class Environment(bindings: Map[String, Store.Location]) {
+  def get(name: String): Option[Store.Location] = {
     bindings.get(name)
   }
 
-  def set(name: String, value: Value): Environment = {
-    Environment(bindings + (name -> value))
+  def set(name: String, location: Store.Location): Environment = {
+    Environment(bindings + (name -> location))
   }
 }
 
