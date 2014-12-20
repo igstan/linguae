@@ -167,4 +167,9 @@ class InterpreterTest extends FunSuite with Matchers {
     Interpreter.eval(ast, env, store) should not(evaluateTo(Value.Num(3)))
     Interpreter.eval(ast, env, store) should be(Result.Failure("Unbound identifier: b"))
   }
+
+  test("rejects update of an unbound identifier") {
+    val ast = Set("a", Num(2))
+    Interpreter.eval(ast, env, store) should be(Result.Failure("Unbound identifier: a"))
+  }
 }
