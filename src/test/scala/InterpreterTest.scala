@@ -4,48 +4,44 @@ package test
 class InterpreterTest extends FunSuite with Matchers {
   val env = Environment.empty
 
-  def evaluatesTo(ast: Node, env: Environment, value: Value): Unit = {
-    Interpreter.eval(ast, env) should be(Result.Success(Evaluation(value)))
-  }
-
   test("evaluates numbers") {
     val ast = Num(1)
-    evaluatesTo(ast, env, Value.Num(1))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(1))
   }
 
   test("evaluates addition expressions") {
     val ast = Add(Num(1), Add(Num(2), Num(3)))
-    evaluatesTo(ast, env, Value.Num(6))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(6))
   }
 
   test("evaluates subtraction expressions") {
     val ast = Sub(Num(5), Add(Num(2), Num(1)))
-    evaluatesTo(ast, env, Value.Num(2))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(2))
   }
 
   test("evaluates multiplication expressions") {
     val ast = Mul(Num(2), Num(5))
-    evaluatesTo(ast, env, Value.Num(10))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(10))
   }
 
   test("evaluates division expressions") {
     val ast = Div(Num(10), Num(5))
-    evaluatesTo(ast, env, Value.Num(2))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(2))
   }
 
   test("evaluates if expressions: false branch") {
     val ast = If(Num(0), Num(1), Num(2))
-    evaluatesTo(ast, env, Value.Num(2))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(2))
   }
 
   test("evaluates if expressions: true branch") {
     val ast = If(Num(42), Num(1), Num(2))
-    evaluatesTo(ast, env, Value.Num(1))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(1))
   }
 
   test("evaluates function expressions") {
     val ast = Fun("p", Num(1))
-    evaluatesTo(ast, env, Value.Fun("p", Num(1), env))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Fun("p", Num(1), env))
   }
 
   test("rejects non-numbers as left operands") {
@@ -71,7 +67,7 @@ class InterpreterTest extends FunSuite with Matchers {
 
   test("evaluates function application") {
     val ast = App(Fun("p", Num(1)), Num(2))
-    evaluatesTo(ast, env, Value.Num(1))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(1))
   }
 
   test("rejects non-functions in function application position") {
@@ -83,7 +79,7 @@ class InterpreterTest extends FunSuite with Matchers {
 
   test("evaluates parameter references") {
     val ast = App(Fun("p", Ref("p")), Num(1))
-    evaluatesTo(ast, env, Value.Num(1))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(1))
   }
 
   test("rejects unbound identifiers") {
@@ -95,7 +91,7 @@ class InterpreterTest extends FunSuite with Matchers {
 
   test("evaluates let expressions") {
     val ast = Let("a", Num(1), Add(Ref("a"), Num(2)))
-    evaluatesTo(ast, env, Value.Num(3))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(3))
   }
 
   test("supports closures") {
@@ -120,7 +116,7 @@ class InterpreterTest extends FunSuite with Matchers {
         )),
       Fun("base", Fun("n", Add(Ref("base"), Ref("n"))))
     )
-    evaluatesTo(ast, env, Value.Num(12))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(12))
   }
 
   test("functions introduce static, or lexical scope, not dynamic scope") {
@@ -141,12 +137,23 @@ class InterpreterTest extends FunSuite with Matchers {
       )
     )
 
-    Interpreter.eval(ast, env) should not be(Result.Success(Evaluation(Value.Num(5))))
+    Interpreter.eval(ast, env) should not(evaluateTo(Value.Num(5)))
     Interpreter.eval(ast, env) should be(Result.Failure("Unbound identifier: x"))
   }
 
   test("evaluates two expressions in sequence") {
     val ast = Seq(Num(1), Num(2))
-    evaluatesTo(ast, env, Value.Num(2))
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(2))
+  }
+
+  test("evaluates identifier update expressions") {
+    val ast = Let(
+      "a", Num(1),
+      Seq(
+        Set("a", Num(2)),
+        Ref("a")
+      )
+    )
+    Interpreter.eval(ast, env) should evaluateTo(Value.Num(2))
   }
 }
