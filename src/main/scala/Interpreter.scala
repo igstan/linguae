@@ -15,17 +15,17 @@ object Interpreter {
         case Result.Success(_: Value.Fun) =>
           Result.Failure("If condition was not a number, but a function.")
       }
-    case Fun(param, body) => Result.Success(Value.Fun(param, body))
+    case Fun(param, body) => Result.Success(Value.Fun(param, body, closure = env))
     case App(fn, arg) =>
       eval(fn, env) match {
         case f: Result.Failure => f
         case Result.Success(Value.Num(_)) =>
           Result.Failure("Number in function application position.")
-        case Result.Success(Value.Fun(param, body)) =>
+        case Result.Success(Value.Fun(param, body, closure)) =>
           eval(arg, env) match {
             case f: Result.Failure => f
             case Result.Success(value) =>
-              val augmentedEnv = env.set(param, value)
+              val augmentedEnv = env.merge(closure).set(param, value)
               eval(body, augmentedEnv)
           }
       }

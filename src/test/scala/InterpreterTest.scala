@@ -41,7 +41,7 @@ class InterpreterTest extends FunSuite with Matchers {
 
   test("evaluates function expressions") {
     val ast = Fun("p", Num(1))
-    Interpreter.eval(ast, env) should be(Result.Success(Value.Fun("p", Num(1))))
+    Interpreter.eval(ast, env) should be(Result.Success(Value.Fun("p", Num(1), env)))
   }
 
   test("rejects non-numbers as left operands") {
@@ -92,5 +92,30 @@ class InterpreterTest extends FunSuite with Matchers {
   test("evaluates let expressions") {
     val ast = Let("a", Num(1), Add(Ref("a"), Num(2)))
     Interpreter.eval(ast, env) should be(Result.Success(Value.Num(3)))
+  }
+
+  test("supports closures") {
+    // (
+    //   function (makeAdder) {
+    //     return (function (add10) {
+    //       return add10(2);
+    //     })(makeAdder(10));
+    //   }
+    // )(
+    //   function (base) {
+    //     return function (n) {
+    //       return base + n;
+    //     }
+    //   }
+    // );
+    val ast = App(
+      Fun("makeAdder",
+        App(
+          Fun("add10", App(Ref("add10"), Num(2))),
+          App(Ref("makeAdder"), Num(10))
+        )),
+      Fun("base", Fun("n", Add(Ref("base"), Ref("n"))))
+    )
+    Interpreter.eval(ast, env) should be(Result.Success(Value.Num(12)))
   }
 }
