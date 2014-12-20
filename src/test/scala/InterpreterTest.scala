@@ -144,4 +144,9 @@ class InterpreterTest extends FunSuite with Matchers {
     Interpreter.eval(ast, env) should not be(Result.Success(Evaluation(Value.Num(5))))
     Interpreter.eval(ast, env) should be(Result.Failure("Unbound identifier: x"))
   }
+
+  test("evaluates two expressions in sequence") {
+    val ast = Seq(Num(1), Num(2))
+    evaluatesTo(ast, env, Value.Num(2))
+  }
 }

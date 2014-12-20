@@ -11,3 +11,4 @@ case class Fun(param: String, body: Node) extends Node
 case class App(fn: Node, arg: Node) extends Node
 case class Ref(name: String) extends Node
 case class Let(name: String, value: Node, body: Node) extends Node
+case class Seq(a: Node, b: Node) extends Node

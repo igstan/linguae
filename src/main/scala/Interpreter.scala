@@ -30,6 +30,8 @@ object Interpreter {
     case Let(name, value, body) =>
       val desugared = App(Fun(name, body), value)
       eval(desugared, env)
+    case Seq(a, b) =>
+      eval(a, env).flatMap(_ => eval(b, env))
   }
 
   private def arith(l: Node, r: Node, env: Environment, op: (Int, Int) => Int): Result[Evaluation] = {
