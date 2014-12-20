@@ -25,7 +25,7 @@ object Interpreter {
           eval(arg, env) match {
             case f: Result.Failure => f
             case Result.Success(value) =>
-              val augmentedEnv = env.merge(closure).set(param, value)
+              val augmentedEnv = closure.set(param, value)
               eval(body, augmentedEnv)
           }
       }

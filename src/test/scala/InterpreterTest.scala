@@ -118,4 +118,26 @@ class InterpreterTest extends FunSuite with Matchers {
     )
     Interpreter.eval(ast, env) should be(Result.Success(Value.Num(12)))
   }
+
+  test("functions introduce static, or lexical scope, not dynamic scope") {
+    // function f1(y) {
+    //   return x + y;
+    // }
+    //
+    // function f2(x) {
+    //   return f1(4);
+    // }
+    //
+    // f2(1);
+    val ast = Let(
+      "f1", Fun("y", Add(Ref("x"), Ref("y"))),
+      Let(
+        "f2", Fun("x", App(Ref("f1"), Num(4))),
+        App(Ref("f2"), Num(1))
+      )
+    )
+
+    Interpreter.eval(ast, env) should not be(Result.Success(Value.Num(5)))
+    Interpreter.eval(ast, env) should be(Result.Failure("Unbound identifier: x"))
+  }
 }
