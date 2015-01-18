@@ -1,7 +1,7 @@
 package leesp
 
 object Main {
-  val parser = new Parser(traceExecution = false)
+  val reader = new Reader(traceExecution = false)
 
   def main(args: Array[String]): Unit = {
     showProgram(args(0))
@@ -15,7 +15,7 @@ object Main {
 
   def showProgram(source: String): Unit = {
     try {
-      println(parser.parse(source).mkString("\n"))
+      println(reader.read(source).mkString("\n"))
     } catch {
       case UnmatchedLeftParen(row, col) =>
         println(s"unmatched left parenthesis: row=$row, col=$col")

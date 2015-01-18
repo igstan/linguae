@@ -1,7 +1,7 @@
 package leesp
 
 /*
- * The structure of the AST produced by the parser.
+ * The tree produced by the reader.
  */
 sealed trait NODE
 case class ATOM(value: String) extends NODE
@@ -10,18 +10,18 @@ case class LIST(value: List[NODE]) extends NODE {
 }
 
 /*
- * Exceptions throw by the parser.
+ * Exceptions throw by the reader.
  */
 case class UnmatchedLeftParen(row: Int, col: Int) extends RuntimeException
 case class UnmatchedRightParen(row: Int, col: Int) extends RuntimeException
 
 /*
- * The parser itself!
+ * The reader itself!
  */
-class Parser(traceExecution: Boolean) {
+class Reader(traceExecution: Boolean) {
   type Transition = State => State
 
-  def parse(source: String): List[NODE] = {
+  def read(source: String): List[NODE] = {
     val finalState = commitAtom(source.foldLeft(State.empty)(transition))
     verifyUnmatchedParenthesis(finalState)
     finalState.program.toList
