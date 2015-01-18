@@ -1,7 +1,5 @@
 package leesp
 
-import Character.isWhitespace
-
 sealed trait NODE
 case class ATOM(value: String) extends NODE
 case class LIST(value: List[NODE]) extends NODE {
@@ -55,10 +53,10 @@ object Parser {
   def transition(state: State, char: Char) = {
     adjustPosition(char) {
       char match {
-        case '('                  => startList(commitAtom(state))
-        case ')'                  => commitList(commitAtom(state))
-        case c if isWhitespace(c) => commitAtom(state)
-        case c                    => adjustAtom(c)(state)
+        case '('                            => startList(commitAtom(state))
+        case ')'                            => commitList(commitAtom(state))
+        case c if Character.isWhitespace(c) => commitAtom(state)
+        case c                              => adjustAtom(c)(state)
       }
     }
   }
