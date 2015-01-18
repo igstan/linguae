@@ -53,11 +53,13 @@ object Parser {
   type Transition = State => State
 
   def transition(state: State, char: Char) = {
-    char match {
-      case c @ '('              => adjustPosition(c)(startList(commitAtom(state)))
-      case c @ ')'              => adjustPosition(c)(commitList(commitAtom(state)))
-      case c if isWhitespace(c) => adjustPosition(c)(commitAtom(state))
-      case c                    => adjustPosition(c)(adjustAtom(c)(state))
+    adjustPosition(char) {
+      char match {
+        case '('                  => startList(commitAtom(state))
+        case ')'                  => commitList(commitAtom(state))
+        case c if isWhitespace(c) => commitAtom(state)
+        case c                    => adjustAtom(c)(state)
+      }
     }
   }
 
