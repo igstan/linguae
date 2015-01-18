@@ -1,37 +1,25 @@
 package leesp
 
+/*
+ * The structure of the AST produced by the parser.
+ */
 sealed trait NODE
 case class ATOM(value: String) extends NODE
 case class LIST(value: List[NODE]) extends NODE {
   override def toString = value.mkString("LIST(", ", ", ")")
 }
 
+/*
+ * Exceptions throw by the parser.
+ */
 case class UnmatchedLeftParen(row: Int, col: Int) extends RuntimeException
 case class UnmatchedRightParen(row: Int, col: Int) extends RuntimeException
 
-object Parser {
-  val traceExecution = false
-
-  def main(args: Array[String]): Unit = {
-    showProgram(args(0))
-    showProgram("""
-      (define a 1)
-      (define b 2)
-      (define add (lambda (a b) (+ a b)))
-      (add a b)
-    """)
-  }
-
-  def showProgram(source: String): Unit = {
-    try {
-      println(parse(source).mkString("\n"))
-    } catch {
-      case UnmatchedLeftParen(row, col) =>
-        println(s"unmatched left parenthesis: row=$row, col=$col")
-      case UnmatchedRightParen(row, col) =>
-        println(s"unmatched right parenthesis: row=$row, col=$col")
-    }
-  }
+/*
+ * The parser itself!
+ */
+class Parser(traceExecution: Boolean) {
+  type Transition = State => State
 
   def parse(source: String): List[NODE] = {
     val finalState = commitAtom(source.foldLeft(State.empty)(transition))
@@ -47,8 +35,6 @@ object Parser {
       }
     }
   }
-
-  type Transition = State => State
 
   def transition(state: State, char: Char) = {
     adjustPosition(char) {
