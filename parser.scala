@@ -26,15 +26,15 @@ object Parser {
   }
 
   def parse(source: String): List[NODE] = {
-    commitAtom(source.foldRight(State.empty)(folder)).program
+    commitAtom(source.foldLeft(State.empty)(folder)).program.toList
   }
 
   type Transition = State => State
 
-  def folder(char: Char, state: State) = {
+  def folder(state: State, char: Char) = {
     char match {
-      case '('                  => commitList(commitAtom(state))
-      case ')'                  => startList(commitAtom(state))
+      case '('                  => startList(commitAtom(state))
+      case ')'                  => commitList(commitAtom(state))
       case c if isWhitespace(c) => commitAtom(state)
       case c                    => adjustAtom(c)(state)
     }
@@ -51,18 +51,18 @@ object Parser {
       case None => sys.error("unbalanced parentheses")
       case Some(list) =>
         state.lists match {
-          case Nil =>
-            state.copy(program = LIST(list) :: state.program, lastList = None)
-          case x :: prevLists =>
-            state.copy(lastList = Some(LIST(list) :: x), lists = prevLists)
+          case Vector() =>
+            state.copy(program = state.program :+ LIST(list.toList), lastList = None)
+          case prevLists :+ x =>
+            state.copy(lastList = Some(x :+ LIST(list.toList)), lists = prevLists)
         }
     }
   }
 
   val startList: Transition = log("startList") { state =>
     state.lastList match {
-      case None => state.copy(lastList = Some(List.empty))
-      case Some(list) => state.copy(lastList = Some(List.empty), lists = list :: state.lists)
+      case None => state.copy(lastList = Some(Vector.empty))
+      case Some(list) => state.copy(lastList = Some(Vector.empty), lists = state.lists :+ list)
     }
   }
 
@@ -71,8 +71,8 @@ object Parser {
       case None => state
       case Some(atom) =>
         val commited = state.lastList match {
-          case None => state.copy(program = ATOM(atom) :: state.program)
-          case Some(list) => state.copy(lastList = Some(ATOM(atom) :: list))
+          case None => state.copy(program = state.program :+ ATOM(atom))
+          case Some(list) => state.copy(lastList = Some(list :+ ATOM(atom)))
         }
         commited.copy(lastAtom = None)
     }
@@ -81,14 +81,14 @@ object Parser {
   def adjustAtom(char: Char): Transition = log(s"adjustAtom($char)") { state =>
     state.lastAtom match {
       case None => state.copy(lastAtom = Some(char.toString))
-      case Some(atom) => state.copy(lastAtom = Some(char + atom))
+      case Some(atom) => state.copy(lastAtom = Some(atom + char))
     }
   }
 
   case class State(
-    program: List[NODE],
-    lists: List[List[NODE]],
-    lastList: Option[List[NODE]],
+    program: Vector[NODE],
+    lists: Vector[Vector[NODE]],
+    lastList: Option[Vector[NODE]],
     lastAtom: Option[String]
   ) {
     override def toString = {
@@ -102,6 +102,6 @@ object Parser {
   }
 
   object State {
-    def empty = State(List.empty, List.empty, Option.empty, Option.empty)
+    def empty = State(Vector.empty, Vector.empty, Option.empty, Option.empty)
   }
 }
