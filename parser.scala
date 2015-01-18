@@ -8,6 +8,9 @@ case class LIST(value: List[NODE]) extends NODE {
   override def toString = value.mkString("LIST(", ", ", ")")
 }
 
+case class UnmatchedLeftParen(row: Int, col: Int) extends RuntimeException
+case class UnmatchedRightParen(row: Int, col: Int) extends RuntimeException
+
 object Parser {
   val traceExecution = false
 
@@ -22,21 +25,47 @@ object Parser {
   }
 
   def showProgram(source: String): Unit = {
-    println(parse(source).mkString("\n"))
+    try {
+      println(parse(source).mkString("\n"))
+    } catch {
+      case UnmatchedLeftParen(row, col) =>
+        println(s"unmatched left parenthesis: row=$row, col=$col")
+      case UnmatchedRightParen(row, col) =>
+        println(s"unmatched right parenthesis: row=$row, col=$col")
+    }
   }
 
   def parse(source: String): List[NODE] = {
-    commitAtom(source.foldLeft(State.empty)(folder)).program.toList
+    val finalState = commitAtom(source.foldLeft(State.empty)(transition))
+    verifyUnmatchedParenthesis(finalState)
+    finalState.program.toList
+  }
+
+  def verifyUnmatchedParenthesis(state: State): Unit = {
+    if (state.lastList.isDefined) {
+      state.listPositions match {
+        case Nil => sys.error("this is a bug")
+        case (row, col) :: _ => throw UnmatchedLeftParen(row, col)
+      }
+    }
   }
 
   type Transition = State => State
 
-  def folder(state: State, char: Char) = {
+  def transition(state: State, char: Char) = {
     char match {
-      case '('                  => startList(commitAtom(state))
-      case ')'                  => commitList(commitAtom(state))
-      case c if isWhitespace(c) => commitAtom(state)
-      case c                    => adjustAtom(c)(state)
+      case c @ '('              => adjustPosition(c)(startList(commitAtom(state)))
+      case c @ ')'              => adjustPosition(c)(commitList(commitAtom(state)))
+      case c if isWhitespace(c) => adjustPosition(c)(commitAtom(state))
+      case c                    => adjustPosition(c)(adjustAtom(c)(state))
+    }
+  }
+
+  def adjustPosition(char: Char): Transition = { state =>
+    if (char == '\n') {
+      state.copy(col = 1, row = state.row + 1)
+    } else {
+      state.copy(col = state.col + 1)
     }
   }
 
@@ -48,21 +77,36 @@ object Parser {
 
   val commitList: Transition = log("commitList") { state =>
     state.lastList match {
-      case None => sys.error("unbalanced parentheses")
+      case None => throw UnmatchedRightParen(state.row, state.col)
       case Some(list) =>
         state.lists match {
           case Vector() =>
-            state.copy(program = state.program :+ LIST(list.toList), lastList = None)
+            state.copy(
+              program = state.program :+ LIST(list.toList),
+              lastList = None,
+              listPositions = state.listPositions.tail
+            )
           case prevLists :+ x =>
-            state.copy(lastList = Some(x :+ LIST(list.toList)), lists = prevLists)
+            state.copy(
+              lastList = Some(x :+ LIST(list.toList)),
+              lists = prevLists,
+              listPositions = state.listPositions.tail
+            )
         }
     }
   }
 
   val startList: Transition = log("startList") { state =>
     state.lastList match {
-      case None => state.copy(lastList = Some(Vector.empty))
-      case Some(list) => state.copy(lastList = Some(Vector.empty), lists = state.lists :+ list)
+      case None => state.copy(
+        lastList = Some(Vector.empty),
+        listPositions = (state.row -> state.col) :: state.listPositions
+      )
+      case Some(list) => state.copy(
+        lastList = Some(Vector.empty),
+        lists = state.lists :+ list,
+        listPositions = (state.row -> state.col) :: state.listPositions
+      )
     }
   }
 
@@ -89,19 +133,33 @@ object Parser {
     program: Vector[NODE],
     lists: Vector[Vector[NODE]],
     lastList: Option[Vector[NODE]],
-    lastAtom: Option[String]
+    lastAtom: Option[String],
+    listPositions: List[(Int, Int)],
+    row: Int,
+    col: Int
   ) {
     override def toString = {
       s"""State(
-      |   program = $program,
-      |     lists = $lists,
-      |  lastList = $lastList,
-      |  lastAtom = $lastAtom
+      |       program = $program,
+      |         lists = $lists,
+      |      lastList = $lastList,
+      |      lastAtom = $lastAtom
+      | listPositions = $listPositions,
+      |           row = $row,
+      |           col = $col
       |)""".stripMargin
     }
   }
 
   object State {
-    def empty = State(Vector.empty, Vector.empty, Option.empty, Option.empty)
+    def empty = State(
+      program = Vector.empty,
+      lists = Vector.empty,
+      lastList = Option.empty,
+      lastAtom = Option.empty,
+      listPositions = List.empty,
+      row = 1,
+      col = 1
+    )
   }
 }
