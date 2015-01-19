@@ -20,7 +20,7 @@ case class UnmatchedRightParen(row: Int, col: Int) extends RuntimeException
  */
 class Reader(traceExecution: Boolean) {
   def read(source: String): List[NODE] = {
-    source.foldLeft(State.empty)(fold)
+    source.foldLeft(State.withExecutionTracing(traceExecution))(fold)
       .commitAtom
       .verifyUnmatchedParenthesis()
       .program
@@ -44,7 +44,8 @@ case class State(
   lastAtom: Option[String],
   listPositions: List[(Int, Int)],
   row: Int,
-  col: Int
+  col: Int,
+  traceExecution: Boolean
 ) {
   def adjustPosition(char: Char): State = {
     if (char == '\n') {
@@ -145,6 +146,10 @@ object State {
     lastAtom = Option.empty,
     listPositions = List.empty,
     row = 1,
-    col = 1
+    col = 1,
+    traceExecution = false
   )
+
+  def withExecutionTracing(traceExecution: Boolean) =
+    empty.copy(traceExecution = traceExecution)
 }
