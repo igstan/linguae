@@ -18,4 +18,5 @@ struct
   | IF of ty * ty * ty
   | FUN of Var.ty * ty
   | APP of ty * ty
+  | LET of Var.ty * ty * ty
 end

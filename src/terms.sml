@@ -23,4 +23,11 @@ struct
       BOOL false
     )
   )
+
+  val letTerm = FUN ("x",
+    LET (
+      "y", FUN ("a", VAR "a"),
+      APP (VAR "y", BOOL true)
+    )
+  )
 end

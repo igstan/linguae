@@ -9,6 +9,7 @@ struct
     | IF of Type.ty * ty * ty * ty
     | FUN of Type.ty * Term.Var.ty * ty
     | APP of Type.ty * ty * ty
+    | LET of Type.ty * Term.Var.ty * ty * ty
 
     fun typeOf (INT t) = t
       | typeOf (BOOL t) = t
@@ -16,6 +17,7 @@ struct
       | typeOf (IF t) = #1 t
       | typeOf (FUN t) = #1 t
       | typeOf (APP t) = #1 t
+      | typeOf (LET t) = #1 t
   end
 
   exception UnificationFailure of Type.ty * Type.ty
@@ -53,6 +55,14 @@ struct
       end
     | Term.APP (def, arg) =>
         TypedTerm.APP (Type.freshVar (), annotate def tenv, annotate arg tenv)
+    | Term.LET (var, value, body) =>
+      let
+        val annValue = annotate value tenv
+        val tenv' = TEnv.set tenv var (TypedTerm.typeOf annValue)
+        val annBody = annotate body tenv'
+      in
+        TypedTerm.LET (Type.freshVar (), var, annValue, annBody)
+      end
 
   fun constrain (term : TypedTerm.ty) : constraint list =
     let
@@ -78,6 +88,12 @@ struct
               val appC = (defTy, Type.FUN (argTy, returnTy))
             in
               loop (def :: arg :: terms) (appC :: constraints)
+            end
+          | TypedTerm.LET (letTy, _, value, body) =>
+            let
+              val letC = (letTy, TypedTerm.typeOf body)
+            in
+              loop (value :: body :: terms) (letC :: constraints)
             end
     in
       loop [term] []
