@@ -12,12 +12,12 @@ struct
         Type.VAR var' =>
           if var = var' then newTy else oldTy
       | Type.FUN (param, return) =>
-          let
-            val paramTy = substPair ((var, newTy), param)
-            val returnTy = substPair ((var, newTy), return)
-          in
-            Type.FUN (paramTy, returnTy)
-          end
+        let
+          val paramTy = substPair ((var, newTy), param)
+          val returnTy = substPair ((var, newTy), return)
+        in
+          Type.FUN (paramTy, returnTy)
+        end
   in
     fun apply subst ty = List.foldl substPair ty subst
   end
