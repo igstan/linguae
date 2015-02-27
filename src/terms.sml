@@ -3,11 +3,11 @@ struct
   open Term
 
   val predefinedTEnv = TEnv.fromList [
-    ("+", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
-    ("-", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
-    ("*", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
-    ("/", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
-    ("zero?", Type.FUN (Type.INT, Type.BOOL))
+    ("+",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("-",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("*",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("/",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("zero?", TypeScheme.forall [] (Type.FUN (Type.INT, Type.BOOL)))
   ]
 
   val identity = FUN ("a", VAR "a")
@@ -30,4 +30,13 @@ struct
       APP (VAR "y", BOOL true)
     )
   )
+
+  val letPolymorphism =
+    LET ("id", FUN ("a", VAR "a"),
+      IF (
+        APP (FUN ("a", VAR "a"), BOOL true),
+        APP (FUN ("a", VAR "a"), INT 1),
+        APP (FUN ("a", VAR "a"), INT 0)
+      )
+    )
 end

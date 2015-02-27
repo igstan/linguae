@@ -3,6 +3,12 @@ struct
   structure Var =
   struct
     type ty = int
+
+    structure Key : ORD_KEY =
+    struct
+      type ord_key = ty
+      val compare = Int.compare
+    end
   end
 
   datatype ty =
@@ -10,6 +16,16 @@ struct
   | BOOL
   | VAR of Var.ty
   | FUN of ty * ty
+
+  (**
+   * Obtain free type variables from within the given type.
+   *)
+  fun freeVars ty =
+    case ty of
+      INT => []
+    | BOOL => []
+    | VAR (var) => [var]
+    | FUN (p, r) => (freeVars p) @ (freeVars r)
 
   local
     val counter = ref 0

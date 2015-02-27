@@ -31,7 +31,7 @@ struct
       let in
         case TEnv.get tenv var of
           NONE => raise Fail ("unbound identifier: " ^ String.toString var)
-        | SOME ty => TypedTerm.VAR (ty, var)
+        | SOME ty => TypedTerm.VAR (TypeScheme.instantiate ty, var)
       end
     | Term.INT _ => TypedTerm.INT Type.INT
     | Term.BOOL _ => TypedTerm.BOOL Type.BOOL
@@ -46,7 +46,7 @@ struct
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
-        val tenv' = TEnv.set tenv param paramTy
+        val tenv' = TEnv.set tenv param (TypeScheme.forall [] paramTy)
         val annotatedBody = annotate body tenv'
         val bodyTy = TypedTerm.typeOf annotatedBody
         val funTy = Type.FUN (paramTy, bodyTy)
@@ -58,7 +58,7 @@ struct
     | Term.LET (var, value, body) =>
       let
         val annValue = annotate value tenv
-        val tenv' = TEnv.set tenv var (TypedTerm.typeOf annValue)
+        val tenv' = TEnv.set tenv var (TEnv.generalize tenv (TypedTerm.typeOf annValue))
         val annBody = annotate body tenv'
       in
         TypedTerm.LET (Type.freshVar (), var, annValue, annBody)

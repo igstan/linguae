@@ -12,4 +12,6 @@ src/tenv.sml
 src/term.sml
 src/terms.sml
 src/type.sml
+src/type-scheme.sig
+src/type-scheme.sml
 src/unify.sml

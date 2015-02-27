@@ -6,6 +6,9 @@ struct
 
   fun fromList xs = xs
 
+  fun set subst var value =
+    (var, value) :: subst
+
   local
     fun substPair ((var, newTy), oldTy) =
       case oldTy of
