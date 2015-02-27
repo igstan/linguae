@@ -3,6 +3,12 @@ struct
   structure Var =
   struct
     type ty = string
+
+    structure Key : ORD_KEY =
+    struct
+      type ord_key = ty
+      val compare = String.compare
+    end
   end
 
   datatype ty =

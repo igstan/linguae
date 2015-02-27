@@ -1,6 +1,10 @@
 Group is
 
 $/basis.cm
+$/smlnj-lib.cm
 
+src/tenv.sig
+src/tenv.fun
+src/tenv.sml
 src/term.sml
 src/type.sml
