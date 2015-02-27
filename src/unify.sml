@@ -41,13 +41,12 @@ struct
       loop term TEnv.empty
     end
 
-
-  fun constrain (terms: TypedTerm.ty list) : constraint list =
+  fun constrain (term : TypedTerm.ty) : constraint list =
     let
       fun loop [] constraints = constraints
         | loop (term :: terms) constraints =
           case term of
-            TypedTerm.VAR _            => loop terms constraints
+            TypedTerm.VAR _ => loop terms constraints
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
             let
@@ -58,6 +57,6 @@ struct
               loop (def :: arg :: terms) (appC :: constraints)
             end
     in
-      loop terms []
+      loop [term] []
     end
 end
