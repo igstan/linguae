@@ -21,7 +21,7 @@ struct
           Type.FUN (paramTy, returnTy)
         end
   in
-    fun apply subst ty = List.foldl substPair ty subst
+    fun apply subst ty = List.foldr substPair ty subst
   end
 
   fun compose s1 s2 = s2 @ s1
