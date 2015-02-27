@@ -7,7 +7,6 @@ struct
       val subst = unify (constrain typedTerm)
       val termTy = TypedTerm.typeOf typedTerm
     in
-      Type.resetFreshness ();
       Subst.apply subst termTy
     end
 end
