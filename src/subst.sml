@@ -10,6 +10,7 @@ struct
     fun substPair ((var, newTy), oldTy) =
       case oldTy of
         Type.INT => oldTy
+      | Type.BOOL => oldTy
       | Type.VAR var' =>
           if var = var' then newTy else oldTy
       | Type.FUN (param, return) =>

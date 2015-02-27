@@ -7,6 +7,7 @@ struct
 
   datatype ty =
     INT
+  | BOOL
   | VAR of Var.ty
   | FUN of ty * ty
 
@@ -19,6 +20,7 @@ struct
   end
 
   fun toString INT = "int"
+    | toString BOOL = "bool"
     | toString (VAR v) = "a" ^ Int.toString v
     | toString (FUN (p as FUN _, r)) = "(" ^ toString p ^ ") -> " ^ toString r
     | toString (FUN (p, r)) = toString p ^ " -> " ^ toString r

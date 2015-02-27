@@ -4,11 +4,13 @@ struct
   struct
     datatype ty =
       INT of Type.ty
+    | BOOL of Type.ty
     | VAR of Type.ty * Term.Var.ty
     | FUN of Type.ty * Term.Var.ty * ty
     | APP of Type.ty * ty * ty
 
     fun typeOf (INT t) = t
+      | typeOf (BOOL t) = t
       | typeOf (VAR t) = #1 t
       | typeOf (FUN t) = #1 t
       | typeOf (APP t) = #1 t
@@ -28,6 +30,7 @@ struct
         | SOME ty => TypedTerm.VAR (ty, var)
       end
     | Term.INT _ => TypedTerm.INT Type.INT
+    | Term.BOOL _ => TypedTerm.BOOL Type.BOOL
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
@@ -47,6 +50,7 @@ struct
         | loop (term :: terms) constraints =
           case term of
             TypedTerm.INT _ => constraints
+          | TypedTerm.BOOL _ => constraints
           | TypedTerm.VAR _ => loop terms constraints
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
@@ -65,6 +69,7 @@ struct
     fun occurs v ty =
       case ty of
         Type.INT => false
+      | Type.BOOL => false
       | Type.VAR v' => v = v'
       | Type.FUN (param, return) => occurs v param orelse occurs v return
 

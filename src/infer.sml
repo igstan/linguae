@@ -50,6 +50,7 @@ struct
     let
       open Type
       fun string INT = "int"
+        | string BOOL = "bool"
         | string (VAR v) = GenVar.genvar v
         | string (FUN (p as FUN _, r)) =
           let
