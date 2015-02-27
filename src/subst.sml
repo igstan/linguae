@@ -9,7 +9,8 @@ struct
   local
     fun substPair ((var, newTy), oldTy) =
       case oldTy of
-        Type.VAR var' =>
+        Type.INT => oldTy
+      | Type.VAR var' =>
           if var = var' then newTy else oldTy
       | Type.FUN (param, return) =>
         let
