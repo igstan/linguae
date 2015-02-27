@@ -14,15 +14,15 @@ opening Terms
   val letTerm : ty
   val letPolymorphism : ty
 -
-- Infer.typeSignature Terms.identity predef;
+- Infer.typeSignature identity predef;
 val it = "forall a. a -> a" : string
 -
-- Infer.typeSignature Terms.constant predef;
+- Infer.typeSignature constant predef;
 val it = "forall ab. a -> b -> a" : string
 -
-- Infer.typeSignature Terms.compose predef;
+- Infer.typeSignature compose predef;
 val it = "forall abc. (c -> b) -> (a -> c) -> a -> b" : string
 -
-- Infer.typeSignature Terms.letPolymorphism predef;
+- Infer.typeSignature letPolymorphism predef;
 val it = "int" : string
 ```
