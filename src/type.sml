@@ -14,4 +14,12 @@ struct
   datatype ty =
     VAR of Var.ty
   | FUN of ty * ty
+
+  local
+    fun increment r = !r before r := !r + 1
+    val counter = ref 0
+  in
+    fun freshVar () = VAR (increment counter)
+    fun resetFreshness () = counter := 0
+  end
 end
