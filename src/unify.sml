@@ -6,12 +6,14 @@ struct
       INT of Type.ty
     | BOOL of Type.ty
     | VAR of Type.ty * Term.Var.ty
+    | IF of Type.ty * ty * ty * ty
     | FUN of Type.ty * Term.Var.ty * ty
     | APP of Type.ty * ty * ty
 
     fun typeOf (INT t) = t
       | typeOf (BOOL t) = t
       | typeOf (VAR t) = #1 t
+      | typeOf (IF t) = #1 t
       | typeOf (FUN t) = #1 t
       | typeOf (APP t) = #1 t
   end
@@ -31,6 +33,14 @@ struct
       end
     | Term.INT _ => TypedTerm.INT Type.INT
     | Term.BOOL _ => TypedTerm.BOOL Type.BOOL
+    | Term.IF (test, yes, no) =>
+      let
+        val testTy = annotate test tenv
+        val thenTy = annotate yes tenv
+        val elseTy = annotate no tenv
+      in
+        TypedTerm.IF (Type.BOOL, testTy, thenTy, elseTy)
+      end
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
@@ -52,6 +62,12 @@ struct
             TypedTerm.INT _ => constraints
           | TypedTerm.BOOL _ => constraints
           | TypedTerm.VAR _ => loop terms constraints
+          | TypedTerm.IF (ifTy, test, yes, no) =>
+            let
+              val branchC = (TypedTerm.typeOf yes, TypedTerm.typeOf no)
+            in
+              loop (test :: yes :: no :: terms) (branchC :: constraints)
+            end
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
             let
@@ -87,6 +103,7 @@ struct
     fun unifyPair pair =
       case pair of
         (Type.INT, Type.INT) => Subst.empty
+      | (Type.BOOL, Type.BOOL) => Subst.empty
       | (Type.VAR (v), ty) => unifyVar v ty
       | (ty, Type.VAR (v)) => unifyVar v ty
       | (Type.FUN (param1, return1), Type.FUN (param2, return2)) =>

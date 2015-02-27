@@ -15,4 +15,12 @@ struct
   val compose = FUN ("f", FUN ("g", FUN ("x", APP (VAR "f", APP (VAR "g", VAR "x")))))
   val counter = FUN ("counter", INT 1)
   val add10 = FUN ("x", APP (APP (VAR "+", VAR "x"), INT 10))
+
+  val isZero = FUN ("x",
+    IF (
+      APP (VAR "zero?", VAR "x"),
+      BOOL true,
+      BOOL false
+    )
+  )
 end

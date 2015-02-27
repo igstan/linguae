@@ -15,6 +15,7 @@ struct
     VAR of Var.ty
   | BOOL of bool
   | INT of int
+  | IF of ty * ty * ty
   | FUN of Var.ty * ty
   | APP of ty * ty
 end
