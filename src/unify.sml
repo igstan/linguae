@@ -12,6 +12,8 @@ struct
       | typeOf (APP t) = #1 t
   end
 
+  exception OccursCheck of Type.Var.ty * Type.ty
+
   type constraint = Type.ty * Type.ty
 
   fun annotate (term : Term.ty) : TypedTerm.ty =
@@ -73,7 +75,7 @@ struct
             Subst.fromList [(v, ty)]
       | unifyVar v ty =
           if occurs v ty then
-            raise Fail "occurs check"
+            raise OccursCheck (v, ty)
           else
             Subst.fromList [(v, ty)]
 
