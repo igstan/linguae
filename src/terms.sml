@@ -2,6 +2,9 @@ structure Terms =
 struct
   val predefinedTEnv = TEnv.fromList [
     ("+", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
+    ("-", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
+    ("*", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
+    ("/", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
     ("zero?", Type.FUN (Type.INT, Type.BOOL))
   ]
 
