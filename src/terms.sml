@@ -1,6 +1,6 @@
 structure Terms =
 struct
-  val standardTEnv = TEnv.fromList [
+  val predefinedTEnv = TEnv.fromList [
     ("add", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
     ("zero?", Type.FUN (Type.INT, Type.BOOL))
   ]
