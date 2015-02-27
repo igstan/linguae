@@ -3,7 +3,8 @@ struct
   fun typeOf term =
     let
       open Unify
-      val typedTerm = annotate term
+      val _ = Type.resetFreshness ()
+      val typedTerm = annotate term TEnv.empty
       val subst = unify (constrain typedTerm)
       val termTy = TypedTerm.typeOf typedTerm
     in

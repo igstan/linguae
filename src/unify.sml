@@ -19,33 +19,27 @@ struct
 
   type constraint = Type.ty * Type.ty
 
-  fun annotate (term : Term.ty) : TypedTerm.ty =
-    let
-      fun loop term tenv =
-        case term of
-          Term.VAR (var) =>
-          let in
-            case TEnv.get tenv var of
-              NONE => raise Fail ("unbound identifier: " ^ String.toString var)
-            | SOME ty => TypedTerm.VAR (ty, var)
-          end
-        | Term.INT _ => TypedTerm.INT Type.INT
-        | Term.FUN (param, body) =>
-          let
-            val paramTy = Type.freshVar ()
-            val tenv' = TEnv.set tenv param paramTy
-            val annotatedBody = loop body tenv'
-            val bodyTy = TypedTerm.typeOf annotatedBody
-            val funTy = Type.FUN (paramTy, bodyTy)
-          in
-            TypedTerm.FUN (funTy, param, annotatedBody)
-          end
-        | Term.APP (def, arg) =>
-            TypedTerm.APP (Type.freshVar (), loop def tenv, loop arg tenv)
-    in
-      Type.resetFreshness();
-      loop term TEnv.empty
-    end
+  fun annotate term tenv =
+    case term of
+      Term.VAR (var) =>
+      let in
+        case TEnv.get tenv var of
+          NONE => raise Fail ("unbound identifier: " ^ String.toString var)
+        | SOME ty => TypedTerm.VAR (ty, var)
+      end
+    | Term.INT _ => TypedTerm.INT Type.INT
+    | Term.FUN (param, body) =>
+      let
+        val paramTy = Type.freshVar ()
+        val tenv' = TEnv.set tenv param paramTy
+        val annotatedBody = annotate body tenv'
+        val bodyTy = TypedTerm.typeOf annotatedBody
+        val funTy = Type.FUN (paramTy, bodyTy)
+      in
+        TypedTerm.FUN (funTy, param, annotatedBody)
+      end
+    | Term.APP (def, arg) =>
+        TypedTerm.APP (Type.freshVar (), annotate def tenv, annotate arg tenv)
 
   fun constrain (term : TypedTerm.ty) : constraint list =
     let
