@@ -39,7 +39,7 @@ struct
         val thenTy = annotate yes tenv
         val elseTy = annotate no tenv
       in
-        TypedTerm.IF (Type.BOOL, testTy, thenTy, elseTy)
+        TypedTerm.IF (Type.freshVar (), testTy, thenTy, elseTy)
       end
     | Term.FUN (param, body) =>
       let
