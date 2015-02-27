@@ -3,7 +3,7 @@ struct
   local
     open Term
   in
-    val predefinedTypeEnv = TypeEnv.fromList [
+    val predef = TypeEnv.fromList [
       ("+",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
       ("-",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
       ("*",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
