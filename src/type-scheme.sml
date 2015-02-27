@@ -1,10 +1,8 @@
-structure TypeScheme :> TYPE_SCHEME =
+structure TypeScheme =
 struct
-  type ty = Type.Var.ty list * Type.ty
+  datatype ty = ForAll of Type.Var.ty list * Type.ty
 
-  fun forall vars ty = (vars, ty)
-
-  fun instantiate (tyVars, ty) =
+  fun instantiate (ForAll (tyVars, ty)) =
     let
       val fresh = Type.freshVar ()
       fun extend (var, subst) = Subst.set subst var fresh
@@ -16,7 +14,7 @@ struct
   local
     structure Set = BinarySetFn (Type.Var.Key)
   in
-    fun freeVars (tyVars, ty) =
+    fun freeVars (ForAll (tyVars, ty)) =
       let
         val tyFreeVars = Set.fromList (Type.freeVars ty)
         val quantFreeVars = Set.fromList tyVars
@@ -26,11 +24,11 @@ struct
       end
   end
 
-  fun toString (vars, ty) =
+  fun toString (ForAll (vars, ty)) =
     let
       fun string v = Type.toString (Type.VAR v)
       val forall = String.concat (List.map string vars)
     in
-      "∀"^ forall ^". "^ Type.toString ty
+      "forall "^ forall ^". "^ Type.toString ty
     end
 end

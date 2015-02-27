@@ -46,7 +46,7 @@ struct
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
-        val tenv' = TypeEnv.set tenv param (TypeScheme.forall [] paramTy)
+        val tenv' = TypeEnv.set tenv param (TypeScheme.ForAll ([], paramTy))
         val annotatedBody = annotate body tenv'
         val bodyTy = TypedTerm.typeOf annotatedBody
         val funTy = Type.FUN (paramTy, bodyTy)

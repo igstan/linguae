@@ -3,11 +3,11 @@ struct
   open Term
 
   val predefinedTEnv = TypeEnv.fromList [
-    ("+",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-    ("-",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-    ("*",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-    ("/",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-    ("zero?", TypeScheme.forall [] (Type.FUN (Type.INT, Type.BOOL)))
+    ("+",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("-",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("*",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("/",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+    ("zero?", TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.BOOL)))
   ]
 
   val identity = FUN ("a", VAR "a")

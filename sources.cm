@@ -12,6 +12,5 @@ src/type.sml
 src/type-env.sig
 src/type-env.fun
 src/type-env.sml
-src/type-scheme.sig
 src/type-scheme.sml
 src/unify.sml

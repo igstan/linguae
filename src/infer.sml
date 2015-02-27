@@ -8,7 +8,7 @@ struct
       val subst = unify (constrain typedTerm)
       val termTy = TypedTerm.typeOf typedTerm
     in
-      Subst.apply subst termTy
+      TypeEnv.generalize tenv (Subst.apply subst termTy)
     end handle
       Unify.UnificationFailure (a, b) =>
         raise Fail ("cannot unify "^ Type.toString a  ^" with "^ Type.toString b)
@@ -49,19 +49,30 @@ struct
   fun typeSignature term tenv =
     let
       open Type
-      fun string INT = "int"
-        | string BOOL = "bool"
-        | string (VAR v) = GenVar.genvar v
-        | string (FUN (p as FUN _, r)) =
+
+      fun typeString INT = "int"
+        | typeString BOOL = "bool"
+        | typeString (VAR v) = GenVar.genvar v
+        | typeString (FUN (p as FUN _, r)) =
           let
-            val return = string r
-            val param = string p
+            val return = typeString r
+            val param = typeString p
           in
             "(" ^ param ^ ") -> " ^ return
           end
-        | string (FUN (p, r)) = string p ^ " -> " ^ string r
+        | typeString (FUN (p, r)) = typeString p ^ " -> " ^ typeString r
+
+      fun typeScheme (TypeScheme.ForAll (vars, ty)) =
+        let
+          val tsVars = String.concat (List.map GenVar.genvar vars)
+          val tsType = typeString ty
+        in
+          case vars of
+            [] => tsType
+          | _ => "forall " ^ tsVars ^ ". " ^ tsType
+        end
     in
       GenVar.reset ();
-      string (typeOf term tenv)
+      typeScheme (typeOf term tenv)
     end
 end

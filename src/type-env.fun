@@ -29,6 +29,6 @@ struct
       val envVars = S.fromList (freeVars tenv)
       val schemeVars = S.listItems (S.difference (tyVars, envVars))
     in
-      TypeScheme.forall schemeVars ty
+      TypeScheme.ForAll (schemeVars, ty)
     end
 end
