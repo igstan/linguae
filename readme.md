@@ -1,7 +1,7 @@
 # Damas-Hindley-Milner in Standard ML
 
 ```
-$ sml
+$ sml -Cprint.depth=20
 - open Terms;
 opening Terms
   val predef : TypeEnv.ty
