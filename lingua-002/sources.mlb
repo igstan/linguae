@@ -1,0 +1,15 @@
+$(SML_LIB)/basis/basis.mlb
+$(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
+
+src/term.sml
+src/type.sml
+src/subst.sig
+src/subst.sml
+src/type-scheme.sml
+src/type-env.sig
+src/type-env.fun
+src/type-env.sml
+src/unify.sml
+src/infer.sml
+src/terms.sml
+src/main.mlton.sml
