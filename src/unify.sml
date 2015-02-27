@@ -64,9 +64,11 @@ struct
           | TypedTerm.VAR _ => loop terms constraints
           | TypedTerm.IF (ifTy, test, yes, no) =>
             let
+              val ifC = (ifTy, TypedTerm.typeOf yes)
+              val testC = (TypedTerm.typeOf test, Type.BOOL)
               val branchC = (TypedTerm.typeOf yes, TypedTerm.typeOf no)
             in
-              loop (test :: yes :: no :: terms) (branchC :: constraints)
+              loop (test :: yes :: no :: terms) (ifC :: testC :: branchC :: constraints)
             end
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
