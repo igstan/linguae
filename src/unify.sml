@@ -21,14 +21,18 @@ struct
           Term.VAR (var) =>
           let in
             case TEnv.get tenv var of
-              NONE    => TypedTerm.VAR (Type.freshVar (), var)
+              NONE => raise Fail ("unbound identifier: " ^ String.toString var)
             | SOME ty => TypedTerm.VAR (ty, var)
           end
         | Term.FUN (param, body) =>
           let
-            val tenv' = TEnv.set tenv param (Type.freshVar ())
+            val paramTy = Type.freshVar ()
+            val tenv' = TEnv.set tenv param paramTy
+            val annotatedBody = loop body tenv'
+            val bodyTy = TypedTerm.typeOf annotatedBody
+            val funTy = Type.FUN (paramTy, bodyTy)
           in
-            TypedTerm.FUN (Type.freshVar (), param, loop body tenv')
+            TypedTerm.FUN (funTy, param, annotatedBody)
           end
         | Term.APP (def, arg) =>
             TypedTerm.APP (Type.freshVar (), loop def tenv, loop arg tenv)
