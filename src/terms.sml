@@ -2,7 +2,7 @@ structure Terms =
 struct
   open Term
 
-  val predefinedTEnv = TEnv.fromList [
+  val predefinedTEnv = TypeEnv.fromList [
     ("+",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
     ("-",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
     ("*",     TypeScheme.forall [] (Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),

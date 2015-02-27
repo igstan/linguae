@@ -1,7 +1,7 @@
-functor TEnvFn (
+functor TypeEnvFn (
   structure TermMap : ORD_MAP where type Key.ord_key = Term.Var.ty
   structure TypeSet : ORD_SET where type Key.ord_key = Type.Var.ty
-) :> TENV =
+) :> TYPE_ENV =
 struct
   structure M = TermMap
   structure S = TypeSet

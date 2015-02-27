@@ -1,4 +1,4 @@
-signature TENV =
+signature TYPE_ENV =
 sig
   type ty
 

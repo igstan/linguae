@@ -6,12 +6,12 @@ $/smlnj-lib.cm
 src/infer.sml
 src/subst.sig
 src/subst.sml
-src/tenv.sig
-src/tenv.fun
-src/tenv.sml
 src/term.sml
 src/terms.sml
 src/type.sml
+src/type-env.sig
+src/type-env.fun
+src/type-env.sml
 src/type-scheme.sig
 src/type-scheme.sml
 src/unify.sml
