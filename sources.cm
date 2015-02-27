@@ -3,3 +3,4 @@ Group is
 $/basis.cm
 
 src/term.sml
+src/type.sml
