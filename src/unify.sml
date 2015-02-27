@@ -59,4 +59,40 @@ struct
     in
       loop [term] []
     end
+
+  local
+    fun occurs v ty =
+      case ty of
+        Type.VAR v' => v = v'
+      | Type.FUN (param, return) => occurs v param orelse occurs v return
+
+    fun unifyVar v (ty as Type.VAR v') =
+          if v = v' then
+            Subst.empty
+          else
+            Subst.fromList [(v, ty)]
+      | unifyVar v ty =
+          if occurs v ty then
+            raise Fail "occurs check"
+          else
+            Subst.fromList [(v, ty)]
+
+    fun unifyPair pair =
+      case pair of
+        (Type.VAR (v), ty) => unifyVar v ty
+      | (ty, Type.VAR (v)) => unifyVar v ty
+      | (Type.FUN (param1, return1), Type.FUN (param2, return2)) =>
+          unifyMany [(param1, param2), (return1, return2)]
+
+    and unifyMany [] = Subst.empty
+      | unifyMany ((t1, t2) :: constraints) =
+        let
+          val s1 = unifyMany constraints
+          val s2 = unifyPair (Subst.apply s1 t1, Subst.apply s1 t2)
+        in
+          Subst.compose s1 s2
+        end
+  in
+    fun unify constraints = unifyMany constraints
+  end
 end
