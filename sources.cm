@@ -3,6 +3,7 @@ Group is
 $/basis.cm
 $/smlnj-lib.cm
 
+src/infer.sml
 src/subst.sig
 src/subst.sml
 src/tenv.sig
