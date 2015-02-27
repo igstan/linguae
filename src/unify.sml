@@ -59,8 +59,8 @@ struct
       fun loop [] constraints = constraints
         | loop (term :: terms) constraints =
           case term of
-            TypedTerm.INT _ => constraints
-          | TypedTerm.BOOL _ => constraints
+            TypedTerm.INT _ => loop terms constraints
+          | TypedTerm.BOOL _ => loop terms constraints
           | TypedTerm.VAR _ => loop terms constraints
           | TypedTerm.IF (ifTy, test, yes, no) =>
             let
