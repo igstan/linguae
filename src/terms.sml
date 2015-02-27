@@ -1,7 +1,8 @@
 structure Terms =
 struct
   val standardTEnv = TEnv.fromList [
-    ("add", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))
+    ("add", Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT))),
+    ("zero?", Type.FUN (Type.INT, Type.BOOL))
   ]
 
   val identity = Term.FUN ("a", Term.VAR "a")
