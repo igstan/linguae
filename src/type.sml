@@ -6,7 +6,8 @@ struct
   end
 
   datatype ty =
-    VAR of Var.ty
+    INT
+  | VAR of Var.ty
   | FUN of ty * ty
 
   structure GenVar =
@@ -47,7 +48,8 @@ struct
 
     fun increment r = !r before r := !r + 1
 
-    fun string (VAR v) = GenVar.genvar v
+    fun string INT = "int"
+      | string (VAR v) = GenVar.genvar v
       | string (FUN (p as FUN _, r)) =
         let
           val return = string r

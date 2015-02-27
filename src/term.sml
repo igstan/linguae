@@ -13,6 +13,7 @@ struct
 
   datatype ty =
     VAR of Var.ty
+  | INT of int
   | FUN of Var.ty * ty
   | APP of ty * ty
 end

@@ -3,15 +3,18 @@ struct
   structure TypedTerm =
   struct
     datatype ty =
-      VAR of Type.ty * Term.Var.ty
+      INT of Type.ty
+    | VAR of Type.ty * Term.Var.ty
     | FUN of Type.ty * Term.Var.ty * ty
     | APP of Type.ty * ty * ty
 
-    fun typeOf (VAR t) = #1 t
+    fun typeOf (INT t) = t
+      | typeOf (VAR t) = #1 t
       | typeOf (FUN t) = #1 t
       | typeOf (APP t) = #1 t
   end
 
+  exception UnificationFailure of Type.ty * Type.ty
   exception OccursCheck of Type.Var.ty * Type.ty
 
   type constraint = Type.ty * Type.ty
@@ -26,6 +29,7 @@ struct
               NONE => raise Fail ("unbound identifier: " ^ String.toString var)
             | SOME ty => TypedTerm.VAR (ty, var)
           end
+        | Term.INT _ => TypedTerm.INT Type.INT
         | Term.FUN (param, body) =>
           let
             val paramTy = Type.freshVar ()
@@ -48,7 +52,8 @@ struct
       fun loop [] constraints = constraints
         | loop (term :: terms) constraints =
           case term of
-            TypedTerm.VAR _ => loop terms constraints
+            TypedTerm.INT _ => constraints
+          | TypedTerm.VAR _ => loop terms constraints
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
             let
@@ -65,7 +70,8 @@ struct
   local
     fun occurs v ty =
       case ty of
-        Type.VAR v' => v = v'
+        Type.INT => false
+      | Type.VAR v' => v = v'
       | Type.FUN (param, return) => occurs v param orelse occurs v return
 
     fun unifyVar v (ty as Type.VAR v') =
@@ -81,10 +87,12 @@ struct
 
     fun unifyPair pair =
       case pair of
-        (Type.VAR (v), ty) => unifyVar v ty
+        (Type.INT, Type.INT) => Subst.empty
+      | (Type.VAR (v), ty) => unifyVar v ty
       | (ty, Type.VAR (v)) => unifyVar v ty
       | (Type.FUN (param1, return1), Type.FUN (param2, return2)) =>
           unifyMany [(param1, param2), (return1, return2)]
+      | _ => raise UnificationFailure pair
 
     and unifyMany [] = Subst.empty
       | unifyMany ((t1, t2) :: constraints) =
