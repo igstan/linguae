@@ -1,6 +1,7 @@
 # A Toy Interpreter
 
 ```
+$ sbt
 > test
 [info] InterpreterTest:
 [info] - evaluates numbers
