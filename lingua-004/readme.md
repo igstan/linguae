@@ -1,6 +1,6 @@
 # Leesp
 
-A tiny Lisp.
+A tiny parser for a LISP-like language.
 
 ### Running
 
