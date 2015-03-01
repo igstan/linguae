@@ -1,10 +1,13 @@
-functor TypeEnvFn (
+signature TYPE_ENV_FN_DEPS =
+sig
   structure TermMap : ORD_MAP where type Key.ord_key = Term.Var.ty
   structure TypeSet : ORD_SET where type Key.ord_key = Type.Var.ty
-) :> TYPE_ENV =
+end
+
+functor TypeEnvFn (Deps : TYPE_ENV_FN_DEPS) :> TYPE_ENV =
 struct
-  structure M = TermMap
-  structure S = TypeSet
+  structure M = Deps.TermMap
+  structure S = Deps.TypeSet
 
   type ty = TypeScheme.ty M.map
 
