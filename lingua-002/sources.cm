@@ -1,17 +1,18 @@
-Group is
+GROUP
 
-$/basis.cm
-$/smlnj-lib.cm
+IS
+  $/basis.cm
+  $/smlnj-lib.cm
 
-src/term.sml
-src/type.sml
-src/subst.sig
-src/subst.sml
-src/type-scheme.sml
-src/type-env.sig
-src/type-env.fun
-src/type-env.sml
-src/unify.sml
-src/infer.sml
-src/terms.sml
-src/main.smlnj.sml
+  src/term.sml
+  src/type.sml
+  src/subst.sig
+  src/subst.sml
+  src/type-scheme.sml
+  src/type-env.sig
+  src/type-env.fun
+  src/type-env.sml
+  src/unify.sml
+  src/infer.sml
+  src/terms.sml
+  src/main.smlnj.sml
