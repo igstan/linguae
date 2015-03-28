@@ -3,15 +3,15 @@ Group is
 $/basis.cm
 $/smlnj-lib.cm
 
-src/infer.sml
+src/term.sml
+src/type.sml
 src/subst.sig
 src/subst.sml
-src/term.sml
-src/terms.sml
-src/type.sml
+src/type-scheme.sml
 src/type-env.sig
 src/type-env.fun
 src/type-env.sml
-src/type-scheme.sml
 src/unify.sml
+src/infer.sml
+src/terms.sml
 src/main.smlnj.sml
