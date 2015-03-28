@@ -15,4 +15,4 @@ IS
   src/unify.sml
   src/infer.sml
   src/terms.sml
-  src/main.smlnj.sml
+  src/smlnj/main.sml

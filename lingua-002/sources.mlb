@@ -12,4 +12,4 @@ src/type-env.sml
 src/unify.sml
 src/infer.sml
 src/terms.sml
-src/main.mlton.sml
+src/mlton/main.sml
