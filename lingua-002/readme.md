@@ -1,5 +1,7 @@
 # Damas-Hindley-Milner in Standard ML
 
+### Using SML/NJ:
+
 ```
 $ sml -Cprint.depth=20
 - open Terms;
@@ -25,4 +27,12 @@ val it = "forall abc. (c -> b) -> (a -> c) -> a -> b" : string
 -
 - Infer.typeSignature letPolymorphism predef;
 val it = "int" : string
+```
+
+### Using MLton:
+
+```bash
+$ mlton -output infer sources.mlb
+$ ./infer
+forall abc. (c -> b) -> (a -> c) -> a -> b
 ```
