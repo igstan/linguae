@@ -1,5 +1,8 @@
 structure Unify =
 struct
+  (**
+   * An explicitly typed Abstract Syntax Tree.
+   *)
   structure TypedTerm =
   struct
     datatype ty =
@@ -25,6 +28,10 @@ struct
 
   type constraint = Type.ty * Type.ty
 
+  (**
+   * Walks the entire Abstract Syntax Tree and annotates each sub-term with a
+   * fresh type variable. Produces a typed syntax tree.
+   *)
   fun annotate term tenv =
     case term of
       Term.VAR (var) =>
@@ -64,6 +71,10 @@ struct
         TypedTerm.LET (Type.freshVar (), var, annValue, annBody)
       end
 
+  (**
+   * Walks over a typed tree and records constraints along the way.
+   * Produces a list of constraint pairs amenable to unification.
+   *)
   fun constrain (term : TypedTerm.ty) : constraint list =
     let
       fun loop [] constraints = constraints
@@ -72,6 +83,7 @@ struct
             TypedTerm.INT _ => loop terms constraints
           | TypedTerm.BOOL _ => loop terms constraints
           | TypedTerm.VAR _ => loop terms constraints
+          | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.IF (ifTy, test, yes, no) =>
             let
               val ifC = (ifTy, TypedTerm.typeOf yes)
@@ -80,7 +92,6 @@ struct
             in
               loop (test :: yes :: no :: terms) (ifC :: testC :: branchC :: constraints)
             end
-          | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.APP (returnTy, def, arg) =>
             let
               val defTy = TypedTerm.typeOf def
@@ -107,6 +118,9 @@ struct
       | Type.VAR v' => v = v'
       | Type.FUN (param, return) => occurs v param orelse occurs v return
 
+    (**
+     * Unifies two type variables.
+     *)
     fun unifyVar v (ty as Type.VAR v') =
           if v = v' then
             Subst.empty
@@ -118,6 +132,9 @@ struct
           else
             Subst.fromList [(v, ty)]
 
+    (**
+     * Unifies a single constraint pair.
+     *)
     fun unifyPair pair =
       case pair of
         (Type.INT, Type.INT) => Subst.empty
@@ -128,6 +145,9 @@ struct
           unifyMany [(param1, param2), (return1, return2)]
       | _ => raise UnificationFailure pair
 
+    (**
+     * Unifies a set of constraint pairs.
+     *)
     and unifyMany [] = Subst.empty
       | unifyMany ((t1, t2) :: constraints) =
         let
