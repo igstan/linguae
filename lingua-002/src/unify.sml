@@ -122,15 +122,13 @@ struct
      * Unifies two type variables.
      *)
     fun unifyVar v (ty as Type.VAR v') =
-          if v = v' then
-            Subst.empty
-          else
-            Subst.fromList [(v, ty)]
+        if v = v'
+        then Subst.empty
+        else Subst.fromList [(v, ty)]
       | unifyVar v ty =
-          if occurs v ty then
-            raise OccursCheck (v, ty)
-          else
-            Subst.fromList [(v, ty)]
+        if occurs v ty
+        then raise OccursCheck (v, ty)
+        else Subst.fromList [(v, ty)]
 
     (**
      * Unifies a single constraint pair.
