@@ -6,16 +6,16 @@ end
 
 functor TypeEnvFn (Deps : TYPE_ENV_FN_DEPS) :> TYPE_ENV =
 struct
-  structure M = Deps.TermMap
-  structure S = Deps.TypeSet
+  structure Map = Deps.TermMap
+  structure Set = Deps.TypeSet
 
-  type ty = TypeScheme.ty M.map
+  type ty = TypeScheme.ty Map.map
 
-  val empty = M.empty
+  val empty = Map.empty
 
-  fun get tenv var = M.find (tenv, var)
+  fun get tenv var = Map.find (tenv, var)
 
-  fun set tenv var ty = M.insert (tenv, var, ty)
+  fun set tenv var ty = Map.insert (tenv, var, ty)
 
   fun fromList bindings =
     let
@@ -25,13 +25,13 @@ struct
     end
 
   fun freeVars tenv =
-    List.concat (M.listItems (M.map TypeScheme.freeVars tenv))
+    List.concat (Map.listItems (Map.map TypeScheme.freeVars tenv))
 
   fun generalize tenv ty =
     let
-      val tyVars = S.fromList (Type.freeVars ty)
-      val envVars = S.fromList (freeVars tenv)
-      val schemeVars = S.listItems (S.difference (tyVars, envVars))
+      val tyVars = Set.fromList (Type.freeVars ty)
+      val envVars = Set.fromList (freeVars tenv)
+      val schemeVars = Set.listItems (Set.difference (tyVars, envVars))
     in
       TypeScheme.ForAll (schemeVars, ty)
     end
