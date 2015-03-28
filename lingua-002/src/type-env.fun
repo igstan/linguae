@@ -17,11 +17,12 @@ struct
 
   fun set tenv var ty = M.insert (tenv, var, ty)
 
-  local
-    fun insert ((binding, value), env) = set env binding value
-  in
-    fun fromList bindings = List.foldl insert empty bindings
-  end
+  fun fromList bindings =
+    let
+      fun insert ((binding, value), env) = set env binding value
+    in
+      List.foldl insert empty bindings
+    end
 
   fun freeVars tenv =
     List.concat (M.listItems (M.map TypeScheme.freeVars tenv))
