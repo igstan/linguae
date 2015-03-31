@@ -99,8 +99,7 @@ struct
 
   fun instantiate (ForAll (tyVars, ty)) =
     let
-      val fresh = Type.freshVar ()
-      fun extend (var, subst) = Subst.set subst var fresh
+      fun extend (var, subst) = Subst.set subst var (Type.freshVar ())
       val subst = List.foldl extend Subst.empty tyVars
     in
       Subst.apply subst ty
