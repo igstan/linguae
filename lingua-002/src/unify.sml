@@ -26,7 +26,8 @@ struct
   exception UnificationFailure of Type.ty * Type.ty
   exception OccursCheck of Type.Var.ty * Type.ty
 
-  type constraint = Type.ty * Type.ty
+  datatype constraint =
+    EQ of Type.ty * Type.ty
 
   (**
    * Walks the entire Abstract Syntax Tree and annotates each sub-term with a
@@ -86,9 +87,9 @@ struct
           | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
           | TypedTerm.IF (ifTy, test, yes, no) =>
             let
-              val ifC = (ifTy, TypedTerm.typeOf yes)
-              val testC = (TypedTerm.typeOf test, Type.BOOL)
-              val branchC = (TypedTerm.typeOf yes, TypedTerm.typeOf no)
+              val ifC = EQ (ifTy, TypedTerm.typeOf yes)
+              val testC = EQ (TypedTerm.typeOf test, Type.BOOL)
+              val branchC = EQ (TypedTerm.typeOf yes, TypedTerm.typeOf no)
             in
               loop (test :: yes :: no :: terms) (ifC :: testC :: branchC :: constraints)
             end
@@ -96,13 +97,13 @@ struct
             let
               val defTy = TypedTerm.typeOf def
               val argTy = TypedTerm.typeOf arg
-              val appC = (defTy, Type.FUN (argTy, returnTy))
+              val appC = EQ (defTy, Type.FUN (argTy, returnTy))
             in
               loop (def :: arg :: terms) (appC :: constraints)
             end
           | TypedTerm.LET (letTy, _, value, body) =>
             let
-              val letC = (letTy, TypedTerm.typeOf body)
+              val letC = EQ (letTy, TypedTerm.typeOf body)
             in
               loop (value :: body :: terms) (letC :: constraints)
             end
@@ -140,14 +141,14 @@ struct
       | (Type.VAR (v), ty) => unifyVar v ty
       | (ty, Type.VAR (v)) => unifyVar v ty
       | (Type.FUN (param1, return1), Type.FUN (param2, return2)) =>
-          unifyMany [(param1, param2), (return1, return2)]
+          unifyMany [EQ (param1, param2), EQ (return1, return2)]
       | _ => raise UnificationFailure pair
 
     (**
      * Unifies a set of constraint pairs.
      *)
     and unifyMany [] = Subst.empty
-      | unifyMany ((t1, t2) :: constraints) =
+      | unifyMany (EQ (t1, t2) :: constraints) =
         let
           val s1 = unifyMany constraints
           val s2 = unifyPair (Subst.apply s1 t1, Subst.apply s1 t2)
