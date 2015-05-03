@@ -1,28 +1,5 @@
 structure Unify =
 struct
-  (**
-   * An explicitly typed Abstract Syntax Tree.
-   *)
-  structure TypedTerm =
-  struct
-    datatype ty =
-      INT of Type.ty
-    | BOOL of Type.ty
-    | VAR of Type.ty * Term.Var.ty
-    | IF of Type.ty * ty * ty * ty
-    | FUN of Type.ty * Term.Var.ty * ty
-    | APP of Type.ty * ty * ty
-    | LET of Type.ty * Term.Var.ty * ty * ty
-
-    fun typeOf (INT t) = t
-      | typeOf (BOOL t) = t
-      | typeOf (VAR t) = #1 t
-      | typeOf (IF t) = #1 t
-      | typeOf (FUN t) = #1 t
-      | typeOf (APP t) = #1 t
-      | typeOf (LET t) = #1 t
-  end
-
   exception UnificationFailure of Type.ty * Type.ty
   exception OccursCheck of Type.Var.ty * Type.ty
 
@@ -30,79 +7,59 @@ struct
     EQ of Type.ty * Type.ty
 
   (**
-   * Walks the entire Abstract Syntax Tree and annotates each sub-term with a
-   * fresh type variable. Produces a typed syntax tree.
+   * Walks over a typed tree and records constraints along the way. Produces a
+   * list of constraints amenable to unification.
    *)
-  fun annotate term tenv =
+  fun constrain tenv ty term =
     case term of
-      Term.VAR (var) =>
+      Term.INT _ => []
+    | Term.BOOL _ => []
+    | Term.VAR var =>
       let in
         case TypeEnv.get tenv var of
           NONE => raise Fail ("unbound identifier: " ^ String.toString var)
-        | SOME ty => TypedTerm.VAR (TypeScheme.instantiate ty, var)
-      end
-    | Term.INT _ => TypedTerm.INT Type.INT
-    | Term.BOOL _ => TypedTerm.BOOL Type.BOOL
-    | Term.IF (test, yes, no) =>
-      let
-        val testTy = annotate test tenv
-        val thenTy = annotate yes tenv
-        val elseTy = annotate no tenv
-      in
-        TypedTerm.IF (Type.freshVar (), testTy, thenTy, elseTy)
+        | SOME (TypeScheme.ForAll (_, varTy)) => [EQ (ty, varTy)]
       end
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
+        val bodyTy = Type.freshVar ()
         val tenv' = TypeEnv.set tenv param (TypeScheme.ForAll ([], paramTy))
-        val annotatedBody = annotate body tenv'
-        val bodyTy = TypedTerm.typeOf annotatedBody
-        val funTy = Type.FUN (paramTy, bodyTy)
+        val bodyC = constrain tenv' bodyTy body
       in
-        TypedTerm.FUN (funTy, param, annotatedBody)
+        (EQ (ty, Type.FUN (paramTy, bodyTy))) :: bodyC
+      end
+    | Term.IF (test, yes, no) =>
+      let
+        val testTy = Type.freshVar ()
+        val yesTy = Type.freshVar ()
+        val noTy = Type.freshVar ()
+        val ifC = EQ (yesTy, ty)
+        val testC = constrain tenv Type.BOOL test
+        val yesC = constrain tenv noTy yes
+        val noC = constrain tenv yesTy no
+      in
+        ifC :: testC @ yesC @ noC
       end
     | Term.APP (def, arg) =>
-        TypedTerm.APP (Type.freshVar (), annotate def tenv, annotate arg tenv)
-    | Term.LET (var, value, body) =>
       let
-        val annValue = annotate value tenv
-        val tenv' = TypeEnv.set tenv var (TypeEnv.generalize tenv (TypedTerm.typeOf annValue))
-        val annBody = annotate body tenv'
+        val argTy = Type.freshVar ()
+        val defC = constrain tenv (Type.FUN (argTy, ty)) def
+        val argC = constrain tenv argTy arg
       in
-        TypedTerm.LET (Type.freshVar (), var, annValue, annBody)
+        defC @ argC
       end
+    | Term.LET (binding, value, body) =>
+      let
+        val bindingTy = Type.freshVar ()
+        val valueTy = Type.freshVar ()
 
-  (**
-   * Walks over a typed tree and records constraints along the way.
-   * Produces a list of constraint pairs amenable to unification.
-   *)
-  fun constrain (term : TypedTerm.ty) : constraint list =
-    case term of
-      TypedTerm.INT _ => []
-    | TypedTerm.BOOL _ => []
-    | TypedTerm.VAR _ => []
-    | TypedTerm.FUN (_, _, body) => constrain body
-    | TypedTerm.IF (ty, test, yes, no) =>
-      let
-        val ifC = EQ (ty, TypedTerm.typeOf yes)
-        val testC = EQ (TypedTerm.typeOf test, Type.BOOL)
-        val branchC = EQ (TypedTerm.typeOf yes, TypedTerm.typeOf no)
+        val valueC = constrain tenv valueTy value
+        val tenv' = TypeEnv.set tenv binding (TypeScheme.ForAll ([], bindingTy))
+        val bodyC = constrain tenv' ty body
+        val bindingC = EQ (bindingTy, valueTy)
       in
-        [ifC, testC, branchC] @ (constrain test) @ (constrain yes) @ (constrain no)
-      end
-    | TypedTerm.APP (returnTy, def, arg) =>
-      let
-        val defTy = TypedTerm.typeOf def
-        val argTy = TypedTerm.typeOf arg
-        val appC = EQ (defTy, Type.FUN (argTy, returnTy))
-      in
-        appC :: (constrain def) @ (constrain arg)
-      end
-    | TypedTerm.LET (letTy, _, value, body) =>
-      let
-        val letC = EQ (letTy, TypedTerm.typeOf body)
-      in
-        letC :: (constrain value) @ (constrain body)
+        bindingC :: valueC @ bodyC
       end
 
   local

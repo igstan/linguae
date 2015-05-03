@@ -4,9 +4,8 @@ struct
     let
       open Unify
       val _ = Type.resetFreshness ()
-      val typedTerm = annotate term tenv
-      val subst = unify (constrain typedTerm)
-      val termTy = TypedTerm.typeOf typedTerm
+      val termTy = Type.freshVar ()
+      val subst = unify (constrain tenv termTy term)
     in
       TypeEnv.generalize tenv (Subst.apply subst termTy)
     end handle
