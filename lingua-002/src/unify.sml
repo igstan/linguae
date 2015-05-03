@@ -77,39 +77,33 @@ struct
    * Produces a list of constraint pairs amenable to unification.
    *)
   fun constrain (term : TypedTerm.ty) : constraint list =
-    let
-      fun loop [] constraints = constraints
-        | loop (term :: terms) constraints =
-          case term of
-            TypedTerm.INT _ => loop terms constraints
-          | TypedTerm.BOOL _ => loop terms constraints
-          | TypedTerm.VAR _ => loop terms constraints
-          | TypedTerm.FUN (_, _, body) => loop (body :: terms) constraints
-          | TypedTerm.IF (ifTy, test, yes, no) =>
-            let
-              val ifC = EQ (ifTy, TypedTerm.typeOf yes)
-              val testC = EQ (TypedTerm.typeOf test, Type.BOOL)
-              val branchC = EQ (TypedTerm.typeOf yes, TypedTerm.typeOf no)
-            in
-              loop (test :: yes :: no :: terms) (ifC :: testC :: branchC :: constraints)
-            end
-          | TypedTerm.APP (returnTy, def, arg) =>
-            let
-              val defTy = TypedTerm.typeOf def
-              val argTy = TypedTerm.typeOf arg
-              val appC = EQ (defTy, Type.FUN (argTy, returnTy))
-            in
-              loop (def :: arg :: terms) (appC :: constraints)
-            end
-          | TypedTerm.LET (letTy, _, value, body) =>
-            let
-              val letC = EQ (letTy, TypedTerm.typeOf body)
-            in
-              loop (value :: body :: terms) (letC :: constraints)
-            end
-    in
-      loop [term] []
-    end
+    case term of
+      TypedTerm.INT _ => []
+    | TypedTerm.BOOL _ => []
+    | TypedTerm.VAR _ => []
+    | TypedTerm.FUN (_, _, body) => constrain body
+    | TypedTerm.IF (ty, test, yes, no) =>
+      let
+        val ifC = EQ (ty, TypedTerm.typeOf yes)
+        val testC = EQ (TypedTerm.typeOf test, Type.BOOL)
+        val branchC = EQ (TypedTerm.typeOf yes, TypedTerm.typeOf no)
+      in
+        [ifC, testC, branchC] @ (constrain test) @ (constrain yes) @ (constrain no)
+      end
+    | TypedTerm.APP (returnTy, def, arg) =>
+      let
+        val defTy = TypedTerm.typeOf def
+        val argTy = TypedTerm.typeOf arg
+        val appC = EQ (defTy, Type.FUN (argTy, returnTy))
+      in
+        appC :: (constrain def) @ (constrain arg)
+      end
+    | TypedTerm.LET (letTy, _, value, body) =>
+      let
+        val letC = EQ (letTy, TypedTerm.typeOf body)
+      in
+        letC :: (constrain value) @ (constrain body)
+      end
 
   local
     fun occurs v ty =
