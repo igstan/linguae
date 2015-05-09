@@ -10,7 +10,6 @@ case class Env(bindings: Map[String, Value]) {
       case (k, Value.Num(n)) => s"$k: $n"
       case (k, Value.Bool(b)) => s"$k: $b"
       case (k, _: Value.Fun) => s"$k: <function>"
-      case (k, _: Value.Native) => s"$k: <function>"
     })
 
     pairs.mkString("[", ",", "]")

@@ -62,19 +62,11 @@ object Main extends JSApp {
           display.appendChild(document.createTextNode(s"value: $v"))
         case Resumption.Next(r) =>
           result = r
-
-          val env = Env(result.env.bindings.filter {
-            case (_, _: Value.Native) => false
-            case _ => true
-          })
-
-          println(s"id: ${result.id}")
           highlighted.classList.remove("highlight")
           highlighted = document.getElementById(result.id)
           highlighted.classList.add("highlight")
-
           envElem.innerHTML = ""
-          envElem.appendChild(document.createTextNode(s"env: $env"))
+          envElem.appendChild(document.createTextNode(s"env: ${result.env}"))
       }
     )
   }

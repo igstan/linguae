@@ -99,20 +99,7 @@ object Interpreter {
                   case Left(error) => kont(Resumption.Done(Left(error)))
                   case Right(Value.Num(_)) => kont(Resumption.Done(Left("number in function position")))
                   case Right(Value.Bool(_)) => kont(Resumption.Done(Left("boolean in function position")))
-                  case Right(Value.Native(native)) =>
-                    Resumption.Next {
-                      eval(arg, env) {
-                        case Resumption.Next(r) => r.next()
-                        case Resumption.Done(v) =>
-                          Resumption.Next(Resumption(env, term.id) { () =>
-                            v match {
-                              case Left(error) => kont(Resumption.Done(Left(error)))
-                              case Right(arg) => kont(Resumption.Done(native(arg)))
-                            }
-                          })
-                      }
-                    }
-                  case Right(fn @ Value.Fun(param, body, closure)) =>
+                  case Right(Value.Fun(param, body, closure)) =>
                     Resumption.Next {
                       eval(arg, env) {
                         case Resumption.Next(r) => Resumption.Next(r)
@@ -142,7 +129,6 @@ object Interpreter {
                 v match {
                   case Left(error) => kont(Resumption.Done(Left(error)))
                   case Right(_: Value.Num) => kont(Resumption.Done(Left("number in if predicate position")))
-                  case Right(_: Value.Native) => kont(Resumption.Done(Left("function in if predicate position")))
                   case Right(_: Value.Fun) => kont(Resumption.Done(Left("function in if predicate position")))
                   case Right(Value.Bool(test)) =>
                     Resumption.Next {
