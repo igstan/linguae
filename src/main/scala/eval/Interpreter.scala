@@ -8,22 +8,22 @@ object Interpreter {
   def eval(term: Term, env: Env)(kont: Kont): Resumption = {
     term match {
       case Term.INT(value) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing NUM: $term")
           kont(Resumption.Done(Right(Value.Num(value))))
         }
       case Term.BOOL(value) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing BOOL: $term")
           kont(Resumption.Done(Right(Value.Bool(value))))
         }
       case Term.FN(param, body) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing FUN: $term")
           kont(Resumption.Done(Right(Value.Fun(param, body, env))))
         }
       case Term.ADD(a, b) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing ADD: $term")
           Resumption.Next {
             eval(a, env) {
@@ -36,7 +36,7 @@ object Interpreter {
                       eval(b, env) {
                         case Resumption.Next(r) => r.next()
                         case Resumption.Done(v) =>
-                          Resumption.Next(Resumption(env) { () =>
+                          Resumption.Next(Resumption(env, term.id) { () =>
                             v match {
                               case Left(error) => kont(Resumption.Done(Left(error)))
                               case Right(Value.Num(b)) => kont(Resumption.Done(Right(Value.Num(a + b))))
@@ -51,7 +51,7 @@ object Interpreter {
           }
         }
       case Term.SUB(a, b) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing SUB: $term")
           Resumption.Next {
             eval(a, env) {
@@ -64,7 +64,7 @@ object Interpreter {
                       eval(b, env) {
                         case Resumption.Next(r) => r.next()
                         case Resumption.Done(v) =>
-                          Resumption.Next(Resumption(env) { () =>
+                          Resumption.Next(Resumption(env, term.id) { () =>
                             v match {
                               case Left(error) => kont(Resumption.Done(Left(error)))
                               case Right(Value.Num(b)) => kont(Resumption.Done(Right(Value.Num(a - b))))
@@ -79,7 +79,7 @@ object Interpreter {
           }
         }
       case Term.VAR(name) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing VAR: $term")
           kont {
             env.get(name) match {
@@ -89,7 +89,7 @@ object Interpreter {
           }
         }
       case Term.APP(fn, arg) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing APP: $term")
           Resumption.Next {
             eval(fn, env) {
@@ -104,7 +104,7 @@ object Interpreter {
                       eval(arg, env) {
                         case Resumption.Next(r) => r.next()
                         case Resumption.Done(v) =>
-                          Resumption.Next(Resumption(Env.empty) { () =>
+                          Resumption.Next(Resumption(env, term.id) { () =>
                             v match {
                               case Left(error) => kont(Resumption.Done(Left(error)))
                               case Right(arg) => kont(Resumption.Done(native(arg)))
@@ -117,7 +117,7 @@ object Interpreter {
                       eval(arg, env) {
                         case Resumption.Next(r) => Resumption.Next(r)
                         case Resumption.Done(v) =>
-                          Resumption.Next(Resumption(closure) { () =>
+                          Resumption.Next(Resumption(env, term.id) { () =>
                             v match {
                               case Left(error) => kont(Resumption.Done(Left(error)))
                               case Right(arg) =>
@@ -133,7 +133,7 @@ object Interpreter {
           }
         }
       case Term.IF(test, yes, no) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing IF: $term")
           Resumption.Next {
             eval(test, env) {
@@ -145,20 +145,18 @@ object Interpreter {
                   case Right(_: Value.Native) => kont(Resumption.Done(Left("function in if predicate position")))
                   case Right(_: Value.Fun) => kont(Resumption.Done(Left("function in if predicate position")))
                   case Right(Value.Bool(test)) =>
-                    Resumption.Next(Resumption(env) { () =>
-                      Resumption.Next {
-                        eval(if (test) yes else no, env) {
-                          case Resumption.Next(r) => r.next()
-                          case Resumption.Done(v) => kont(Resumption.Done(v))
-                        }
+                    Resumption.Next {
+                      eval(if (test) yes else no, env) {
+                        case Resumption.Next(r) => r.next()
+                        case Resumption.Done(v) => kont(Resumption.Done(v))
                       }
-                    })
+                    }
                 }
             }
           }
         }
       case Term.LET(binding, value, body) =>
-        Resumption(env) { () =>
+        Resumption(env, term.id) { () =>
           println(s"Executing LET: $term")
           Resumption.Next {
             eval(value, env) {
@@ -166,17 +164,15 @@ object Interpreter {
               case Resumption.Done(v) =>
                 v match {
                   case Left(error) => kont(Resumption.Done(Left(error)))
-                  case Right(value) =>
-                    val extendedEnv = env.set(binding, value)
+                  case Right(valueResult) =>
+                    val extendedEnv = env.set(binding, valueResult)
 
-                    Resumption.Next(Resumption(extendedEnv) { () =>
-                      Resumption.Next {
-                        eval(body, extendedEnv) {
-                          case Resumption.Next(r) => r.next()
-                          case Resumption.Done(v) => kont(Resumption.Done(v))
-                        }
+                    Resumption.Next {
+                      eval(body, extendedEnv) {
+                        case Resumption.Next(r) => r.next()
+                        case Resumption.Done(v) => kont(Resumption.Done(v))
                       }
-                    })
+                    }
                 }
             }
           }

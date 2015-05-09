@@ -25,10 +25,10 @@ object Parser {
   // <ATEXP>
   private def parseAtExp(tokens: List[Token]): (Term, List[Token]) = {
     tokens match {
-      case INT(n) :: tokens => Term.INT(n)("") -> tokens
-      case TRUE :: tokens => Term.BOOL(true)("") -> tokens
-      case FALSE :: tokens => Term.BOOL(false)("") -> tokens
-      case VAR(id) :: tokens => Term.VAR(id)("") -> tokens
+      case INT(n) :: tokens => Term.INT(n)("", "") -> tokens
+      case TRUE :: tokens => Term.BOOL(true)("", "") -> tokens
+      case FALSE :: tokens => Term.BOOL(false)("", "") -> tokens
+      case VAR(id) :: tokens => Term.VAR(id)("", "") -> tokens
       case LET :: tokens => parseLet(tokens)
       case LPAREN :: tokens =>
         val (exp, rest) = parseExp(tokens)
@@ -55,7 +55,7 @@ object Parser {
                     val (body, rest) = parseExp(tokens)
                     rest match {
                       case END :: tokens =>
-                        Term.LET(bindingName, bindingValue, body)("") -> tokens
+                        Term.LET(bindingName, bindingValue, body)("", "") -> tokens
                       case token :: _ => throw ParseError(token, END)
                       case _ => throw UnexpectedEndOfStream(END)
                     }
@@ -80,7 +80,7 @@ object Parser {
       // 1 token lookahead
       if (nextIsAtExp(tokens)) {
         val (inner, rest) = parseAtExp(tokens)
-        recur(rest, Term.APP(term, inner)(""))
+        recur(rest, Term.APP(term, inner)("", ""))
       } else {
         term -> tokens
       }
@@ -109,10 +109,10 @@ object Parser {
       tokens match {
         case ADD :: tokens =>
           val (inner, rest) = parseInfExp(tokens)
-          recur(rest, Term.ADD(term, inner)(""))
+          recur(rest, Term.ADD(term, inner)("", ""))
         case SUB :: tokens =>
           val (inner, rest) = parseInfExp(tokens)
-          recur(rest, Term.SUB(term, inner)(""))
+          recur(rest, Term.SUB(term, inner)("", ""))
         case _ => term -> tokens
       }
     }
@@ -140,7 +140,7 @@ object Parser {
         rest match {
           case ELSE :: tokens =>
             val (no, rest) = parseExp(tokens)
-            Term.IF(test, yes, no)("") -> rest
+            Term.IF(test, yes, no)("", "") -> rest
           case token :: _ => throw ParseError(token, ELSE)
           case _ => throw UnexpectedEndOfStream(ELSE)
         }
@@ -155,7 +155,7 @@ object Parser {
         rest match {
           case DARROW :: tokens =>
             val (body, rest) = parseExp(tokens)
-            Term.FN(param, body)("") -> rest
+            Term.FN(param, body)("", "") -> rest
           case token :: _ => throw ParseError(token, DARROW)
           case _ => throw UnexpectedEndOfStream(DARROW)
         }

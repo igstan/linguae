@@ -19,7 +19,7 @@ body {
   outline: none;
 }
 
-pre {
+.env, .result, pre {
   font-size: 14px;
   font-family: menlo, 'inputmononarrow light', monospace;
 }

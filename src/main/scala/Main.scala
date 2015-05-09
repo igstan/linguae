@@ -1,7 +1,6 @@
 package ro.igstan.debugger
 
 import scala.scalajs.js.JSApp
-
 import org.scalajs.dom, dom.document
 
 import display._
@@ -19,15 +18,18 @@ object Main extends JSApp {
             f
           end
       in
-        (const 1 true) + 2
+        let
+          val id = fn a => a
+        in
+          if id true
+          then (const 1 true) + 2
+          else id 2
+        end
       end
     """
 
-    // val term = APP(FN("x", APP(APP(VAR("+"), VAR("x")), VAR("x"))), INT(2))
-    val term = Parser.parse(source)
-    val annotatedAST = HtmlRenderer.render(term)
+    val annotatedAST = HtmlRenderer.render(Parser.parse(source))
     var result = Interpreter.eval(annotatedAST, Env.empty)(identity)
-
 
     document.body.innerHTML = """
       <button id="step-in">step in</button>
@@ -44,8 +46,10 @@ object Main extends JSApp {
     val termElem = document.getElementById("term")
 
     termElem.innerHTML = annotatedAST.meta
-
     reset.addEventListener("click", (event: dom.MouseEvent) => main())
+
+    var highlighted = document.getElementById(result.id)
+    highlighted.classList.add("highlight")
 
     next.addEventListener("click", (event: dom.MouseEvent) =>
       result.next() match {
@@ -53,16 +57,24 @@ object Main extends JSApp {
           next.setAttribute("disabled", "true")
           println(s"Finished: $v")
           display.innerHTML = ""
+          envElem.innerHTML = ""
+          highlighted.classList.remove("highlight")
           display.appendChild(document.createTextNode(s"value: $v"))
         case Resumption.Next(r) =>
-          val env = Env(r.env.bindings.filter {
+          result = r
+
+          val env = Env(result.env.bindings.filter {
             case (_, _: Value.Native) => false
             case _ => true
           })
 
+          println(s"id: ${result.id}")
+          highlighted.classList.remove("highlight")
+          highlighted = document.getElementById(result.id)
+          highlighted.classList.add("highlight")
+
           envElem.innerHTML = ""
           envElem.appendChild(document.createTextNode(s"env: $env"))
-          result = r
       }
     )
   }
