@@ -24,12 +24,12 @@ pre {
   font-family: menlo, 'inputmononarrow light', monospace;
 }
 
-.keyword, .boolean {
+.keyword, .bool {
   font-weight: bold;
 }
 
 
-.identifier {
+.param, .val-def, .var {
   color: #804000;
 }
 

@@ -1,10 +1,18 @@
 package ro.igstan.debugger
 package syntax
 
-sealed trait Term
+sealed trait Term {
+  val meta: String
+}
+
 object Term {
-  case class Num(value: Int) extends Term
-  case class Var(name: String) extends Term
-  case class Fun(param: String, body: Term) extends Term
-  case class App(fn: Term, arg: Term) extends Term
+  case class INT(value: Int)(val meta: String) extends Term
+  case class ADD(a: Term, b: Term)(val meta: String) extends Term
+  case class SUB(a: Term, b: Term)(val meta: String) extends Term
+  case class BOOL(value: Boolean)(val meta: String) extends Term
+  case class VAR(name: String)(val meta: String) extends Term
+  case class IF(test: Term, yes: Term, no: Term)(val meta: String) extends Term
+  case class FN(param: String, body: Term)(val meta: String) extends Term
+  case class APP(fn: Term, arg: Term)(val meta: String) extends Term
+  case class LET(binding: String, value: Term, body: Term)(val meta: String) extends Term
 }
