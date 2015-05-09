@@ -1,0 +1,38 @@
+* {
+  -webkit-box-siging: border-box;
+  -ms-box-siging: border-box;
+  -o-box-siging: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: optima;
+}
+
+.source {
+  font-family: 'fira mono', menlo, monospace;
+  font-size: 13px;
+  padding: 5px;
+}
+
+.source:focus {
+  outline: none;
+}
+
+pre {
+  font-size: 14px;
+  font-family: menlo, 'inputmononarrow light', monospace;
+}
+
+.keyword, .boolean {
+  font-weight: bold;
+}
+
+
+.identifier {
+  color: #804000;
+}
+
+.highlight {
+  background: #FFE7CA;
+}
