@@ -88,7 +88,7 @@ object Main extends JSApp {
     termElem.addEventListener("mouseout", { (event: dom.MouseEvent) =>
       event.target match {
         case span: dom.html.Span =>
-          renderer.clearRect(0, 0, overlay.width, overlay.height)
+          renderer.clearRect(0, 0, overlay.width.toDouble, overlay.height.toDouble)
           Option(span.getAttribute("data-for-id")).filter(_.trim.nonEmpty).foreach { id =>
             document.getElementsByClassName(id).foreach(_.asInstanceOf[dom.Element].classList.remove("reference"))
           }
