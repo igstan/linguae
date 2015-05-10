@@ -36,9 +36,9 @@ object Main extends JSApp {
     document.body.innerHTML = """
       <button id="step-in">step in</button>
       <button id="reset">reset</button>
+      <pre id="term"></pre>
       <div id="result"></div>
       <div id="env"></div>
-      <pre id="term"></pre>
       <canvas id="overlay" class="overlay"></canvas>
     """
 
@@ -49,8 +49,8 @@ object Main extends JSApp {
     val termElem = document.getElementById("term")
     val overlay = document.getElementById("overlay").asInstanceOf[html.Canvas]
 
-    overlay.width = document.documentElement.clientWidth
-    overlay.height = document.documentElement.clientHeight
+    overlay.width = document.documentElement.clientWidth - 40   // body margins
+    overlay.height = document.documentElement.clientHeight - 40 // body margins
 
     val renderer = overlay.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
     renderer.strokeStyle = "red"
@@ -74,8 +74,8 @@ object Main extends JSApp {
               elem.classList.add("reference")
               val end = elem.getBoundingClientRect()
               renderer.beginPath()
-              renderer.moveTo(start.left + start.width / 2, start.bottom)
-              renderer.lineTo(end.left + end.width / 2, end.top)
+              renderer.moveTo(start.left + start.width / 2 - 20, start.bottom - 20) // - 20, compenstate for body margin
+              renderer.lineTo(end.left + end.width / 2 - 20, end.top - 20)          // - 20, compenstate for body margin
               renderer.closePath()
               renderer.stroke()
             }
