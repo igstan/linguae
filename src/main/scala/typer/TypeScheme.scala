@@ -1,7 +1,7 @@
 package ro.igstan.debugger
 package typer
 
-case class TypeScheme(vars: Set[Type.Var], ty: Type)
+sealed trait TypeScheme
 
 object TypeScheme {
   case class Var(value: Int) extends AnyRef
@@ -9,9 +9,9 @@ object TypeScheme {
   object Var {
     private var counter = -1
 
-    def fresh(): Var = {
+    def fresh(): TypeScheme = {
       counter += 1
-      Var(counter)
+      TSVAR(Var(counter))
     }
 
     def reset(): Unit = {
@@ -19,7 +19,6 @@ object TypeScheme {
     }
   }
 
-  def forall(vars: Set[Type.Var], ty: Type): TypeScheme = {
-    TypeScheme(vars: Set[Type.Var], ty: Type)
-  }
+  case class FORALL(vars: Set[Type.Var], ty: Type) extends TypeScheme
+  case class TSVAR(tsVar: Var) extends TypeScheme
 }

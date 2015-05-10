@@ -18,9 +18,9 @@ object Type {
       counter = -1
     }
   }
-
-  case class TVAR(tvar: Type.Var) extends Type
-  case object TINT extends Type
-  case object TBOOL extends Type
-  case object TFUN extends Type
 }
+
+case class TFUN(paramTy: Type, returnTy: Type) extends Type
+case class TVAR(tvar: Type.Var) extends Type
+case object TBOOL extends Type
+case object TINT extends Type
