@@ -6,7 +6,11 @@
 }
 
 body {
+  margin: 0;
+  padding: 0;
+  position: relative;
   font-family: optima;
+  cursor: default;
 }
 
 .source {
@@ -39,4 +43,14 @@ body {
 .reference {
   color: white;
   background: #804000;
+  background: red;
+  border-radius: 3px;
+  padding: 2px 0;
+}
+
+.overlay {
+  position: absolute;
+  pointer-events: none;
+  top: 0;
+  left: 0;
 }

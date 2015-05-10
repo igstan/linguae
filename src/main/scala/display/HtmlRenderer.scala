@@ -122,7 +122,7 @@ object HtmlRenderer {
             indent(level),
             s"""<span id="$id" class="fn">""",
             s"""<span class="keyword fn">fn</span>""", " ",
-            s"""<span class="param $paramID" data-for-id="$paramID">$param</span>""", " ",
+            s"""<span id="$paramID" class="param $paramID" data-for-id="$paramID">$param</span>""", " ",
             s"""<span class="symbol darrow">=&gt;</span>""", "\n",
             indent(level + 1), s"""<span class="fn-body">${bodyR.meta}</span>""",
             s"""</span>"""
@@ -151,7 +151,7 @@ object HtmlRenderer {
                                s"""<span class="keyword let">let</span>""", "\n",
             indent(level + 1), s"""<span class="let-val">""",
                                s"""<span class="keyword val">val</span>""", " ",
-                               s"""<span class="val-def $valID" data-for-id="$valID">$binding</span>""", " ",
+                               s"""<span id="$valID" class="val-def $valID" data-for-id="$valID">$binding</span>""", " ",
                                s"""<span class="symbol equal">=</span>""", " ",
                                s"""<span class="val-value">${valueR.meta}</span>""", "\n",
                                s"""</span>""",
