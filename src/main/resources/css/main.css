@@ -28,11 +28,15 @@ body {
   font-weight: bold;
 }
 
-
 .param, .val-def, .var {
   color: #804000;
 }
 
 .highlight {
-  background: #FFE7CA;
+  background: #FFCAD3;
+}
+
+.reference {
+  color: white;
+  background: #804000;
 }

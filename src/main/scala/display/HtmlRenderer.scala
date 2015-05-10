@@ -14,12 +14,12 @@ object HtmlRenderer {
       s"id-$counter"
     }
 
-    def wrap(term: Term, level: Int): Term = {
+    def wrap(term: Term, level: Int, env: Map[String, String]): Term = {
       term match {
         case APP(fn, arg) =>
           val id = nextID()
-          val fnR = loop(fn, level)
-          val argR = loop(arg, level)
+          val fnR = loop(fn, level, env)
+          val argR = loop(arg, level, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="app"><span class="left-paren">(</span>""",
@@ -30,8 +30,8 @@ object HtmlRenderer {
           APP(fnR, argR)(html.mkString(""), id)
         case ADD(a, b) =>
           val id = nextID()
-          val aR = wrap(a, 0)
-          val bR = wrap(b, 0)
+          val aR = wrap(a, 0, env)
+          val bR = wrap(b, 0, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="add"><span class="left-paren">(</span>""",
@@ -43,8 +43,8 @@ object HtmlRenderer {
           ADD(aR, bR)(html.mkString(""), id)
         case SUB(a, b) =>
           val id = nextID()
-          val aR = wrap(a, 0)
-          val bR = wrap(b, 0)
+          val aR = wrap(a, 0, env)
+          val bR = wrap(b, 0, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="sub"><span class="left-paren">(</span>""",
@@ -54,19 +54,19 @@ object HtmlRenderer {
             s"""<span class="right-paren">)</span></span>"""
           )
           SUB(aR, bR)(html.mkString(""), id)
-        case other => loop(other, level)
+        case other => loop(other, level, env)
       }
     }
 
-    def loop(term: Term, level: Int): Term = {
+    def loop(term: Term, level: Int, env: Map[String, String]): Term = {
       term match {
         case INT(value) =>
           val id = nextID()
           INT(value)(indent(level) + s"""<span id="$id" class="int">$value</span>""", id)
         case ADD(a, b) =>
           val id = nextID()
-          val aR = wrap(a, 0)
-          val bR = wrap(b, 0)
+          val aR = wrap(a, 0, env)
+          val bR = wrap(b, 0, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="add">""",
@@ -78,8 +78,8 @@ object HtmlRenderer {
           ADD(aR, bR)(html.mkString(""), id)
         case SUB(a, b) =>
           val id = nextID()
-          val aR = wrap(a, 0)
-          val bR = wrap(b, 0)
+          val aR = wrap(a, 0, env)
+          val bR = wrap(b, 0, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="sub">""",
@@ -94,12 +94,13 @@ object HtmlRenderer {
           BOOL(value)(indent(level) + s"""<span id="$id" class="bool">$value</span>""", id)
         case VAR(name) =>
           val id = nextID()
-          VAR(name)(indent(level) + s"""<span id="$id" class="var">$name</span>""", id)
+          val varID = env.get(name).getOrElse("")
+          VAR(name)(indent(level) + s"""<span id="$id" class="var $varID" data-for-id="$varID">$name</span>""", id)
         case IF(test, yes, no) =>
           val id = nextID()
-          val testR = loop(test, 0)
-          val yesR = loop(yes, 0)
-          val noR = loop(no, 0)
+          val testR = loop(test, 0, env)
+          val yesR = loop(yes, 0, env)
+          val noR = loop(no, 0, env)
           val html = List(
             indent(level),
                            s"""<span id="$id" class="if">""",
@@ -115,12 +116,13 @@ object HtmlRenderer {
           IF(testR, yesR, noR)(html.mkString(""), id)
         case FN(param, body) =>
           val id = nextID()
-          val bodyR = loop(body, level + 1)
+          val paramID = nextID()
+          val bodyR = loop(body, level + 1, env + (param -> paramID))
           val html = List(
             indent(level),
             s"""<span id="$id" class="fn">""",
             s"""<span class="keyword fn">fn</span>""", " ",
-            s"""<span class="param">$param</span>""", " ",
+            s"""<span class="param $paramID" data-for-id="$paramID">$param</span>""", " ",
             s"""<span class="symbol darrow">=&gt;</span>""", "\n",
             indent(level + 1), s"""<span class="fn-body">${bodyR.meta}</span>""",
             s"""</span>"""
@@ -128,8 +130,8 @@ object HtmlRenderer {
           FN(param, bodyR)(html.mkString(""), id)
         case APP(fn, arg) =>
           val id = nextID()
-          val fnR = loop(fn, level)
-          val argR = loop(arg, level)
+          val fnR = loop(fn, level, env)
+          val argR = loop(arg, level, env)
           val html = List(
             indent(level),
             s"""<span id="$id" class="app">""",
@@ -140,15 +142,16 @@ object HtmlRenderer {
           APP(fnR, argR)(html.mkString(""), id)
         case LET(binding, value, body) =>
           val id = nextID()
-          val valueR = loop(value, 0)
-          val bodyR = loop(body, level + 1)
+          val valID = nextID()
+          val valueR = loop(value, 0, env)
+          val bodyR = loop(body, level + 1, env + (binding -> valID))
           val html = List(
             indent(level),
                                s"""<span id="$id" class="let">""",
                                s"""<span class="keyword let">let</span>""", "\n",
             indent(level + 1), s"""<span class="let-val">""",
                                s"""<span class="keyword val">val</span>""", " ",
-                               s"""<span class="val-def">$binding</span>""", " ",
+                               s"""<span class="val-def $valID" data-for-id="$valID">$binding</span>""", " ",
                                s"""<span class="symbol equal">=</span>""", " ",
                                s"""<span class="val-value">${valueR.meta}</span>""", "\n",
                                s"""</span>""",
@@ -161,7 +164,7 @@ object HtmlRenderer {
       }
     }
 
-    loop(term, 0)
+    loop(term, 0, Map.empty)
   }
 
   private def indent(level: Int): String = "  " * level

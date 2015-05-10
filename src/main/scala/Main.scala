@@ -51,6 +51,26 @@ object Main extends JSApp {
     var highlighted = document.getElementById(result.id)
     highlighted.classList.add("highlight")
 
+    termElem.addEventListener("mouseover", { (event: dom.MouseEvent) =>
+      event.target match {
+        case span: dom.html.Span =>
+          Option(span.getAttribute("data-for-id")).filter(_.trim.nonEmpty).foreach { id =>
+            document.getElementsByClassName(id).foreach(_.asInstanceOf[dom.Element].classList.add("reference"))
+          }
+        case other => ()
+      }
+    })
+
+    termElem.addEventListener("mouseout", { (event: dom.MouseEvent) =>
+      event.target match {
+        case span: dom.html.Span =>
+          Option(span.getAttribute("data-for-id")).filter(_.trim.nonEmpty).foreach { id =>
+            document.getElementsByClassName(id).foreach(_.asInstanceOf[dom.Element].classList.remove("reference"))
+          }
+        case other => ()
+      }
+    })
+
     next.addEventListener("click", (event: dom.MouseEvent) =>
       result.next() match {
         case Resumption.Done(v) =>
