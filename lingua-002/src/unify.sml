@@ -63,13 +63,6 @@ struct
       end
 
   local
-    fun occurs v ty =
-      case ty of
-        Type.INT => false
-      | Type.BOOL => false
-      | Type.VAR v' => v = v'
-      | Type.FUN (param, return) => occurs v param orelse occurs v return
-
     (**
      * Unifies EQ constraints.
      *)
@@ -83,7 +76,7 @@ struct
             then unify1 tail
             else Subst.compose (Subst.fromList [(a, ty)]) (unify1 (Constraint.substitute tail (Subst.fromList [(a, ty)])))
         | EQ (Type.VAR a, ty) =>
-            if occurs a ty
+            if Type.containsVar ty a
             then raise OccursCheck (a, ty)
             else Subst.compose (Subst.fromList [(a, ty)]) (unify1 (Constraint.substitute tail (Subst.fromList [(a, ty)])))
         | EQ (ty, Type.VAR a) => unify1 ((EQ (Type.VAR a, ty)) :: tail)

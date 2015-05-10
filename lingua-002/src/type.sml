@@ -27,6 +27,13 @@ struct
     | VAR (var) => [var]
     | FUN (p, r) => (freeVars p) @ (freeVars r)
 
+  fun containsVar ty v =
+    case ty of
+      INT => false
+    | BOOL => false
+    | VAR v' => v = v'
+    | FUN (param, return) => containsVar param v orelse containsVar return v
+
   local
     val counter = ref 0
     fun increment r = !r before r := !r + 1
