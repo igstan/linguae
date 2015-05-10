@@ -9,5 +9,5 @@ package object debugger {
     def ignore(): Unit = ()
   }
 
-  implicit class RichDOMList[A](coll: DOMList[A]) extends EasySeq[A](coll.length, coll.apply)
+  implicit class RichDOMList[A](list: DOMList[A]) extends EasySeq[A](list.length, list.apply)
 }

@@ -117,8 +117,8 @@ object Main extends JSApp {
     )
   }
 
-  def displayResult(r: Option[Result]): String = {
-    r match {
+  def displayResult(result: Option[Result]): String = {
+    result match {
       case None => ""
       case Some(Left(error)) => s"error: $error"
       case Some(Right(value)) =>
