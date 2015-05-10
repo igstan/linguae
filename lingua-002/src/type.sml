@@ -17,6 +17,17 @@ struct
   | VAR of Var.ty
   | FUN of ty * ty
 
+  fun substitute ty tvar replacement =
+    case ty of
+      INT => ty
+    | BOOL => ty
+    | VAR candidate => if tvar = candidate then replacement else ty
+    | FUN (paramTy, returnTy) =>
+        FUN (
+          substitute paramTy tvar replacement,
+          substitute returnTy tvar replacement
+        )
+
   (**
    * Obtain free type variables from within the given type.
    *)

@@ -9,23 +9,12 @@ struct
   fun set subst var value =
     (var, value) :: subst
 
-  local
-    fun substPair ((var, newTy), oldTy) =
-      case oldTy of
-        Type.INT => oldTy
-      | Type.BOOL => oldTy
-      | Type.VAR var' =>
-          if var = var' then newTy else oldTy
-      | Type.FUN (param, return) =>
-        let
-          val paramTy = substPair ((var, newTy), param)
-          val returnTy = substPair ((var, newTy), return)
-        in
-          Type.FUN (paramTy, returnTy)
-        end
-  in
-    fun apply subst ty = List.foldr substPair ty subst
-  end
+  fun apply subst ty =
+    let
+      fun fold ((tvar, newTy), ty) = Type.substitute ty tvar newTy
+    in
+      List.foldl fold ty subst
+    end
 
   fun compose s1 s2 =
     let
