@@ -1,7 +1,7 @@
 package ro.igstan.debugger
 
 import scala.scalajs.js.JSApp
-import org.scalajs.dom, dom.html, dom.document, dom.console
+import org.scalajs.dom, dom.{ html, document, console }
 
 import display._
 import eval._
