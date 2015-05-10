@@ -4,11 +4,11 @@ struct
     open Term
   in
     val predef = TypeEnv.fromList [
-      ("+",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-      ("-",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-      ("*",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-      ("/",     TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
-      ("zero?", TypeScheme.ForAll ([], Type.FUN (Type.INT, Type.BOOL)))
+      ("+",     TypeScheme.FORALL ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+      ("-",     TypeScheme.FORALL ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+      ("*",     TypeScheme.FORALL ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+      ("/",     TypeScheme.FORALL ([], Type.FUN (Type.INT, Type.FUN (Type.INT, Type.INT)))),
+      ("zero?", TypeScheme.FORALL ([], Type.FUN (Type.INT, Type.BOOL)))
     ]
 
     val identity = FUN ("a", VAR "a")
@@ -35,9 +35,33 @@ struct
     val letPolymorphism =
       LET ("id", FUN ("a", VAR "a"),
         IF (
-          APP (FUN ("a", VAR "a"), BOOL true),
-          APP (FUN ("a", VAR "a"), INT 1),
-          APP (FUN ("a", VAR "a"), INT 0)
+          APP (VAR "id", BOOL true),
+          APP (VAR "id", INT 1),
+          APP (VAR "id", INT 0)
+        )
+      )
+
+    (*
+     * let
+     *   val const = fn y =>
+     *     let
+     *       val f = fn x => y
+     *     in
+     *       f
+     *     end
+     * in
+     *   if const true 1
+     *   then 2
+     *   else 3
+     * end
+     *)
+    val closureLetPolymorphism =
+      LET (
+        "const", FUN ("y", LET ("f", FUN ("x", VAR "y"), VAR "f")),
+        IF (
+          APP (APP (VAR "const", BOOL true), INT 1),
+          INT 2,
+          INT 3
         )
       )
   end

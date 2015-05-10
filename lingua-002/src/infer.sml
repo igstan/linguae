@@ -5,7 +5,8 @@ struct
       open Unify
       val _ = Type.resetFreshness ()
       val termTy = Type.freshVar ()
-      val subst = unify (constrain tenv termTy term)
+      val constraints = constrain tenv termTy term
+      val subst = unify constraints
     in
       TypeEnv.generalize tenv (Subst.apply subst termTy)
     end handle
@@ -61,15 +62,16 @@ struct
           end
         | typeString (FUN (p, r)) = typeString p ^ " -> " ^ typeString r
 
-      fun typeScheme (TypeScheme.ForAll (vars, ty)) =
-        let
-          val tsVars = String.concat (List.map GenVar.genvar vars)
-          val tsType = typeString ty
-        in
-          case vars of
-            [] => tsType
-          | _ => "forall " ^ tsVars ^ ". " ^ tsType
-        end
+      fun typeScheme (TypeScheme.SVAR _) = raise Fail "TypeScheme VAR"
+        | typeScheme (TypeScheme.FORALL (vars, ty)) =
+          let
+            val tsVars = String.concat (List.map GenVar.genvar vars)
+            val tsType = typeString ty
+          in
+            case vars of
+              [] => tsType
+            | _ => "forall " ^ tsVars ^ ". " ^ tsType
+          end
     in
       GenVar.reset ();
       typeScheme (typeOf term tenv)

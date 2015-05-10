@@ -4,6 +4,8 @@ IS
   $/basis.cm
   $/smlnj-lib.cm
 
+  $SMACKAGE/sml-extras/v0.1.0/sources.sml.cm
+
   src/term.sml
   src/type.sml
   src/subst.sig

@@ -33,6 +33,25 @@ struct
       val envVars = Set.fromList (freeVars tenv)
       val schemeVars = Set.listItems (Set.difference (tyVars, envVars))
     in
-      TypeScheme.ForAll (schemeVars, ty)
+      TypeScheme.FORALL (schemeVars, ty)
+    end
+
+  fun substitute tenv subst =
+    let
+      fun substTypeScheme typeScheme =
+        case typeScheme of
+          TypeScheme.SVAR _ => typeScheme
+          (* XXX: It might not be ok to substitute bound type variables... *)
+        | TypeScheme.FORALL (vars, ty) => TypeScheme.FORALL (vars, Subst.apply subst ty)
+    in
+      Map.map substTypeScheme tenv
+    end
+
+  fun toString tenv =
+    let
+      open Show
+      val pair = tuple2 (fn a => a, TypeScheme.toString)
+    in
+      list pair (Map.listItemsi tenv)
     end
 end

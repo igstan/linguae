@@ -8,4 +8,6 @@ sig
   val set : ty -> Term.Var.ty -> TypeScheme.ty -> ty
   val freeVars : ty -> Type.Var.ty list
   val generalize : ty -> Type.ty -> TypeScheme.ty
+  val substitute : ty -> Subst.ty -> ty
+  val toString : ty -> string
 end

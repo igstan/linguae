@@ -95,34 +95,55 @@
  *)
 structure TypeScheme =
 struct
-  datatype ty = ForAll of Type.Var.ty list * Type.ty
+  structure Var =
+  struct
+    type ty = int
+  end
 
-  fun instantiate (ForAll (tyVars, ty)) =
-    let
-      fun extend (var, subst) = Subst.set subst var (Type.freshVar ())
-      val subst = List.foldl extend Subst.empty tyVars
-    in
-      Subst.apply subst ty
-    end
+  datatype ty =
+    SVAR of Var.ty
+  | FORALL of Type.Var.ty list * Type.ty
+
+  fun instantiate typeScheme =
+    case typeScheme of
+      SVAR _ => raise Fail "TypeScheme VAR"
+    | FORALL (tyVars, ty) =>
+      let
+        fun extend (var, subst) = Subst.set subst var (Type.freshVar ())
+        val subst = List.foldl extend Subst.empty tyVars
+      in
+        Subst.apply subst ty
+      end
 
   local
     structure Set = BinarySetFn (Type.Var.Key)
   in
-    fun freeVars (ForAll (tyVars, ty)) =
-      let
-        val tyFreeVars = Set.fromList (Type.freeVars ty)
-        val quantFreeVars = Set.fromList tyVars
-        val boundVars = Set.difference (tyFreeVars, quantFreeVars)
-      in
-        Set.listItems boundVars
-      end
+    fun freeVars (SVAR _) = raise Fail "TypeScheme VAR"
+      | freeVars (FORALL (tyVars, ty)) =
+        let
+          val tyFreeVars = Set.fromList (Type.freeVars ty)
+          val quantFreeVars = Set.fromList tyVars
+          val boundVars = Set.difference (tyFreeVars, quantFreeVars)
+        in
+          Set.listItems boundVars
+        end
   end
 
-  fun toString (ForAll (vars, ty)) =
-    let
-      fun string v = Type.toString (Type.VAR v)
-      val forall = String.concat (List.map string vars)
-    in
-      "forall "^ forall ^". "^ Type.toString ty
-    end
+  local
+    val counter = ref 0
+    fun increment r = !r before r := !r + 1
+  in
+    fun freshVar () = SVAR (increment counter)
+    fun resetFreshness () = counter := 0
+  end
+
+  fun toString (SVAR var) = "SVAR " ^ Int.toString var
+    | toString (FORALL (vars, ty)) =
+      let
+        fun string v = Type.toString (Type.VAR v)
+        val forall = String.concat (List.map string vars)
+        val prefix = if null vars then "" else "forall "^ forall ^". "
+      in
+        prefix ^ Type.toString ty
+      end
 end

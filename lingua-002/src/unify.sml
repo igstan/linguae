@@ -5,6 +5,14 @@ struct
 
   datatype constraint =
     EQ of Type.ty * Type.ty
+  | GEN of TypeEnv.ty * TypeScheme.ty * Type.ty
+  | INST of TypeScheme.Var.ty * Type.ty
+
+  fun constraintToString c =
+    case c of
+      EQ (a, b) => "EQ " ^ (Show.tuple2 (Type.toString, Type.toString) (a, b))
+    | GEN (a, b, c) => "GEN " ^ (Show.tuple2 (TypeScheme.toString, Type.toString) (b, c))
+    | INST (a, b) => "INST " ^ (Show.tuple2 (Int.toString, Type.toString) (a, b))
 
   (**
    * Walks over a typed tree and records constraints along the way. Produces a
@@ -12,34 +20,35 @@ struct
    *)
   fun constrain tenv ty term =
     case term of
-      Term.INT _ => []
-    | Term.BOOL _ => []
+      Term.INT _ => [EQ (ty, Type.INT)]
+    | Term.BOOL _ => [EQ (ty, Type.BOOL)]
     | Term.VAR var =>
       let in
         case TypeEnv.get tenv var of
           NONE => raise Fail ("unbound identifier: " ^ String.toString var)
-        | SOME (TypeScheme.ForAll (_, varTy)) => [EQ (ty, varTy)]
+        | SOME (TypeScheme.FORALL (_, ty')) => [EQ (ty, ty')]
+        | SOME (TypeScheme.SVAR var) => [INST (var, ty)]
       end
     | Term.FUN (param, body) =>
       let
         val paramTy = Type.freshVar ()
         val bodyTy = Type.freshVar ()
-        val tenv' = TypeEnv.set tenv param (TypeScheme.ForAll ([], paramTy))
+        val tenv' = TypeEnv.set tenv param (TypeScheme.FORALL ([], paramTy))
         val bodyC = constrain tenv' bodyTy body
       in
         (EQ (ty, Type.FUN (paramTy, bodyTy))) :: bodyC
       end
     | Term.IF (test, yes, no) =>
       let
-        val testTy = Type.freshVar ()
         val yesTy = Type.freshVar ()
         val noTy = Type.freshVar ()
         val ifC = EQ (yesTy, ty)
+        val branchC = EQ (yesTy, noTy)
         val testC = constrain tenv Type.BOOL test
-        val yesC = constrain tenv noTy yes
-        val noC = constrain tenv yesTy no
+        val yesC = constrain tenv yesTy yes
+        val noC = constrain tenv noTy no
       in
-        ifC :: testC @ yesC @ noC
+        [ifC, branchC] @ testC @ yesC @ noC
       end
     | Term.APP (def, arg) =>
       let
@@ -51,15 +60,15 @@ struct
       end
     | Term.LET (binding, value, body) =>
       let
-        val bindingTy = Type.freshVar ()
+        val bindingScheme = TypeScheme.freshVar ()
         val valueTy = Type.freshVar ()
 
         val valueC = constrain tenv valueTy value
-        val tenv' = TypeEnv.set tenv binding (TypeScheme.ForAll ([], bindingTy))
+        val tenv' = TypeEnv.set tenv binding bindingScheme
         val bodyC = constrain tenv' ty body
-        val bindingC = EQ (bindingTy, valueTy)
+        val bindingC = GEN (tenv, bindingScheme, valueTy)
       in
-        bindingC :: valueC @ bodyC
+        valueC @ [bindingC] @ bodyC
       end
 
   local
@@ -70,43 +79,85 @@ struct
       | Type.VAR v' => v = v'
       | Type.FUN (param, return) => occurs v param orelse occurs v return
 
-    (**
-     * Unifies two type variables.
-     *)
-    fun unifyVar v (ty as Type.VAR v') =
-        if v = v'
-        then Subst.empty
-        else Subst.fromList [(v, ty)]
-      | unifyVar v ty =
-        if occurs v ty
-        then raise OccursCheck (v, ty)
-        else Subst.fromList [(v, ty)]
+    fun substConstraint subst constraint =
+      case constraint of
+        EQ (tyA, tyB) =>
+          EQ (Subst.apply subst tyA, Subst.apply subst tyB)
+      | GEN (tenv, typeScheme, ty) =>
+          GEN (TypeEnv.substitute tenv subst, typeScheme, Subst.apply subst ty)
+      | INST (typeScheme, ty) =>
+          INST (typeScheme, Subst.apply subst ty)
 
-    (**
-     * Unifies a single constraint pair.
-     *)
-    fun unifyPair pair =
-      case pair of
-        (Type.INT, Type.INT) => Subst.empty
-      | (Type.BOOL, Type.BOOL) => Subst.empty
-      | (Type.VAR (v), ty) => unifyVar v ty
-      | (ty, Type.VAR (v)) => unifyVar v ty
-      | (Type.FUN (param1, return1), Type.FUN (param2, return2)) =>
-          unifyMany [EQ (param1, param2), EQ (return1, return2)]
-      | _ => raise UnificationFailure pair
+    fun substConstraints subst constraints =
+      List.map (substConstraint subst) constraints
 
-    (**
-     * Unifies a set of constraint pairs.
-     *)
-    and unifyMany [] = Subst.empty
-      | unifyMany (EQ (t1, t2) :: constraints) =
+    fun unify1 [] = Subst.empty
+      | unify1 (head :: tail) =
+        case head of
+          EQ (Type.INT, Type.INT) => unify1 tail
+        | EQ (Type.BOOL, Type.BOOL) => unify1 tail
+        | EQ (Type.VAR a, ty as Type.VAR b) =>
+            if a = b
+            then unify1 tail
+            else Subst.compose (Subst.fromList [(a, ty)]) (unify1 (substConstraints (Subst.fromList [(a, ty)]) tail))
+        | EQ (Type.VAR a, ty) =>
+            if occurs a ty
+            then raise OccursCheck (a, ty)
+            else Subst.compose (Subst.fromList [(a, ty)]) (unify1 (substConstraints (Subst.fromList [(a, ty)]) tail))
+        | EQ (ty, Type.VAR a) => unify1 ((EQ (Type.VAR a, ty)) :: tail)
+        | EQ (Type.FUN (paramA, returnA), Type.FUN (paramB, returnB)) =>
+            unify1 ((EQ (paramA, paramB)) :: (EQ (returnA, returnB)) :: tail)
+        | EQ pair => raise UnificationFailure pair
+        | GEN _ => raise Fail "Bug: GEN constraint encountered."
+        | INST _ => raise Fail "Bug: INST constraint encountered."
+
+    fun instantiateAll insts tenv ty =
+      let
+        val gen = TypeEnv.generalize tenv ty
+        fun loop insts =
+          case insts of
+            [] => []
+          | (INST (_, ty)) :: tail =>
+            let
+              val instTy = TypeScheme.instantiate gen
+              val constrs = loop tail
+            in
+              EQ (ty, instTy) :: constrs
+            end
+          | _ => raise Fail "Bug: bad constraint type in instantiateAll."
+      in
+        loop insts
+      end
+
+    fun isEQ (EQ _) = true
+      | isEQ _ = false
+
+    fun isINST (TypeScheme.FORALL _) _ = false
+      | isINST (TypeScheme.SVAR typeScheme) constraint =
+        case constraint of
+          INST (typeScheme', ty) => typeScheme = typeScheme'
+        | _ => false
+
+    fun unify2 [] = Subst.empty
+      | unify2 (GEN (tenv, typeScheme, ty) :: tail) =
         let
-          val s1 = unifyMany constraints
-          val s2 = unifyPair (Subst.apply s1 t1, Subst.apply s1 t2)
+          val (instConstraints, rest) = List.partition (isINST typeScheme) tail
+          val insts = instantiateAll instConstraints tenv ty
+          val s1 = unify1 insts
+          val c' = substConstraints s1 rest
         in
-          Subst.compose s1 s2
+          Subst.compose s1 (unify2 c')
         end
+      | unify2 _ = raise Fail "Bug: INST constraint seen before GEN constraint."
   in
-    fun unify constraints = unifyMany constraints
+    fun unify constraints =
+      let
+        val (eqConstraints, otherConstraints) = List.partition isEQ constraints
+        val s1 = unify1 eqConstraints
+        val s2 = unify2 (substConstraints s1 otherConstraints)
+        val s = Subst.compose s1 s2
+      in
+        s
+      end
   end
 end
