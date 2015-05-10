@@ -102,7 +102,6 @@ object HtmlRenderer {
           val yesR = loop(yes, 0, env)
           val noR = loop(no, 0, env)
           val html = List(
-            indent(level),
                            s"""<span id="$id" class="if">""",
             indent(level), s"""<span class="keyword if">if</span>""", " ",
                            s"""<span class="if-test">${testR.meta}</span>""", "\n",
@@ -117,14 +116,13 @@ object HtmlRenderer {
         case FN(param, body) =>
           val id = nextID()
           val paramID = nextID()
-          val bodyR = loop(body, level + 1, env + (param -> paramID))
+          val bodyR = loop(body, level + 2, env + (param -> paramID))
           val html = List(
-            indent(level),
             s"""<span id="$id" class="fn">""",
             s"""<span class="keyword fn">fn</span>""", " ",
             s"""<span id="$paramID" class="param $paramID" data-for-id="$paramID">$param</span>""", " ",
             s"""<span class="symbol darrow">=&gt;</span>""", "\n",
-            indent(level + 1), s"""<span class="fn-body">${bodyR.meta}</span>""",
+            s"""<span class="fn-body">${bodyR.meta}</span>""",
             s"""</span>"""
           )
           FN(param, bodyR)(html.mkString(""), id)
@@ -143,7 +141,7 @@ object HtmlRenderer {
         case LET(binding, value, body) =>
           val id = nextID()
           val valID = nextID()
-          val valueR = loop(value, 0, env)
+          val valueR = loop(value, level, env)
           val bodyR = loop(body, level + 1, env + (binding -> valID))
           val html = List(
             indent(level),
@@ -156,7 +154,7 @@ object HtmlRenderer {
                                s"""<span class="val-value">${valueR.meta}</span>""", "\n",
                                s"""</span>""",
             indent(level),     s"""<span class="keyword in">in</span>""", "\n",
-            indent(level), s"""<span class="let-body">${bodyR.meta}</span>""", "\n",
+                               s"""<span class="let-body">${bodyR.meta}</span>""", "\n",
             indent(level),     s"""<span class="keyword end">end</span>""",
                                s"""</span>"""
           )
