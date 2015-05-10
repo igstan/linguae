@@ -79,7 +79,8 @@ struct
             if Type.containsVar ty a
             then raise OccursCheck (a, ty)
             else Subst.compose (Subst.fromList [(a, ty)]) (unify1 (Constraint.substitute tail (Subst.fromList [(a, ty)])))
-        | EQ (ty, Type.VAR a) => unify1 ((EQ (Type.VAR a, ty)) :: tail)
+        | EQ (ty, Type.VAR a) =>
+            unify1 ((EQ (Type.VAR a, ty)) :: tail)
         | EQ (Type.FUN (paramA, returnA), Type.FUN (paramB, returnB)) =>
             unify1 ((EQ (paramA, paramB)) :: (EQ (returnA, returnB)) :: tail)
         | EQ pair => raise UnificationFailure pair
