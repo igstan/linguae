@@ -37,8 +37,8 @@ object Main extends JSApp {
       <button id="step-in">step in</button>
       <button id="reset">reset</button>
       <pre id="term"></pre>
+      <div>last: <span id="last-result"></span></div>
       <div id="result"></div>
-      <div>return: <span id="last-result"></span></div>
       <div id="env"></div>
       <canvas id="overlay" class="overlay"></canvas>
     """
@@ -55,8 +55,7 @@ object Main extends JSApp {
     overlay.height = document.documentElement.clientHeight - 40 // body margins
 
     val renderer = overlay.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
-    renderer.strokeStyle = "red"
-    renderer.fill()
+    renderer.strokeStyle = "#FFC9D7"
 
     termElem.innerHTML = annotatedAST.meta
     reset.addEventListener("click", (event: dom.MouseEvent) => main())
@@ -105,16 +104,29 @@ object Main extends JSApp {
           display.innerHTML = ""
           envElem.innerHTML = ""
           highlighted.classList.remove("highlight")
-          display.appendChild(document.createTextNode(s"value: $v"))
+          display.appendChild(document.createTextNode(s"value: ${displayResult(Some(v))}"))
         case Resumption.Next(r) =>
           result = r
           highlighted.classList.remove("highlight")
           highlighted = document.getElementById(result.id)
           highlighted.classList.add("highlight")
-          lastResult.innerHTML = s"${r.prev}"
+          lastResult.innerHTML = displayResult(r.prev)
           envElem.innerHTML = ""
           envElem.appendChild(document.createTextNode(s"env: ${result.env}"))
       }
     )
+  }
+
+  def displayResult(r: Option[Result]): String = {
+    r match {
+      case None => ""
+      case Some(Left(error)) => s"error: $error"
+      case Some(Right(value)) =>
+        value match {
+          case Value.Num(value) => s"$value"
+          case Value.Bool(value) => s"$value"
+          case Value.Fun(param, body, closure) => "ƒ"
+        }
+    }
   }
 }

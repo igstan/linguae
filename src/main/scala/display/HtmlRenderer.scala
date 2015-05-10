@@ -144,8 +144,8 @@ object HtmlRenderer {
           val valueR = loop(value, level, env)
           val bodyR = loop(body, level + 1, env + (binding -> valID))
           val html = List(
-            indent(level),
                                s"""<span id="$id" class="let">""",
+            indent(level),
                                s"""<span class="keyword let">let</span>""", "\n",
             indent(level + 1), s"""<span class="let-val">""",
                                s"""<span class="keyword val">val</span>""", " ",
