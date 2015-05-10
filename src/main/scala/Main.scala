@@ -29,7 +29,7 @@ object Main extends JSApp {
     """
 
     val annotatedAST = HtmlRenderer.render(Parser.parse(source))
-    var result = Resumption(Env.empty, annotatedAST.id) { () =>
+    var result = Resumption(Env.empty, annotatedAST.id, None) { () =>
       Resumption.Next(Interpreter.eval(annotatedAST, Env.empty)(identity))
     }
 
@@ -38,6 +38,7 @@ object Main extends JSApp {
       <button id="reset">reset</button>
       <pre id="term"></pre>
       <div id="result"></div>
+      <div>return: <span id="last-result"></span></div>
       <div id="env"></div>
       <canvas id="overlay" class="overlay"></canvas>
     """
@@ -47,6 +48,7 @@ object Main extends JSApp {
     val display = document.getElementById("result")
     val envElem = document.getElementById("env")
     val termElem = document.getElementById("term")
+    val lastResult = document.getElementById("last-result")
     val overlay = document.getElementById("overlay").asInstanceOf[html.Canvas]
 
     overlay.width = document.documentElement.clientWidth - 40   // body margins
@@ -109,6 +111,7 @@ object Main extends JSApp {
           highlighted.classList.remove("highlight")
           highlighted = document.getElementById(result.id)
           highlighted.classList.add("highlight")
+          lastResult.innerHTML = s"${r.prev}"
           envElem.innerHTML = ""
           envElem.appendChild(document.createTextNode(s"env: ${result.env}"))
       }

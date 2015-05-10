@@ -1,7 +1,7 @@
 package ro.igstan.debugger
 package eval
 
-case class Resumption(env: Env, id: String)(val next: () => Resumption.Step)
+case class Resumption(env: Env, id: String, prev: Option[Result])(val next: () => Resumption.Step)
 
 object Resumption {
   sealed trait Step
