@@ -6,7 +6,7 @@ struct
   exception OccursCheck of Type.Var.ty * Type.ty
 
   (**
-   * Walks over a typed tree and records constraints along the way. Produces a
+   * Walks over a term tree and records constraints along the way. Produces a
    * list of constraints amenable to unification.
    *)
   fun constrain tenv ty term =
@@ -70,6 +70,9 @@ struct
       | Type.VAR v' => v = v'
       | Type.FUN (param, return) => occurs v param orelse occurs v return
 
+    (**
+     * Unifies EQ constraints.
+     *)
     fun unify1 [] = Subst.empty
       | unify1 (head :: tail) =
         case head of
@@ -90,6 +93,9 @@ struct
         | GEN _ => raise Fail "Bug: GEN constraint encountered."
         | INST _ => raise Fail "Bug: INST constraint encountered."
 
+    (**
+     * Unifies GEN and their associated INST constraints.
+     *)
     fun unify2 [] = Subst.empty
       | unify2 (GEN (tenv, typeScheme, ty) :: tail) =
         let
@@ -107,9 +113,8 @@ struct
         val (eqConstraints, otherConstraints) = List.partition isEQ constraints
         val s1 = unify1 eqConstraints
         val s2 = unify2 (Constraint.substitute otherConstraints s1)
-        val s = Subst.compose s1 s2
       in
-        s
+        Subst.compose s1 s2
       end
   end
 end
