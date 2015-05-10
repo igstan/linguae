@@ -8,6 +8,7 @@ IS
 
   src/term.sml
   src/type.sml
+  src/constraint.sml
   src/subst.sig
   src/subst.sml
   src/type-scheme.sml

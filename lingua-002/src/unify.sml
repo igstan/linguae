@@ -1,18 +1,9 @@
 structure Unify =
 struct
+  open Constraint
+
   exception UnificationFailure of Type.ty * Type.ty
   exception OccursCheck of Type.Var.ty * Type.ty
-
-  datatype constraint =
-    EQ of Type.ty * Type.ty
-  | GEN of TypeEnv.ty * TypeScheme.ty * Type.ty
-  | INST of TypeScheme.Var.ty * Type.ty
-
-  fun constraintToString c =
-    case c of
-      EQ (a, b) => "EQ " ^ (Show.tuple2 (Type.toString, Type.toString) (a, b))
-    | GEN (a, b, c) => "GEN " ^ (Show.tuple2 (TypeScheme.toString, Type.toString) (b, c))
-    | INST (a, b) => "INST " ^ (Show.tuple2 (Int.toString, Type.toString) (a, b))
 
   (**
    * Walks over a typed tree and records constraints along the way. Produces a
@@ -117,7 +108,7 @@ struct
         fun loop insts =
           case insts of
             [] => []
-          | (INST (_, ty)) :: tail =>
+          | INST (_, ty) :: tail =>
             let
               val instTy = TypeScheme.instantiate gen
               val constrs = loop tail
