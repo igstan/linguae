@@ -1,6 +1,8 @@
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 
+$(SMACKAGE)/sml-extras/v0.1.0/sources.mlb
+
 src/term.sml
 src/type.sml
 src/subst.sig
@@ -9,6 +11,7 @@ src/type-scheme.sml
 src/type-env.sig
 src/type-env.fun
 src/type-env.sml
+src/constraint.sml
 src/unify.sml
 src/infer.sml
 src/terms.sml

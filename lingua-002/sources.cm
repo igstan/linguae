@@ -8,13 +8,13 @@ is
 
   src/term.sml
   src/type.sml
-  src/constraint.sml
   src/subst.sig
   src/subst.sml
   src/type-scheme.sml
   src/type-env.sig
   src/type-env.fun
   src/type-env.sml
+  src/constraint.sml
   src/unify.sml
   src/infer.sml
   src/terms.sml
