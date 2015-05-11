@@ -15,6 +15,7 @@ opening Terms
   val isZero : ty
   val letTerm : ty
   val letPolymorphism : ty
+  val closureLetPolymorphism : Term.ty
 -
 - Infer.typeSignature identity predef;
 val it = "forall a. a -> a" : string
