@@ -1,6 +1,6 @@
-GROUP
+group
 
-IS
+is
   $/basis.cm
   $/smlnj-lib.cm
 
