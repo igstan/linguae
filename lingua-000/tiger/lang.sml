@@ -1,13 +1,9 @@
-infixr 1 <|
-infixr 9 <|>
+infix 1 |>
 
 structure Lang =
 struct
-  (* Low-precedence function application. Useful to avoid parentheses. *)
-  fun f <| x = f x
-
-  (* Function composition. The built-in `o` operator is pretty hard to spot. *)
-  fun f <|> g = fn (x) => f (g x)
+  (* Reverse function application. Useful to pipe results from call to call. *)
+  fun x |> f = f x
 
   (* Constant function. *)
   fun const a b = a

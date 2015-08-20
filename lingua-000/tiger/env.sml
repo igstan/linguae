@@ -3,8 +3,16 @@ struct
   type ty = Types.ty
 
   datatype enventry =
-    VarEntry of { ty: ty }
-  | FunEntry of { formals: ty list, result: ty }
+    VarEntry of {
+      access : Translate.access,
+      ty : ty
+    }
+  | FunEntry of {
+      level : Translate.level,
+      label : Temp.label,
+      formals : ty list,
+      result : ty
+    }
 
   val quux = Types.RECORD([
     (Symbol.symbol "foo", Types.INT),
@@ -26,9 +34,20 @@ struct
   val base_venv =
     let
       val venv0 = Symbol.empty
-      val venv1 = Symbol.set venv0 (Symbol.symbol "print") (FunEntry { formals = [Types.STRING], result = Types.UNIT })
-      val venv2 = Symbol.set venv1 (Symbol.symbol "q") (VarEntry { ty = quux })
-      val venv3 = Symbol.set venv2 (Symbol.symbol "arr") (VarEntry { ty = Types.ARRAY(Types.STRING, ref ()) })
+      val venv1 = Symbol.set venv0 (Symbol.symbol "print") (FunEntry {
+        level = Translate.outermost,
+        label = Temp.newLabel (),
+        formals = [Types.STRING],
+        result = Types.UNIT
+      })
+      val venv2 = Symbol.set venv1 (Symbol.symbol "q") (VarEntry {
+        ty = quux,
+        access = Translate.allocLocal Translate.outermost true
+      })
+      val venv3 = Symbol.set venv2 (Symbol.symbol "arr") (VarEntry {
+        ty = Types.ARRAY(Types.STRING, ref ()),
+        access = Translate.allocLocal Translate.outermost true
+      })
     in
       venv3
     end

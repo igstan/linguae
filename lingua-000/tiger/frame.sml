@@ -1,0 +1,1 @@
+structure Frame :> FRAME = MipsFrame
