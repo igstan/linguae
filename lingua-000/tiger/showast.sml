@@ -136,7 +136,7 @@ struct
     | FunctionDec(fundecs) => showList (List.map showFundec fundecs)
     | VarDec { name, escape, typ, init, pos } =>
         let
-          fun showTyp typ = Option.getOpt (Option.map (fn t : symbol * pos => "SOME"^ Symbol.name (#1 t)) typ, "NONE")
+          fun showTyp typ = Option.getOpt (Option.map (fn t : symbol * pos => "SOME "^ Symbol.name (#1 t)) typ, "NONE")
         in
           record "VarDec" [
             field "name" (Symbol.name name),
@@ -161,7 +161,7 @@ struct
     case fundec of
       FunDec { name, params, result, body, pos } =>
         let
-          val res = Option.getOpt (Option.map (fn r => "SOME"^ Symbol.name (#1 r)) result, "NONE")
+          val res = Option.getOpt (Option.map (fn r => "SOME "^ Symbol.name (#1 r)) result, "NONE")
         in
           record "FunDec" [
             field "name" (Symbol.name name),
