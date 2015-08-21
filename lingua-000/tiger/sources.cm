@@ -34,3 +34,7 @@ is
   translate.sig
   translate.sml
   types.sml
+  tree.sig
+  tree.sml
+  tree-printer.sig
+  tree-printer.sml
