@@ -378,7 +378,7 @@ struct
       let
         val fundecsWithRecursiveFlag =
           let
-            val freeVars = FreeVars.freeVarsInDec dec
+            val freeVars = FreeVarAnalysis.analyseDec dec
             fun isRecursive (Ast.FunDec { name, ... }) = Symbol.has freeVars name
           in
             L.map (fn fundec => (fundec, isRecursive fundec)) fundecs

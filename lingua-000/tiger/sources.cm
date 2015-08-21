@@ -10,8 +10,8 @@ is
   frame.sig
   mips-frame.sml
   frame.sml
-  freevars.sig
-  freevars.sml
+  free-var-analysis.sig
+  free-var-analysis.sml
   escape-analysis.sig
   escape-analysis.sml
   lang.sml
