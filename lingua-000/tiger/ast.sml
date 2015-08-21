@@ -1,7 +1,7 @@
 structure Ast =
 struct
   type pos = int
-  and symbol = Symbol.symbol
+  type symbol = Symbol.symbol
 
   datatype var =
     SimpleVar of symbol * pos       (* l-value      *)
