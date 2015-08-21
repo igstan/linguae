@@ -8,7 +8,6 @@ struct
 
   type venv = Env.enventry Symbol.table
   type tenv = Env.ty Symbol.table
-  (* type expty = { exp: Translate.exp, ty: Types.ty } *)
 
   fun error pos msg = raise TypeError (pos, msg)
 
