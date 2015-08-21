@@ -53,11 +53,11 @@ struct
     | Ast.VarDec { name, escape, init, ... } => (analyseExp env depth init ; Symbol.set env name (depth, escape))
     | Ast.FunctionDec fundecs =>
       let
-        fun addParam (Ast.Field { name, escape, ... }, env) =
+        fun addParamToEnv (Ast.Field { name, escape, ... }, env) =
           Symbol.set env name (depth + 1, escape)
         fun folder (Ast.FunDec { params, body, ... }, env) =
           let
-            val bodyEnv = List.foldl addParam env params
+            val bodyEnv = List.foldl addParamToEnv env params
           in
             analyseExp bodyEnv (depth + 1) body
           ; env
