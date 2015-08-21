@@ -50,11 +50,7 @@ struct
   and analyseDec env depth decs =
     case decs of
       Ast.TypeDec types => env
-    | Ast.VarDec { name, escape, init, ... } =>
-      let in
-        analyseExp env depth init
-      ; Symbol.set env name (depth, escape)
-      end
+    | Ast.VarDec { name, escape, init, ... } => (analyseExp env depth init ; Symbol.set env name (depth, escape))
     | Ast.FunctionDec fundecs =>
       let
         fun addParam (Ast.Field { name, escape, ... }, env) =
