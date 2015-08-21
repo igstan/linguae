@@ -252,13 +252,14 @@ struct
 
       fun typecheckForExp var escape lo hi body pos =
         let
+          val escape = !escape
           val { exp = _, ty = tlo } = translateExp venv tenv lo { insideLoop = insideLoop, level = level }
           val { exp = _, ty = thi } = translateExp venv tenv hi { insideLoop = insideLoop, level = level }
           (*
            * Typecheck the body in a value environment containing the loop
            * variable.
            *)
-          val bodyVenv = Symbol.set venv var (Env.VarEntry { ty = Types.INT, access = Translate.allocLocal level false }) (* TODO: Handle escaping local *)
+          val bodyVenv = Symbol.set venv var (Env.VarEntry { ty = Types.INT, access = Translate.allocLocal level escape })
           (*
            * We're not interested in the result, just in potential typechecking
            * exceptions.
@@ -406,9 +407,8 @@ struct
             fun paramMapper (Ast.Field { name, escape, typ, pos }) =
               case Symbol.get tenv typ of
                 NONE => error pos ("type not found: "^ Symbol.name typ)
-              | SOME(t) => (name, t)
+              | SOME(t) => (t, !escape)
             val typedParams = L.map paramMapper params
-            val tformals = L.map #2 typedParams
             fun tresultMapper (returnType, returnPos) =
               case Symbol.get tenv returnType of
                 NONE => error returnPos ("type not found: "^ Symbol.name returnType)
@@ -426,10 +426,10 @@ struct
                       level = Translate.newLevel {
                         parent = level,
                         name = label,
-                        formals = L.map (const false) tformals (* TODO: Handle escaping formals *)
+                        formals = L.map #2 typedParams
                       },
                       label = label,
-                      formals = tformals,
+                      formals = L.map #1 typedParams,
                       result = tresult
                     })
                   end
@@ -443,9 +443,9 @@ struct
               fun paramMapper (Ast.Field { name, escape, typ, pos }) =
                 case Symbol.get tenv typ of
                   NONE => error pos ("type not found: "^ Symbol.name typ)
-                | SOME(t) => (name, t)
+                | SOME(t) => (name, t, !escape)
               val typedParams = L.map paramMapper params
-              fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level false }) (* TODO: Handle escaping locals *)
+              fun addParam ((name, ty, escape), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
               val bodyEnv = L.foldl addParam venv typedParams
             in
               (*
@@ -460,15 +460,14 @@ struct
               fun paramMapper (Ast.Field { name, escape, typ, pos }) =
                 case Symbol.get tenv typ of
                   NONE => error pos ("type not found: "^ Symbol.name typ)
-                | SOME(t) => (name, t)
+                | SOME(t) => (name, t, !escape)
               val typedParams = L.map paramMapper params
-              val tformals = L.map #2 typedParams
               fun tresultMapper (returnType, returnPos) =
                 case Symbol.get tenv returnType of
                   NONE => error returnPos ("type not found: "^ Symbol.name returnType)
                 | SOME(t) => t
               val tresult = Option.map tresultMapper result
-              fun addParam ((name, ty), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level false }) (* TODO: Handle escaping locals *)
+              fun addParam ((name, ty, escape), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
               val bodyEnv = L.foldl addParam venv typedParams
               val { exp = _, ty = tbody } = translateExp bodyEnv tenv body { insideLoop = false, level = level }
             in
@@ -481,10 +480,10 @@ struct
                       level = Translate.newLevel {
                         parent = level,
                         name = label,
-                        formals = L.map (const false) tformals (* TODO: Handle escaping formals *)
+                        formals = L.map #3 typedParams
                       },
                       label = label,
-                      formals = tformals,
+                      formals = L.map #2 typedParams,
                       result = tbody
                     })
                   end
@@ -497,10 +496,10 @@ struct
                       level = Translate.newLevel {
                         parent = level,
                         name = label,
-                        formals = L.map (const false) tformals (* TODO: Handle escaping formals *)
+                        formals = L.map #3 typedParams
                       },
                       label = label,
-                      formals = tformals,
+                      formals = L.map #2 typedParams,
                       result = tbody
                     })
                   end
@@ -522,6 +521,7 @@ struct
       end
     | Ast.VarDec { name, escape, typ, init, pos } =>
       let
+        val escape = !escape
         fun tvarMapper (var, pos) =
           case Symbol.get tenv var of
             NONE => error pos ("type not found: "^ Symbol.name var)
@@ -530,10 +530,10 @@ struct
         val { exp = (), ty = tinit } = translateExp venv tenv init { insideLoop = insideLoop, level = level }
         val varEntry =
           case tvar of
-            NONE => Env.VarEntry { ty = tinit, access = Translate.allocLocal level false } (* TODO: Handle escaping local *)
+            NONE => Env.VarEntry { ty = tinit, access = Translate.allocLocal level escape }
           | SOME(tvar) =>
             if Types.areEqual (tvar, tinit) then
-              Env.VarEntry { ty = tinit, access = Translate.allocLocal level false } (* TODO: Handle escaping local *)
+              Env.VarEntry { ty = tinit, access = Translate.allocLocal level escape }
             else
               error pos ("variable declaration type mismatch\n"
                        ^ "  required: "^ Syntax.showType tvar ^"\n"
