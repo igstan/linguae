@@ -1,7 +1,5 @@
 structure Symbol : SYMBOL =
 struct
-  open Lang
-
   exception Symbol
 
   type symbol = string * int

@@ -1,8 +1,7 @@
 structure Translate :> TRANSLATE =
 struct
-  open Lang
-
-  (* type exp = unit *)
+  open Fn
+  infix 1 |>
 
   datatype level =
     Outermost

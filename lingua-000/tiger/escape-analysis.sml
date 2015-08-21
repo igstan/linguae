@@ -1,6 +1,7 @@
 structure EscapeAnalysis :> ESCAPE_ANALYSIS =
 struct
-  open Lang
+  open Fn
+  infix 1 |>
 
   fun analyse program =
     let

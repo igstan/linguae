@@ -1,6 +1,7 @@
 structure MipsFrame :> FRAME =
 struct
-  open Lang
+  open Fn
+  infix 1 |>
 
   structure L = List
 

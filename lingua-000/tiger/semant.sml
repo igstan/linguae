@@ -1,7 +1,5 @@
 structure Semant =
 struct
-  open Lang
-
   structure L = List
 
   exception TypeError of Ast.pos * string
