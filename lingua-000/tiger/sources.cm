@@ -12,6 +12,8 @@ is
   frame.sml
   freevars.sig
   freevars.sml
+  escape-analysis.sig
+  escape-analysis.sml
   lang.sml
   list-pair.sig
   list-pair.sml

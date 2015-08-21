@@ -273,8 +273,48 @@ struct
           (peekPoke, 42)
         ]),
         pos = 42
-      };
+      }
+
+      (*
+       * let
+       *   var foo : int := 13
+       *   function bar() : int = 1 + foo
+       * in
+       *   nil
+       * end
+       *)
+      val escapingVar = Ast.LetExp {
+        decs = [
+          Ast.VarDec {
+            name = Symbol.symbol "foo",
+            escape = ref false,
+            typ = SOME (Symbol.symbol "int", 42),
+            init = Ast.IntExp 13,
+            pos = 42
+          },
+          Ast.FunctionDec [
+            Ast.FunDec {
+              name = Symbol.symbol "bar",
+              params = [],
+              result = SOME (Symbol.symbol "int", 42),
+              body = Ast.OpExp {
+                left = Ast.IntExp 1,
+                oper = Ast.PlusOp,
+                right = Ast.VarExp (Ast.SimpleVar (Symbol.symbol "foo", 42)),
+                pos = 42
+              },
+              pos = 42
+            }
+          ]
+        ],
+        body = Ast.NilExp,
+        pos = 42
+      }
     in
-      Semant.translateProgram ast
+      (* Semant.translateProgram ast *)
+      print (ShowAst.showExp escapingVar)
+    ; print "\n——————————————————————————————————————————————————————————————\n"
+    ; EscapeAnalysis.analyse escapingVar
+    ; print (ShowAst.showExp escapingVar)
     end
 end
