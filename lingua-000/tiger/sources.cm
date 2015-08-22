@@ -10,6 +10,7 @@ is
   env.sig
   env.sml
   frame.sig
+  mips-register.sml
   mips-frame.sml
   frame.sml
   free-var-analysis.sig
