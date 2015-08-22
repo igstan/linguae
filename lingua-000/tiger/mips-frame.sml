@@ -3,8 +3,6 @@ struct
   open Fn
   infix 1 |>
 
-  structure L = List
-
   (**
    * Where this local will be stored — stack frame or register.
    *)
