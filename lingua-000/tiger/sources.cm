@@ -6,6 +6,8 @@ is
 
   $SMACKAGE/sml-extras/v0.1.0/sources.sml.cm
 
+  ref.sig
+  ref.sml
   ast.sml
   env.sig
   env.sml
