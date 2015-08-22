@@ -8,7 +8,7 @@ sig
   | Nx of Tree.stm
   | Cx of Temp.label * Temp.label -> Tree.stm
 
-  val outermost : level
+  val topLevel : level
   val newLevel : { parent : level, name : Temp.label, formals : bool list } -> level
 
   val formals : level -> access list

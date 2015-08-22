@@ -571,7 +571,7 @@ struct
     let
       val { exp, ty } = translateExp Env.base_venv Env.base_tenv ast {
         insideLoop = false,
-        level = Translate.outermost
+        level = Translate.topLevel
       }
     in
       print ("type: "^ (Syntax.showType ty) ^"\n")

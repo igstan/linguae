@@ -6,7 +6,7 @@ struct
   structure T = Tree
 
   datatype level =
-    Outermost
+    Top
   | Level of { index : int, frame : Frame.frame }
 
   type access = level * Frame.access
@@ -19,7 +19,7 @@ struct
   (*
    * Top level; inhabited by primitive functions and variables.
    *)
-  val outermost = Outermost
+  val topLevel = Top
 
   (*
    * Creates a new stack frame; handles static links behind the scenes.
@@ -27,7 +27,7 @@ struct
   fun newLevel { parent, name, formals } =
     let
       val level = case parent of
-        Outermost => 0
+        Top => 0
       | Level { index, ... } => index + 1
     in
       Level {
@@ -42,13 +42,13 @@ struct
    *)
   fun formals level =
     case level of
-      Outermost => []
+      Top => []
     | Level { frame, ... } =>
         List.map (fn a => (level, a)) (Frame.formals frame) |> List.tl
 
   fun allocLocal level escapes =
     case level of
-      Outermost => (Outermost, Frame.allocLocal Frame.outermost escapes)
+      Top => (Top, Frame.allocLocal Frame.outermost escapes)
     | Level { frame, ... } => (level, Frame.allocLocal frame escapes)
 
   fun unEx exp =
