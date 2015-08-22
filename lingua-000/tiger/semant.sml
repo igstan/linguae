@@ -1,4 +1,4 @@
-structure Semant =
+structure Semant :> SEMANT =
 struct
   structure L = List
 
@@ -350,7 +350,7 @@ struct
         let
           (*
            * Gather type names and augment tenv with them. Don't typecheck
-           * their definitions, though!
+           * their definitions yet, as types may be recursive.
            *)
           fun augment ({ name, ty, pos }, tenv) = Symbol.set tenv name (Types.NAME(name, ref NONE))
           val augmentedTenv = L.foldl augment tenv decs
@@ -374,13 +374,78 @@ struct
 
     | Ast.FunctionDec fundecs =>
       let
-        val fundecsWithRecursiveFlag =
+        fun raiseRecursiveFunctionsNeedExplicitReturnType funs =
           let
-            val freeVars = FreeVarAnalysis.analyseDec dec
-            fun isRecursive (Ast.FunDec { name, ... }) = Symbol.has freeVars name
+            fun detail ((Ast.FunDec { name, pos, ... }, _), message) =
+              message ^"  "^ Symbol.name name ^" at line "^ Int.toString pos ^"\n"
+            val details = L.foldl detail "" funs
           in
-            L.map (fn fundec => (fundec, isRecursive fundec)) fundecs
+            error 0 ("recursive functions need explicit return type\n"^ details)
           end
+
+        fun tresultMapper (returnType, returnPos) =
+          case Symbol.get tenv returnType of
+            NONE => error returnPos ("type not found: "^ Symbol.name returnType)
+          | SOME t => t
+
+        fun paramMapper (Ast.Field { name, escape, typ, pos }) =
+          case Symbol.get tenv typ of
+            NONE => error pos ("type not found: "^ Symbol.name typ)
+          | SOME t => (name, t, !escape)
+
+        fun funEntry result params =
+          let
+            val typedParams = L.map paramMapper params
+            val label = Temp.newLabel ()
+          in
+            Env.FunEntry {
+              level = Translate.newLevel {
+                parent = level,
+                name = label,
+                formals = L.map #3 typedParams
+              },
+              label = label,
+              formals = L.map #2 typedParams,
+              result = result
+            }
+          end
+
+        fun augment ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
+          if not isRecursive
+          then venv
+          else
+            case Option.map tresultMapper result of
+              NONE => raise Fail ("impossible: type must have been present because this is a recursive function"^ Symbol.name name)
+            | SOME tresult => Symbol.set venv name (funEntry tresult params)
+
+        fun funDecMapper ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
+          let
+            fun addParam ((name, ty, escape), venv) =
+              Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
+            val bodyEnv = L.foldl addParam venv (L.map paramMapper params)
+            val { exp = _, ty = tbody } =
+              translateExp bodyEnv tenv body { insideLoop = false, level = level }
+          in
+            if isRecursive
+            then venv (* The function signature is already in venv. *)
+            else
+              case Option.map tresultMapper result of
+                NONE => Symbol.set venv name (funEntry tbody params)
+              | SOME tresult =>
+                if Types.areEqual (tresult, tbody)
+                then Symbol.set venv name (funEntry tbody params)
+                else
+                  error pos ("function declaration type mismatch\n"
+                           ^ "  required: "^ Syntax.showType tresult ^"\n"
+                           ^ "     found: "^ Syntax.showType tbody ^"\n")
+          end
+
+        val freeVars = FreeVarAnalysis.analyseDec dec
+
+        fun isRecursive (Ast.FunDec { name, ... }) = Symbol.has freeVars name
+
+        val fundecsWithRecursiveFlag =
+          L.map (fn fundec => (fundec, isRecursive fundec)) fundecs
 
         val recursiveWithoutReturnType =
           let
@@ -389,126 +454,10 @@ struct
           in
             L.filter hasNoReturnType fundecsWithRecursiveFlag
           end
-
-        fun raiseRecursiveFunctionsNeedExplicitReturnType _ =
-          let
-            fun detail ((Ast.FunDec { name, pos, ... }, _), message) =
-              message ^"  "^ Symbol.name name ^" at line "^ Int.toString pos ^"\n"
-            val details = L.foldl detail "" recursiveWithoutReturnType
-          in
-            error 0 ("recursive functions need explicit return type\n"^ details)
-          end
-
-        fun augment ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
-          let
-            fun paramMapper (Ast.Field { name, escape, typ, pos }) =
-              case Symbol.get tenv typ of
-                NONE => error pos ("type not found: "^ Symbol.name typ)
-              | SOME(t) => (t, !escape)
-            val typedParams = L.map paramMapper params
-            fun tresultMapper (returnType, returnPos) =
-              case Symbol.get tenv returnType of
-                NONE => error returnPos ("type not found: "^ Symbol.name returnType)
-              | SOME(t) => t
-            val tresult = Option.map tresultMapper result
-          in
-            if isRecursive then
-              case tresult of
-                NONE => raise Fail("impossible: type must have been present because this is a recursive function"^ Symbol.name name)
-              | SOME(tresult) =>
-                  let
-                    val label = Temp.newLabel ()
-                  in
-                    Symbol.set venv name (Env.FunEntry {
-                      level = Translate.newLevel {
-                        parent = level,
-                        name = label,
-                        formals = L.map #2 typedParams
-                      },
-                      label = label,
-                      formals = L.map #1 typedParams,
-                      result = tresult
-                    })
-                  end
-            else
-              venv
-          end
-
-        fun funDecMapper ((Ast.FunDec { name, params, result, body, pos }, isRecursive), venv) =
-          if isRecursive then
-            let
-              fun paramMapper (Ast.Field { name, escape, typ, pos }) =
-                case Symbol.get tenv typ of
-                  NONE => error pos ("type not found: "^ Symbol.name typ)
-                | SOME(t) => (name, t, !escape)
-              val typedParams = L.map paramMapper params
-              fun addParam ((name, ty, escape), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
-              val bodyEnv = L.foldl addParam venv typedParams
-            in
-              (*
-               * Nothing to record here, just typecheck the body. The function
-               * signature is already in venv.
-               *)
-              translateExp bodyEnv tenv body { insideLoop = false, level = level };
-              venv
-            end
-          else
-            let
-              fun paramMapper (Ast.Field { name, escape, typ, pos }) =
-                case Symbol.get tenv typ of
-                  NONE => error pos ("type not found: "^ Symbol.name typ)
-                | SOME(t) => (name, t, !escape)
-              val typedParams = L.map paramMapper params
-              fun tresultMapper (returnType, returnPos) =
-                case Symbol.get tenv returnType of
-                  NONE => error returnPos ("type not found: "^ Symbol.name returnType)
-                | SOME(t) => t
-              val tresult = Option.map tresultMapper result
-              fun addParam ((name, ty, escape), venv) = Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
-              val bodyEnv = L.foldl addParam venv typedParams
-              val { exp = _, ty = tbody } = translateExp bodyEnv tenv body { insideLoop = false, level = level }
-            in
-              case tresult of
-                NONE =>
-                  let
-                    val label = Temp.newLabel ()
-                  in
-                    Symbol.set venv name (Env.FunEntry {
-                      level = Translate.newLevel {
-                        parent = level,
-                        name = label,
-                        formals = L.map #3 typedParams
-                      },
-                      label = label,
-                      formals = L.map #2 typedParams,
-                      result = tbody
-                    })
-                  end
-              | SOME(tresult) =>
-                if Types.areEqual (tresult, tbody) then
-                  let
-                    val label = Temp.newLabel ()
-                  in
-                    Symbol.set venv name (Env.FunEntry {
-                      level = Translate.newLevel {
-                        parent = level,
-                        name = label,
-                        formals = L.map #3 typedParams
-                      },
-                      label = label,
-                      formals = L.map #2 typedParams,
-                      result = tbody
-                    })
-                  end
-                else
-                  error pos ("function declaration type mismatch\n"
-                           ^ "  required: "^ Syntax.showType tresult ^"\n"
-                           ^ "     found: "^ Syntax.showType tbody ^"\n")
-            end
       in
-        if not (L.null recursiveWithoutReturnType) then
-          raiseRecursiveFunctionsNeedExplicitReturnType ()
-        else
+        case recursiveWithoutReturnType of
+          funs as _ :: _ => raiseRecursiveFunctionsNeedExplicitReturnType funs
+        | [] =>
           let
             val augmentedVenv = L.foldl augment venv fundecsWithRecursiveFlag
             val newVenv = L.foldl funDecMapper augmentedVenv fundecsWithRecursiveFlag
