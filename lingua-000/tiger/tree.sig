@@ -28,4 +28,5 @@ sig
 
   val notRel : relop -> relop
   val commute : relop -> relop
+  val seq : stm list -> stm
 end

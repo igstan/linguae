@@ -3,11 +3,18 @@ struct
   open Fn
   infix 1 |>
 
+  structure T = Tree
+
   datatype level =
     Outermost
   | Level of { index : int, frame : Frame.frame }
 
   type access = level * Frame.access
+
+  datatype exp =
+    Ex of Tree.exp
+  | Nx of Tree.stm
+  | Cx of Temp.label * Temp.label -> Tree.stm
 
   (*
    * Top level; inhabited by primitive functions and variables.
@@ -43,4 +50,59 @@ struct
     case level of
       Outermost => (Outermost, Frame.allocLocal Frame.outermost escapes)
     | Level { frame, ... } => (level, Frame.allocLocal frame escapes)
+
+  fun unEx exp =
+    case exp of
+      Ex e => e
+    | Nx s => T.ESEQ (s, T.CONST 0)
+    | Cx genstm =>
+      let
+        val r = Temp.newTemp ()
+        val t = Temp.newLabel ()
+        val f = Temp.newLabel ()
+      in
+        T.ESEQ (
+          T.seq [
+            T.MOVE (T.TEMP r, T.CONST 1),
+            genstm (t, f),
+            T.LABEL f,
+            T.MOVE (T.TEMP r, T.CONST 0),
+            T.LABEL t
+          ],
+          T.TEMP r
+        )
+      end
+
+  fun unNx exp =
+    case exp of
+      Nx s => s
+    | Ex e => T.EXP e
+    | Cx f =>
+      let
+        val label = Temp.newLabel ()
+      in
+        T.SEQ (f (label, label), T.LABEL label)
+      end
+
+  fun unCx exp =
+    case exp of
+      Cx f => f
+    | Ex (T.CONST 0) =>
+      (*
+       * Parentheses need here and below because the parser is greey and will
+       * parse the following rules of the case expressions as being part of the
+       * fn expression.
+       *)
+      (fn (t, f) => T.JUMP (T.NAME f, [f]))
+    | Ex (T.CONST 1) => (fn (t, f) => T.JUMP (T.NAME t, [t]))
+    | Ex e => (fn (t, f) => T.CJUMP (T.EQ, e, T.CONST 1, t, f))
+    | Nx s =>
+      (*
+       * The book says there's no need to treat this case, because well-typed
+       * Tiger programs can't produce Cx(Nx) combinations, but it seems better
+       * to keep the IR free from assumptions about the surface language.
+       * Additionally, we already treat Ex(Nx) as producing CONST 0, so we may
+       * just as well be consistent with that here.
+       *)
+      fn (t, f) => T.SEQ (s, T.JUMP (T.NAME f, [f]))
 end

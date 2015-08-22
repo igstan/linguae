@@ -28,4 +28,18 @@ struct
 
   fun notRel relop = raise Fail "not implemented"
   fun commute relop = raise Fail "not implemented"
+
+  fun seq stms =
+    case stms of
+      [] => raise Fail "empty statement list"
+    | stm :: [] => stm
+    | stm :: rest =>
+      let
+        fun loop stms result =
+          case stms of
+            [] => result
+          | stm :: rest => loop rest (SEQ (stm, result))
+      in
+        loop (List.rev rest) stm
+      end
 end
