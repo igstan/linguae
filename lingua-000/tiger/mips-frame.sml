@@ -35,9 +35,6 @@ struct
     inFrameCount = ref 0
   }
 
-  fun getAndIncrement refCell =
-    !refCell before (refCell := !refCell + 1)
-
   (*
    * Allocates a new stack frame for a function named `name`. The `formals`
    * list tells which of the arguments, identified by position, escapes.
@@ -67,7 +64,7 @@ struct
          *)
         then InRegister (Temp.newTemp ())
         (* The rest of the arguments will have to be passed on the stack. *)
-        else InFrame (getAndIncrement frameArgsCount)
+        else InFrame (Ref.getAndIncrement frameArgsCount)
 
       fun allocFormals formals =
         ListPair.zipWithIndex formals |> List.map allocFormal
@@ -83,6 +80,6 @@ struct
 
   fun allocLocal (StackFrame { inFrameCount, ... }) escapes =
     if escapes
-    then InFrame (getAndIncrement inFrameCount)
+    then InFrame (Ref.getAndIncrement inFrameCount)
     else InRegister (Temp.newTemp ())
 end
