@@ -126,7 +126,8 @@ struct
   fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
   fun letExp (decs, body) = raise Fail "not implemented"
   fun arrayExp (size, init) = raise Fail "not implemented"
-  fun breakExp label = raise Fail "not implemented"
+
+  fun breakExp label = Nx (T.JUMP (T.NAME label, [label]))
 
   fun intExp i = Ex (T.CONST i)
 
