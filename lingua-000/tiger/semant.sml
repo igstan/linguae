@@ -9,30 +9,36 @@ struct
 
   fun error pos msg = raise TypeError (pos, msg)
 
-  fun translateVar venv tenv var { insideLoop, level } =
+  fun translateVar venv tenv var { level, breakLabel } =
     let
       fun simpleVar name pos =
         case Symbol.get venv name of
-          SOME(Env.VarEntry { ty, ... }) => { exp = (), ty = Types.actual ty }
-        | SOME(Env.FunEntry { ... }) => error pos ("undefined variable: " ^ Symbol.name name)
+          SOME (Env.VarEntry { ty, access }) => {
+            exp = Translate.simpleVar (access, level),
+            ty = Types.actual ty
+          }
+        | SOME (Env.FunEntry { ... }) => error pos ("undefined variable: " ^ Symbol.name name)
         | NONE => error pos ("undefined variable: " ^ Symbol.name name)
 
       fun fieldVar var name pos =
         let
-          val { exp, ty = tvar } = translateVar venv tenv var { insideLoop = insideLoop, level = level }
+          val { exp, ty = tvar } = translateVar venv tenv var { level = level, breakLabel = breakLabel }
           fun typecheckRecord fields =
             let
               val field = L.find (fn (sym, ty) => sym = name) fields
             in
               case field of
-                SOME((_, ty)) => { exp = (), ty = ty }
+                SOME ((_, ty)) => {
+                  exp = Translate.fieldVar (exp, 0),
+                  ty = ty
+                }
               | NONE => error pos ("no such field on record\n"
                                  ^ "   field: "^ Symbol.name name ^"\n"
                                  ^ "  record: "^ Syntax.showType tvar ^"\n")
             end
         in
           case tvar of
-            Types.RECORD(fields, _) => typecheckRecord fields
+            Types.RECORD (fields, _) => typecheckRecord fields
           | t => error pos ("field access on non-record type\n"
                           ^ "  actual type: " ^ Syntax.showType t ^"\n"
                           ^ "        field: " ^ Symbol.name name ^"\n")
@@ -40,23 +46,26 @@ struct
 
       fun subscriptVar var exp pos =
         let
-          val { exp = _, ty = tvar } = translateVar venv tenv var {
-            insideLoop = insideLoop,
-            level = level
+          val { exp = array, ty = tvar } = translateVar venv tenv var {
+            level = level,
+            breakLabel = breakLabel
           }
-          val { exp = _, ty = texp } = translateExp venv tenv exp {
-            insideLoop = insideLoop,
-            level = level
+          val { exp = offset, ty = texp } = translateExp venv tenv exp {
+            level = level,
+            breakLabel = breakLabel
           }
           fun typecheckArray tarray =
             case texp of
-              Types.INT => { exp = (), ty = tarray }
+              Types.INT => {
+                exp = Translate.subscriptVar (array, offset),
+                ty = tarray
+              }
             | _ => error pos ("subscript index type mismatch\n"
                             ^ "  required: " ^ Syntax.showType Types.INT ^"\n"
                             ^ "     found: " ^ Syntax.showType texp ^"\n")
         in
           case tvar of
-            Types.ARRAY(tarray, _) => typecheckArray tarray
+            Types.ARRAY (tarray, _) => typecheckArray tarray
           | t =>
               (* TODO: typecheck index type here, too. *)
               error pos ("subscript access on non-array type\n"
@@ -69,7 +78,7 @@ struct
       | Ast.SubscriptVar(var, exp, pos) => subscriptVar var exp pos
     end
 
-  and translateExp venv tenv ast { insideLoop, level } =
+  and translateExp venv tenv ast { level, breakLabel } =
     let
       fun typecheckCallExp func args pos =
         (*
@@ -79,12 +88,14 @@ struct
          * 4. Return `func`'s return type.
          *)
         let
-          fun translateArg arg = #ty (translateExp venv tenv arg { insideLoop = insideLoop, level = level })
-          val targs = L.map translateArg args (* throws for unbound identifiers *)
+          fun translateArg arg = translateExp venv tenv arg { level = level, breakLabel = breakLabel }
+          val mappedArgs = L.map translateArg args (* throws for unbound identifiers *)
+          val translatedArgs = L.map #exp mappedArgs
+          val targs = L.map #ty mappedArgs
           val tfunc = Symbol.get venv func
         in
           case tfunc of
-            SOME(Env.FunEntry { formals, result, ... }) =>
+            SOME (Env.FunEntry { formals, result, label, level as funLevel, ... }) =>
               let
                 val mismatched = L.filter (not o Types.areEqual) (ListPair.zip (formals, targs))
                 fun detail (formal, actual) =
@@ -94,42 +105,46 @@ struct
                 val details = L.foldl op^ "" (L.map detail mismatched)
               in
                 if L.null mismatched then
-                  { exp = (), ty = result }
+                  {
+                    exp = Translate.callExp (label, funLevel, level, translatedArgs),
+                    ty = result
+                  }
                 else
                   error pos details
               end
-          | SOME(Env.VarEntry { ... }) => error pos ("non-function in call position: "^ Symbol.name func)
+          | SOME (Env.VarEntry _) => error pos ("non-function in call position: "^ Symbol.name func)
           | NONE => error pos ("undefined variable: " ^ Symbol.name func)
         end
 
       fun typecheckOpExp left oper right pos =
         let
           open Ast
-          val { exp = _, ty = tyleft } = translateExp venv tenv left { insideLoop = insideLoop, level = level }
-          val { exp = _, ty = tyright } = translateExp venv tenv right { insideLoop = insideLoop, level = level }
+          val { exp = leftExp, ty = tyleft } = translateExp venv tenv left { level = level, breakLabel = breakLabel }
+          val { exp = rightExp, ty = tyright } = translateExp venv tenv right { level = level, breakLabel = breakLabel }
+          fun translateOp left right = Translate.opExp (oper, left, right)
         in
           case (tyleft, tyright) of
             (Types.NIL, Types.NIL) =>
               (case oper of
-                (EqOp | NeqOp) => { exp = (), ty = Types.INT }
+                (EqOp | NeqOp) => { exp = translateOp leftExp rightExp, ty = Types.INT }
                 | _ => error pos ("unit type not supported for operator: " ^ Syntax.showOper oper))
           | (Types.UNIT, Types.UNIT) =>
               (case oper of
-                (EqOp | NeqOp) => { exp = (), ty = Types.INT }
+                (EqOp | NeqOp) => { exp = translateOp leftExp rightExp, ty = Types.INT }
                 | _ => error pos ("unit type not supported for operator: " ^ Syntax.showOper oper))
-          | (Types.INT, Types.INT) => { exp = (), ty = Types.INT }
+          | (Types.INT, Types.INT) => { exp = translateOp leftExp rightExp, ty = Types.INT }
           | (Types.STRING, Types.STRING) =>
               if isComparisonOperator oper then
-                { exp = (), ty = Types.INT }
+                { exp = translateOp leftExp rightExp, ty = Types.INT }
               else
                 error pos ("string types not supported for operator: " ^ Syntax.showOper oper)
           | (Types.ARRAY(_, _), Types.ARRAY(_, _)) =>
               (case oper of
-                (EqOp | NeqOp) => { exp = (), ty = Types.INT }
+                (EqOp | NeqOp) => { exp = translateOp leftExp rightExp, ty = Types.INT }
               | _ => error pos ("array types not supported for operator: " ^ Syntax.showOper oper))
           | (Types.RECORD(_, _), Types.RECORD(_, _)) =>
               (case oper of
-                (EqOp | NeqOp) => { exp = (), ty = Types.INT }
+                (EqOp | NeqOp) => { exp = translateOp leftExp rightExp, ty = Types.INT }
               | _ => error pos ("record types not supported for operator: " ^ Syntax.showOper oper))
           | (type1, type2) =>
             error pos ("argument mismatch:\n"
@@ -142,7 +157,7 @@ struct
         let
           fun typecheckFields definitionFields uniq =
             let
-              fun mapper (symbol, exp, pos) = (symbol, #ty (translateExp venv tenv exp { insideLoop = insideLoop, level = level }), pos)
+              fun mapper (symbol, exp, pos) = (symbol, #ty (translateExp venv tenv exp { level = level, breakLabel = breakLabel }), pos)
               val typedFields = L.map mapper fields
               val zipped = ListPair.zipOption (definitionFields, typedFields)
 
@@ -171,7 +186,10 @@ struct
               val details = L.foldl op^ "" (L.map detail mismatched)
             in
               if L.null mismatched then
-                { exp = (), ty = Types.RECORD(definitionFields, uniq) }
+                {
+                  exp = Translate.recordExp (List.length definitionFields),
+                  ty = Types.RECORD (definitionFields, uniq)
+                }
               else
                 error pos ("record structure mismatch\n"^ details)
             end
@@ -184,26 +202,31 @@ struct
 
       fun typecheckSeqExp exprs =
         let
-          (*
-           * We're using our hand-rolled version of `map` because we want to
-           * remember the type of the last expression in the list, which will
-           * become the type of the whole `SeqExp`.
-           *)
-          fun loop exprs result =
-            case exprs of
-              [] => result
-            | (exp, pos) :: exprs => loop exprs (translateExp venv tenv exp { insideLoop = insideLoop, level = level })
+          fun fold ((exp, pos), { exp = prevExprs, ty }) =
+            let
+              val { exp, ty } = translateExp venv tenv exp { level = level, breakLabel = breakLabel }
+            in
+              { exp = exp :: prevExprs, ty = ty }
+            end
+          val seed = { exp = [], ty = Types.UNIT }
+          val { exp = translatedExps, ty } = List.foldl fold seed exprs
         in
-          loop exprs { exp = (), ty = Types.UNIT }
+          {
+            exp = Translate.seqExp (List.rev translatedExps),
+            ty = ty
+          }
         end
 
       fun typecheckAssignExp var exp pos =
         let
-          val { exp = _, ty = tvar } = translateVar venv tenv var { insideLoop = insideLoop, level = level }
-          val { exp = _, ty = texp } = translateExp venv tenv exp { insideLoop = insideLoop, level = level }
+          val { exp = translatedVar, ty = tvar } = translateVar venv tenv var { level = level, breakLabel = breakLabel }
+          val { exp = translatedExp, ty = texp } = translateExp venv tenv exp { level = level, breakLabel = breakLabel }
         in
           if Types.areEqual (tvar, texp) then
-            { exp = (), ty = Types.UNIT }
+            {
+              exp = Translate.assignExp (translatedVar, translatedExp),
+              ty = Types.UNIT
+            }
           else
             error pos ("type mismatch in assignment\n"
                      ^ "  required: "^ Syntax.showType tvar ^"\n"
@@ -212,17 +235,23 @@ struct
 
       fun typecheckIfExp tst thn els pos =
         let
-          val { exp = _, ty = ttst } = translateExp venv tenv tst { insideLoop = insideLoop, level = level }
-          val { exp = _, ty = tthn } = translateExp venv tenv thn { insideLoop = insideLoop, level = level }
+          val { exp = translatedTest, ty = ttst } = translateExp venv tenv tst { level = level, breakLabel = breakLabel }
+          val { exp = translatedThen, ty = tthn } = translateExp venv tenv thn { level = level, breakLabel = breakLabel }
           fun typecheckBranches _ =
             case els of
-              NONE => { exp = (), ty = tthn }
-            | SOME(els) =>
+              NONE => {
+                exp = Translate.ifExp (translatedTest, translatedThen, NONE),
+                ty = tthn
+              }
+            | SOME els =>
               let
-                val { exp = _, ty = tels } = translateExp venv tenv els { insideLoop = insideLoop, level = level }
+                val { exp = translatedElse, ty = tels } = translateExp venv tenv els { level = level, breakLabel = breakLabel }
               in
                 if Types.areEqual (tthn, tels) then
-                  { exp = (), ty = tthn }
+                  {
+                    exp = Translate.ifExp (translatedTest, translatedThen, SOME translatedElse),
+                    ty = tthn
+                  }
                 else
                   error pos ("branch types in if expression don't match up\n"
                            ^ "  then type: "^ Syntax.showType tthn ^"\n"
@@ -238,10 +267,15 @@ struct
 
       fun typecheckWhileExp test body pos =
         let
-          val { exp = _, ty = ttest } = translateExp venv tenv test { insideLoop = true, level = level }
+          val { exp = translatedTest, ty = ttest } = translateExp venv tenv test { level = level, breakLabel = breakLabel }
+          val breakLabel = Temp.newLabel ()
+          val { exp = translatedBody, ty = _ } = translateExp venv tenv body { level = level, breakLabel = SOME breakLabel }
         in
           case ttest of
-            Types.INT => { exp = (), ty = Types.UNIT }
+            Types.INT => {
+              exp = Translate.whileExp (translatedTest, translatedBody, breakLabel),
+              ty = Types.UNIT
+            }
           | t => error pos ("type mismatch in while condition\n"
                           ^ "  required: "^ Syntax.showType Types.INT ^"\n"
                           ^ "     found: "^ Syntax.showType ttest ^"\n")
@@ -250,21 +284,24 @@ struct
       fun typecheckForExp var escape lo hi body pos =
         let
           val escape = !escape
-          val { exp = _, ty = tlo } = translateExp venv tenv lo { insideLoop = insideLoop, level = level }
-          val { exp = _, ty = thi } = translateExp venv tenv hi { insideLoop = insideLoop, level = level }
+          val { exp = translatedLo, ty = tlo } = translateExp venv tenv lo { level = level, breakLabel = breakLabel }
+          val { exp = translatedHi, ty = thi } = translateExp venv tenv hi { level = level, breakLabel = breakLabel }
           (*
            * Typecheck the body in a value environment containing the loop
            * variable.
            *)
           val bodyVenv = Symbol.set venv var (Env.VarEntry { ty = Types.INT, access = Translate.allocLocal level escape })
-          (*
-           * We're not interested in the result, just in potential typechecking
-           * exceptions.
-           *)
-          val _ = translateExp bodyVenv tenv body { insideLoop = true, level = level }
+          val breakLabel = Temp.newLabel ()
+          val { exp = translatedBody, ty = _ } = translateExp bodyVenv tenv body {
+            level = level,
+            breakLabel = SOME breakLabel
+          }
         in
           case (tlo, thi) of
-            (Types.INT, Types.INT) => { exp = (), ty = Types.UNIT }
+            (Types.INT, Types.INT) => {
+              exp = Translate.forExp (translatedLo, translatedHi, translatedBody, breakLabel),
+              ty = Types.UNIT
+            }
           | (t, Types.INT) =>
               error pos ("for expression type mismatch\n"
                        ^ "low bound\n"
@@ -287,30 +324,43 @@ struct
 
       fun typecheckLetExp decs body pos =
         let
-          val initEnvs = { venv = venv, tenv = tenv }
-          fun folder (dec, { venv, tenv }) = translateDec venv tenv dec { insideLoop = insideLoop, level = level }
-          val { venv = venv2, tenv = tenv2 } = L.foldl folder initEnvs decs
-          val { exp = _, ty = tbody } = translateExp venv2 tenv2 body { insideLoop = insideLoop, level = level }
+          fun folder (dec, { venv, tenv, translatedDecs }) =
+            let
+              val { venv, tenv, dec } = translateDec venv tenv dec { level = level, breakLabel = breakLabel }
+            in
+              { venv = venv, tenv = tenv, translatedDecs = translatedDecs @ dec }
+            end
+          val seed = { venv = venv, tenv = tenv, translatedDecs = [] }
+          val { venv = venv2, tenv = tenv2, translatedDecs } =
+            L.foldl folder seed decs
+          val { exp = translatedBody, ty = tbody } =
+            translateExp venv2 tenv2 body { level = level, breakLabel = breakLabel }
         in
-          { exp = (), ty = tbody }
+          {
+            exp = Translate.letExp (translatedDecs, translatedBody),
+            ty = tbody
+          }
         end
 
       fun typecheckArrayExp typ size init pos =
         let
           val tarray = Option.map Types.actual (Symbol.get tenv typ)
-          val { exp = _, ty = tsize } = translateExp venv tenv size { insideLoop = insideLoop, level = level }
-          val { exp = _, ty = tinit } = translateExp venv tenv init { insideLoop = insideLoop, level = level }
+          val { exp = translatedSize, ty = tsize } = translateExp venv tenv size { level = level, breakLabel = breakLabel }
+          val { exp = translatedInit, ty = tinit } = translateExp venv tenv init { level = level, breakLabel = breakLabel }
           fun typecheckInit _ =
             case tarray of
               NONE => error pos ("type not found: "^ Symbol.name typ ^"\n")
-            | SOME(Types.ARRAY(innerType, uniq)) =>
+            | SOME (Types.ARRAY (innerType, uniq)) =>
                 if Types.areEqual (innerType, tinit) then
-                  { exp = (), ty = Types.ARRAY(innerType, uniq) }
+                  {
+                    exp = Translate.arrayExp (translatedSize, translatedInit),
+                    ty = Types.ARRAY (innerType, uniq)
+                  }
                 else
                   error pos ("array init type mismatch\n"
                            ^ "  required: "^ Syntax.showType innerType ^"\n"
                            ^ "     found: "^ Syntax.showType tinit ^"\n")
-            | SOME(other) =>
+            | SOME other =>
                 error pos ("declared type is not an array: "^ Syntax.showType other ^"\n")
         in
           case tsize of
@@ -321,30 +371,33 @@ struct
         end
 
       fun typecheckBreakExp pos =
-        if insideLoop then
-          { exp = (), ty = Types.UNIT }
-        else
-          error pos ("no outer while or for expression for this break statement")
+        case breakLabel of
+          NONE => error pos "no outer while or for expression for this break statement"
+        | SOME label =>
+          {
+            exp = Translate.breakExp label,
+            ty = Types.UNIT
+          }
     in
       case ast of
-        Ast.VarExp(var) => translateVar venv tenv var { insideLoop = insideLoop, level = level }
-      | Ast.NilExp => { exp = (), ty = Types.NIL }
-      | Ast.IntExp(i) => { exp = (), ty = Types.INT }
-      | Ast.StringExp(s, pos) => { exp = (), ty = Types.STRING }
+        Ast.VarExp(var) => translateVar venv tenv var { level = level, breakLabel = breakLabel }
+      | Ast.NilExp => { exp = Translate.nilExp, ty = Types.NIL }
+      | Ast.IntExp i => { exp = Translate.intExp i, ty = Types.INT }
+      | Ast.StringExp (s, pos) => { exp = Translate.stringExp s, ty = Types.STRING }
       | Ast.CallExp { func, args, pos } => typecheckCallExp func args pos
       | Ast.OpExp { left, oper, right, pos } => typecheckOpExp left oper right pos
       | Ast.RecordExp { fields, name, pos } => typecheckRecordExp fields name pos
-      | Ast.SeqExp(exprs) => typecheckSeqExp exprs
+      | Ast.SeqExp exprs => typecheckSeqExp exprs
       | Ast.AssignExp { var, exp, pos } => typecheckAssignExp var exp pos
       | Ast.IfExp { test, then', else', pos } => typecheckIfExp test then' else' pos
       | Ast.WhileExp { test, body, pos } => typecheckWhileExp test body pos
       | Ast.ForExp { var, escape, lo, hi, body, pos } => typecheckForExp var escape lo hi body pos
-      | Ast.BreakExp(pos) => typecheckBreakExp pos
+      | Ast.BreakExp pos => typecheckBreakExp pos
       | Ast.LetExp { decs, body, pos } => typecheckLetExp decs body pos
       | Ast.ArrayExp { typ, size, init, pos } => typecheckArrayExp typ size init pos
     end
 
-  and translateDec venv tenv dec { insideLoop, level } =
+  and translateDec venv tenv dec { level, breakLabel } =
     case dec of
       Ast.TypeDec decs =>
         let
@@ -352,7 +405,7 @@ struct
            * Gather type names and augment tenv with them. Don't typecheck
            * their definitions yet, as types may be recursive.
            *)
-          fun augment ({ name, ty, pos }, tenv) = Symbol.set tenv name (Types.NAME(name, ref NONE))
+          fun augment ({ name, ty, pos }, tenv) = Symbol.set tenv name (Types.NAME (name, ref NONE))
           val augmentedTenv = L.foldl augment tenv decs
 
           fun processTypeDec { name, ty, pos } =
@@ -363,13 +416,13 @@ struct
             in
               case header of
                 (* Update refs in type names gathered in 1st pass. *)
-                SOME(Types.NAME(_, tyRef)) => tyRef := SOME(typ)
-              | SOME(other) => raise Fail("impossible: type must have been a NAME, but was: "^ Syntax.showType other)
+                SOME (Types.NAME (_, tyRef)) => tyRef := SOME typ
+              | SOME other => raise Fail("impossible: type must have been a NAME, but was: "^ Syntax.showType other)
               | NONE => raise Fail("impossible: type must have been found inside tenv: "^ Symbol.name name)
             end
         in
-          L.map processTypeDec decs;
-          { venv = venv, tenv = augmentedTenv }
+          L.map processTypeDec decs
+        ; { venv = venv, tenv = augmentedTenv, dec = [] }
         end
 
     | Ast.FunctionDec fundecs =>
@@ -423,10 +476,13 @@ struct
             fun addParam ((name, ty, escape), venv) =
               Symbol.set venv name (Env.VarEntry { ty = ty, access = Translate.allocLocal level escape })
             val bodyEnv = L.foldl addParam venv (L.map paramMapper params)
-            val { exp = _, ty = tbody } =
-              translateExp bodyEnv tenv body { insideLoop = false, level = level }
+            val { exp = translatedBody, ty = tbody } =
+              translateExp bodyEnv tenv body { level = level, breakLabel = breakLabel }
+            val body = Translate.funDec (level, translatedBody)
           in
-            if isRecursive
+            (* Remember this function's body. *)
+            Translate.procEntryExit { level = level, body = body }
+          ; if isRecursive
             then venv (* The function signature is already in venv. *)
             else
               case Option.map tresultMapper result of
@@ -462,7 +518,7 @@ struct
             val augmentedVenv = L.foldl augment venv fundecsWithRecursiveFlag
             val newVenv = L.foldl funDecMapper augmentedVenv fundecsWithRecursiveFlag
           in
-            { venv = newVenv, tenv = tenv }
+            { venv = newVenv, tenv = tenv, dec = [] }
           end
       end
     | Ast.VarDec { name, escape, typ, init, pos } =>
@@ -473,11 +529,14 @@ struct
             NONE => error pos ("type not found: "^ Symbol.name var)
           | SOME(t) => t
         val tvar = Option.map tvarMapper typ
-        val { exp = (), ty = tinit } = translateExp venv tenv init { insideLoop = insideLoop, level = level }
+        val { exp = translatedInit, ty = tinit } = translateExp venv tenv init {
+          level = level,
+          breakLabel = breakLabel
+        }
         val varEntry =
           case tvar of
             NONE => Env.VarEntry { ty = tinit, access = Translate.allocLocal level escape }
-          | SOME(tvar) =>
+          | SOME tvar =>
             if Types.areEqual (tvar, tinit) then
               Env.VarEntry { ty = tinit, access = Translate.allocLocal level escape }
             else
@@ -486,7 +545,7 @@ struct
                        ^ "     found: "^ Syntax.showType tinit ^"\n")
         val newVenv = Symbol.set venv name varEntry
       in
-        { venv = newVenv, tenv = tenv }
+        { venv = newVenv, tenv = tenv, dec = [Translate.varDec translatedInit] }
       end
 
   and translateTy tenv ty pos =
@@ -519,13 +578,16 @@ struct
   fun translateProgram ast =
     let
       val { exp, ty } = translateExp Env.base_venv Env.base_tenv ast {
-        insideLoop = false,
-        level = Translate.topLevel
+        level = Translate.topLevel,
+        breakLabel = NONE
       }
     in
       print ("type: "^ (Syntax.showType ty) ^"\n")
-    end
-    handle
+    ; Translate.getResult ()
+    end handle
       TypeError(pos, message) =>
-        print ("type error [line "^ (Int.toString pos) ^"]: "^ message ^"\n")
+        let in
+          print ("type error [line "^ (Int.toString pos) ^"]: "^ message ^"\n")
+        ; Translate.getResult ()
+        end
 end

@@ -21,6 +21,10 @@ struct
       (* TODO: implement view-shift *)
     }
 
+  datatype frag =
+    PROC of { body : Tree.stm, frame : frame }
+  | STRING of Temp.label * string
+
   (*
    * The MIPS calling conventions reserves 4 registers for procedure arguments,
    * from $a0 to $a3. Extra arguments will be passed in the stack frame.

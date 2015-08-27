@@ -4,6 +4,10 @@ struct
   infix 1 |>
 
   structure T = Tree
+  structure Frame = Frame
+
+  type frag = Frame.frag
+  type offset = int
 
   datatype level =
     Top
@@ -105,4 +109,27 @@ struct
        * just as well be consistent with that here.
        *)
       fn (t, f) => T.SEQ (s, T.JUMP (T.NAME f, [f]))
+
+  val nilExp = Ex (T.CONST 0)
+  fun simpleVar (access, level) = raise Fail "not implemented"
+  fun fieldVar (record, offset) = raise Fail "not implemented"
+  fun subscriptVar (array, offset) = raise Fail "not implemented"
+  fun callExp (label, funLevel, level, args) = raise Fail "not implemented"
+  fun opExp (oper, left, right) = raise Fail "not implemented"
+  fun recordExp length = raise Fail "not implemented"
+  fun seqExp exps = raise Fail "not implemented"
+  fun assignExp (destination, value) = raise Fail "not implemented"
+  fun ifExp (test, thn, els) = raise Fail "not implemented"
+  fun whileExp (test, body, breakLabel) = raise Fail "not implemented"
+  fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
+  fun letExp (decs, body) = raise Fail "not implemented"
+  fun arrayExp (size, init) = raise Fail "not implemented"
+  fun breakExp label = raise Fail "not implemented"
+  fun intExp i = raise Fail "not implemented"
+  fun stringExp string = raise Fail "not implemented"
+  fun varDec init = raise Fail "not implemented"
+  fun funDec (level, body) = raise Fail "not implemented"
+
+  fun procEntryExit { level, body } = raise Fail "not implemented"
+  fun getResult () = raise Fail "not implemented"
 end
