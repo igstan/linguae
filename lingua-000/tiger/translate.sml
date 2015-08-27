@@ -20,6 +20,8 @@ struct
   | Nx of Tree.stm
   | Cx of Temp.label * Temp.label -> Tree.stm
 
+  val fragments : frag list ref = ref []
+
   (*
    * Top level; inhabited by primitive functions and variables.
    *)
@@ -126,10 +128,19 @@ struct
   fun arrayExp (size, init) = raise Fail "not implemented"
   fun breakExp label = raise Fail "not implemented"
   fun intExp i = raise Fail "not implemented"
-  fun stringExp string = raise Fail "not implemented"
+
+  fun stringExp string =
+    let
+      val label = Temp.newLabel ()
+      val frag = Frame.STRING (label, string)
+    in
+      fragments := frag :: !fragments
+    ; Ex (T.NAME label)
+    end
+
   fun varDec init = raise Fail "not implemented"
   fun funDec (level, body) = raise Fail "not implemented"
 
   fun procEntryExit { level, body } = raise Fail "not implemented"
-  fun getResult () = raise Fail "not implemented"
+  fun getResult () = !fragments
 end
