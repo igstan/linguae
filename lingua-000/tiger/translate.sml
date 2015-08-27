@@ -113,11 +113,30 @@ struct
       fn (t, f) => T.SEQ (s, T.JUMP (T.NAME f, [f]))
 
   val nilExp = Ex (T.CONST 0)
+
   fun simpleVar (access, level) = raise Fail "not implemented"
   fun fieldVar (record, offset) = raise Fail "not implemented"
   fun subscriptVar (array, offset) = raise Fail "not implemented"
   fun callExp (label, funLevel, level, args) = raise Fail "not implemented"
-  fun opExp (oper, left, right) = raise Fail "not implemented"
+
+  fun opExp (oper, left, right) =
+    let
+      val l = unEx left
+      val r = unEx right
+    in
+      case oper of
+        Ast.PlusOp => Ex (T.BINOP (T.PLUS, l, r))
+      | Ast.MinusOp => Ex (T.BINOP (T.MINUS, l, r))
+      | Ast.TimesOp => Ex (T.BINOP (T.MUL, l, r))
+      | Ast.DivideOp => Ex (T.BINOP (T.DIV, l, r))
+      | Ast.EqOp => Cx (fn (t, f) => T.CJUMP (T.EQ, l, r, t, f))
+      | Ast.NeqOp => Cx (fn (t, f) => T.CJUMP (T.NE, l, r, t, f))
+      | Ast.LtOp => Cx (fn (t, f) => T.CJUMP (T.LT, l, r, t, f))
+      | Ast.LeOp => Cx (fn (t, f) => T.CJUMP (T.LE, l, r, t, f))
+      | Ast.GtOp => Cx (fn (t, f) => T.CJUMP (T.GT, l, r, t, f))
+      | Ast.GeOp => Cx (fn (t, f) => T.CJUMP (T.GE, l, r, t, f))
+    end
+
   fun recordExp length = raise Fail "not implemented"
   fun seqExp exps = raise Fail "not implemented"
   fun assignExp (destination, value) = raise Fail "not implemented"
