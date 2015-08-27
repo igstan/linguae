@@ -139,7 +139,10 @@ struct
 
   fun recordExp length = raise Fail "not implemented"
   fun seqExp exps = raise Fail "not implemented"
-  fun assignExp (destination, value) = raise Fail "not implemented"
+
+  fun assignExp (destination, value) =
+    Nx (T.MOVE (T.MEM (unEx destination), T.MEM (unEx value)))
+
   fun ifExp (test, thn, els) = raise Fail "not implemented"
   fun whileExp (test, body, breakLabel) = raise Fail "not implemented"
   fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
