@@ -127,7 +127,8 @@ struct
   fun letExp (decs, body) = raise Fail "not implemented"
   fun arrayExp (size, init) = raise Fail "not implemented"
   fun breakExp label = raise Fail "not implemented"
-  fun intExp i = raise Fail "not implemented"
+
+  fun intExp i = Ex (T.CONST i)
 
   fun stringExp string =
     let
