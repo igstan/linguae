@@ -214,7 +214,20 @@ struct
       Ex (T.ESEQ (T.seq instructions, result))
     end
 
-  fun whileExp (test, body, breakLabel) = raise Fail "not implemented"
+  fun whileExp (test, body, doneLabel) =
+    let
+      val testLabel = Temp.newLabel ()
+      val instructions = [
+        T.LABEL doneLabel,
+        unCx test (testLabel, doneLabel),
+        unNx body,
+        T.JUMP (T.NAME testLabel, [testLabel]),
+        T.LABEL doneLabel
+      ]
+    in
+      Nx (T.seq instructions)
+    end
+
   fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
   fun letExp (decs, body) = raise Fail "not implemented"
 
