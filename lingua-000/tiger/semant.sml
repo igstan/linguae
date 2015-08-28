@@ -391,7 +391,7 @@ struct
           }
     in
       case ast of
-        Ast.VarExp(var) => translateVar venv tenv var { level = level, breakLabel = breakLabel }
+        Ast.VarExp var => translateVar venv tenv var { level = level, breakLabel = breakLabel }
       | Ast.NilExp => { exp = Translate.nilExp, ty = Types.NIL }
       | Ast.IntExp i => { exp = Translate.intExp i, ty = Types.INT }
       | Ast.StringExp (s, pos) => { exp = Translate.stringExp s, ty = Types.STRING }
