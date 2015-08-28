@@ -11,7 +11,7 @@ struct
 
   datatype level =
     Top
-  | Level of { index : int, frame : Frame.frame }
+  | Level of { index : int, parent : level, frame : Frame.frame }
 
   type access = level * Frame.access
 
@@ -32,12 +32,13 @@ struct
    *)
   fun newLevel { parent, name, formals } =
     let
-      val level = case parent of
+      val index = case parent of
         Top => 0
       | Level { index, ... } => index + 1
     in
       Level {
-        index = level,
+        index = index,
+        parent = parent,
         frame = Frame.newFrame { name = name, formals = true :: formals }
       }
     end
