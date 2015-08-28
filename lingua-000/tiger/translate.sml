@@ -188,7 +188,32 @@ struct
   fun assignExp (destination, value) =
     Nx (T.MOVE (T.MEM (unEx destination), T.MEM (unEx value)))
 
-  fun ifExp (test, thn, els) = raise Fail "not implemented"
+  (* TODO: optimize when branches are Nx or Cx nodes. *)
+  fun ifExp (test, thn, els) =
+    let
+      val thenLabel = Temp.newLabel ()
+      val elseLabel = Temp.newLabel ()
+      val doneLabel = Temp.newLabel ()
+      val result = T.TEMP (Temp.newTemp ())
+      val elseInstructions =
+        case els of
+          NONE => []
+        | SOME els => [
+            T.JUMP (T.NAME doneLabel, [doneLabel]),
+            T.LABEL elseLabel,
+            T.MOVE (result, unEx els),
+            T.JUMP (T.NAME doneLabel, [doneLabel]),
+            T.LABEL doneLabel
+          ]
+      val instructions = [
+        unCx test (thenLabel, elseLabel),
+        T.LABEL thenLabel,
+        T.MOVE (result, unEx thn)
+      ] @ elseInstructions
+    in
+      Ex (T.ESEQ (T.seq instructions, result))
+    end
+
   fun whileExp (test, body, breakLabel) = raise Fail "not implemented"
   fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
   fun letExp (decs, body) = raise Fail "not implemented"
