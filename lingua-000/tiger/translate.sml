@@ -162,7 +162,27 @@ struct
       | Ast.GeOp => Cx (fn (t, f) => T.CJUMP (T.GE, l, r, t, f))
     end
 
-  fun recordExp length = raise Fail "not implemented"
+  (*
+   * We need to allocate enough memory to hold n words, where n is the number
+   * of fields. Then, we need to initialize those words by assigning them
+   * the value of the translated expressions in `fieldExps`.
+   *)
+  fun recordExp fieldExps =
+    let
+      val size = Frame.wordSize * (List.length fieldExps)
+      val r = T.TEMP (Temp.newTemp ())
+      val start = T.MOVE (r, Frame.externalCall ("allocRecord", [T.CONST size]))
+      fun initialize (fieldExp, index) =
+        let
+          val offset = T.MEM (T.BINOP (T.PLUS, r, T.CONST (index * Frame.wordSize)))
+        in
+          T.MOVE (offset, unEx fieldExp)
+        end
+      val initializeFields = ListPair.zipWithIndex fieldExps |> List.map initialize
+    in
+      Ex (T.ESEQ (T.seq (start :: initializeFields), r))
+    end
+
   fun seqExp exps = raise Fail "not implemented"
 
   fun assignExp (destination, value) =

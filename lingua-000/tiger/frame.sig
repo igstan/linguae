@@ -25,6 +25,11 @@ sig
    *)
   val FP : Temp.temp
 
+  (**
+   * Machine's word size.
+   *)
+  val wordSize : int
+
   val outermost : frame
 
   val exp : access -> Tree.exp -> Tree.exp

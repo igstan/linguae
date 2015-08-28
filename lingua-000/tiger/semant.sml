@@ -157,17 +157,25 @@ struct
         let
           fun typecheckFields definitionFields uniq =
             let
-              fun mapper (symbol, exp, pos) = (symbol, #ty (translateExp venv tenv exp { level = level, breakLabel = breakLabel }), pos)
+              fun mapper (symbol, field, pos) =
+                let
+                  val { exp = translatedField, ty } = translateExp venv tenv field {
+                    level = level,
+                    breakLabel = breakLabel
+                  }
+                in
+                  (symbol, ty, pos, translatedField)
+                end
               val typedFields = L.map mapper fields
               val zipped = ListPair.zipOption (definitionFields, typedFields)
 
               fun equalFields fields =
                 case fields of
-                  (SOME((name1, typ1)), SOME(name2, typ2, _)) =>
+                  (SOME (name1, typ1), SOME (name2, typ2, _, _)) =>
                     name1 = name2 andalso Types.areEqual (typ1, typ2)
                 | (NONE, _) => false
-                |(_, NONE) => false
-              val mismatched = L.filter (not o equalFields) zipped
+                | (_, NONE) => false
+
 
               fun showDefined field =
                 case field of
@@ -177,17 +185,20 @@ struct
               fun showUsed field =
                 case field of
                   NONE => "n/a"
-                | SOME((name, typ, pos)) => Symbol.name name ^" : "^ Syntax.showType typ ^" at line "^ Int.toString pos
+                | SOME (name, typ, pos, _) =>
+                    Symbol.name name ^" : "^ Syntax.showType typ ^" at line "^ Int.toString pos
 
               fun detail (defined, used) =
                   "  required: "^ (showDefined defined) ^"\n"
                 ^ "     found: "^ (showUsed used) ^"\n"
 
+              val mismatched = L.filter (not o equalFields) zipped
               val details = L.foldl op^ "" (L.map detail mismatched)
+              val translatedFields = L.map #4 typedFields
             in
               if L.null mismatched then
                 {
-                  exp = Translate.recordExp (List.length definitionFields),
+                  exp = Translate.recordExp translatedFields,
                   ty = Types.RECORD (definitionFields, uniq)
                 }
               else

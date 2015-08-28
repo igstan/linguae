@@ -26,10 +26,13 @@ struct
   | STRING of Temp.label * string
 
   val FP = MipsRegister.FP
+  val wordSize = 32
 
   fun exp access exp = raise Fail "not implemented"
 
-  fun externalCall (name, args) = raise Fail "not implemented"
+  fun externalCall (name, args) =
+    (* TODO: verify we don't need to adjust the label name *)
+    Tree.CALL (Tree.NAME (Temp.namedLabel name), args)
 
   (*
    * The MIPS calling conventions reserves 4 registers for procedure arguments,

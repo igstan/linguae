@@ -29,7 +29,7 @@ sig
   val subscriptVar : exp * exp -> exp
   val callExp : Temp.label * level * level * exp list -> exp
   val opExp : Ast.oper * exp * exp -> exp
-  val recordExp : int -> exp
+  val recordExp : exp list -> exp
   val seqExp : exp list -> exp
   val assignExp : exp * exp -> exp
   val ifExp : (exp * exp * exp option) -> exp
