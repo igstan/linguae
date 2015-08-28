@@ -20,7 +20,16 @@ sig
     PROC of { body : Tree.stm, frame : frame }
   | STRING of Temp.label * string
 
+  (**
+   * The frame pointer.
+   *)
+  val FP : Temp.temp
+
   val outermost : frame
+
+  val exp : access -> Tree.exp -> Tree.exp
+
+  val externalCall : string * Tree.exp list -> Tree.exp
 
   (**
    * For each formal parameter, this function must calculate two things:

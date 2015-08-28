@@ -25,6 +25,12 @@ struct
     PROC of { body : Tree.stm, frame : frame }
   | STRING of Temp.label * string
 
+  val FP = MipsRegister.FP
+
+  fun exp access exp = raise Fail "not implemented"
+
+  fun externalCall (name, args) = raise Fail "not implemented"
+
   (*
    * The MIPS calling conventions reserves 4 registers for procedure arguments,
    * from $a0 to $a3. Extra arguments will be passed in the stack frame.
