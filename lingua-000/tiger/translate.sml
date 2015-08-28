@@ -172,7 +172,9 @@ struct
   fun whileExp (test, body, breakLabel) = raise Fail "not implemented"
   fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
   fun letExp (decs, body) = raise Fail "not implemented"
-  fun arrayExp (size, init) = raise Fail "not implemented"
+
+  fun arrayExp (size, init) =
+    Ex (Frame.externalCall ("initArray", [unEx size, unEx init]))
 
   fun breakExp label = Nx (T.JUMP (T.NAME label, [label]))
 
