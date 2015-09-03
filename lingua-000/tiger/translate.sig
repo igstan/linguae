@@ -40,7 +40,6 @@ sig
   val breakExp : Temp.label -> exp
   val intExp : int -> exp
   val stringExp : string -> exp
-  val varDec : exp -> exp
   val funDec : (level * exp) -> exp
 
   val procEntryExit : { level : level, body : exp } -> unit

@@ -322,7 +322,6 @@ struct
     ; Ex (T.NAME label)
     end
 
-  fun varDec init = raise Fail "not implemented"
   fun funDec (level, body) = raise Fail "not implemented"
 
   fun procEntryExit { level, body } = raise Fail "not implemented"

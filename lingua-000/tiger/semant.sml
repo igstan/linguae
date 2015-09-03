@@ -562,7 +562,7 @@ struct
                        ^ "     found: "^ Syntax.showType tinit ^"\n")
         val newVenv = Symbol.set venv name varEntry
       in
-        { venv = newVenv, tenv = tenv, dec = [Translate.varDec translatedInit] }
+        { venv = newVenv, tenv = tenv, dec = [translatedInit] }
       end
 
   and translateTy tenv ty pos =
