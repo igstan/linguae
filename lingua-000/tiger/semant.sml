@@ -495,10 +495,9 @@ struct
             val bodyEnv = L.foldl addParam venv (L.map paramMapper params)
             val { exp = translatedBody, ty = tbody } =
               translateExp bodyEnv tenv body { level = level, breakLabel = breakLabel }
-            val body = Translate.funDec (level, translatedBody)
           in
             (* Remember this function's body. *)
-            Translate.procEntryExit { level = level, body = body }
+            Translate.procEntryExit { level = level, body = translatedBody }
           ; if isRecursive
             then venv (* The function signature is already in venv. *)
             else

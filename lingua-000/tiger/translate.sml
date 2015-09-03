@@ -322,8 +322,6 @@ struct
     ; Ex (T.NAME label)
     end
 
-  fun funDec (level, body) = raise Fail "not implemented"
-
   fun procEntryExit { level, body } =
     case level of
       Top => raise Case.Unreachable
