@@ -218,10 +218,6 @@ struct
    * Translate while loops using the two-test approach described in Engineering
    * a Compiler, § 7.8.2. There, it's being argued that this form allows for
    * more optimizations as it creates a single basic block, instead of two.
-   *
-   * Additionaly, putting the loop test at the bottom helps with the translation
-   * of "for" expressions, where care must be taken to not overflow the loop var
-   * when incrementing it.
    *)
   fun whileExp (test, body, doneLabel) =
     let
@@ -237,7 +233,32 @@ struct
       Nx (T.seq instructions)
     end
 
-  fun forExp (lo, hi, body, breakLabel) = raise Fail "not implemented"
+  (*
+   * Just as the translation for while loops, this one uses a two-test approach.
+   * However, the two tests are slightly different. The first one tests for <=,
+   * while the second one tests for < only, and only then performs the increment.
+   * This prevents integer overflows to mess with our loop tests. Test and then
+   * increment, instead of increment and then test.
+   *)
+  fun forExp (lo, hi, body, doneLabel) =
+    let
+      val exLo = unEx lo
+      val exHi = unEx hi
+      val incLabel = Temp.newLabel ()
+      val bodyLabel = Temp.newLabel ()
+      val instructions = [
+        T.CJUMP (T.LE, exLo, exHi, bodyLabel, doneLabel),
+        T.LABEL incLabel,
+        T.MOVE (T. MEM exLo, T.BINOP (T.PLUS, T.MEM exLo, T.CONST 1)),
+        T.LABEL bodyLabel,
+        unNx body,
+        T.CJUMP (T.LT, exLo, exHi, incLabel, doneLabel),
+        T.LABEL doneLabel
+      ]
+    in
+      Nx (T.seq instructions)
+    end
+
   fun letExp (decs, body) = raise Fail "not implemented"
 
   fun arrayExp (size, init) =
