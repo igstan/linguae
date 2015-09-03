@@ -123,7 +123,13 @@ struct
       Ex (T.MEM (T.BINOP (T.PLUS, base, offset)))
     end
 
-  fun subscriptVar (array, offset) = raise Fail "not implemented"
+  fun subscriptVar (array, offset) =
+    let
+      val base = T.MEM (unEx array)
+      val offset = T.BINOP (T.MUL, unEx offset, T.CONST Frame.wordSize)
+    in
+      Ex (T.MEM (T.BINOP (T.PLUS, base, offset)))
+    end
 
   fun chaseStaticLink n parent =
     if n < 0
