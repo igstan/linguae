@@ -115,33 +115,48 @@ struct
 
   val nilExp = Ex (T.CONST 0)
 
-  fun simpleVar (access, level) = raise Fail "not implemented"
   fun fieldVar (record, offset) = raise Fail "not implemented"
   fun subscriptVar (array, offset) = raise Fail "not implemented"
 
+  fun chaseStaticLink n parent =
+    if n < 0
+    then raise Fail "impossible: negative level difference"
+    else
+      case (n, parent) of
+        (0, _) => T.TEMP Frame.FP
+      | (_, Top) => raise Fail "impossible: can't have Top with a non-zero level index"
+      | (n, Level { parent, frame, ... }) =>
+        (*
+         * The location where the static link is stored is implementation
+         * dependent, so the Frame module must be asked to calculate its
+         * offset from the frame pointer.
+         *)
+        Frame.exp (hd (Frame.formals frame)) (chaseStaticLink (n - 1) parent)
+
+  fun simpleVar (access as (defLevel, frameAccess), useLevel) =
+    let
+      fun staticLink defLevel useLevel =
+        case defLevel of
+          Top => raise Fail "not implemented: access to external value"
+        | Level { index = defIndex, ... } =>
+          case useLevel of
+            Top => raise Fail "impossible: top-level symbol translation"
+          | Level { index = useIndex, ... } => chaseStaticLink (useIndex - defIndex) useLevel
+    in
+      Ex (Frame.exp frameAccess (staticLink defLevel useLevel))
+    end
+
   fun callExp (label, funLevel, callerLevel, args) =
     let
-      fun chaseStaticLink (n, parent) =
-        case (n, parent) of
-          (0, _) => T.TEMP Frame.FP
-        | (_, Top) => raise Fail "impossible: can't have Top with a non-zero level index"
-        | (n, Level { parent, frame, ... }) =>
-          (*
-           * The location where the static link is stored is implementation
-           * dependent, so the Frame module must be asked to calculate its
-           * offset from the frame pointer.
-           *)
-          Frame.exp (hd (Frame.formals frame)) (chaseStaticLink (n - 1, parent))
-
-      val staticLink =
-        case funLevel of
+      fun staticLink defLevel useLevel =
+        case defLevel of
           Top => Frame.externalCall (Symbol.name label, List.map unEx args)
-        | Level { index = funIndex, ... } =>
-          case callerLevel of
-            Top => raise Fail "impossible: translation of a nested external function call"
-          | Level { index = callerIndex, ... } => chaseStaticLink (callerIndex - funIndex, callerLevel)
+        | Level { index = defIndex, ... } =>
+          case useLevel of
+            Top => raise Fail "impossible: top-level symbol translation"
+          | Level { index = useIndex, ... } => chaseStaticLink (useIndex - defIndex) useLevel
     in
-      Ex (T.CALL (T.NAME label, staticLink :: (List.map unEx args)))
+      Ex (T.CALL (T.NAME label, (staticLink funLevel callerLevel) :: (List.map unEx args)))
     end
 
   fun opExp (oper, left, right) =
