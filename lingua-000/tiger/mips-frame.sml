@@ -28,7 +28,7 @@ struct
   | STRING of Temp.label * string
 
   val FP = MipsRegister.FP
-  val wordSize = 32
+  val wordSize = 4
 
   fun exp access framePointer =
     case access of
