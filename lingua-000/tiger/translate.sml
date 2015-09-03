@@ -115,7 +115,14 @@ struct
 
   val nilExp = Ex (T.CONST 0)
 
-  fun fieldVar (record, offset) = raise Fail "not implemented"
+  fun fieldVar (record, offset) =
+    let
+      val base = T.MEM (unEx record)
+      val offset = T.CONST (offset * Frame.wordSize)
+    in
+      Ex (T.MEM (T.BINOP (T.PLUS, base, offset)))
+    end
+
   fun subscriptVar (array, offset) = raise Fail "not implemented"
 
   fun chaseStaticLink n parent =

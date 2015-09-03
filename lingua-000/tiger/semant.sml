@@ -22,14 +22,20 @@ struct
 
       fun fieldVar var name pos =
         let
-          val { exp, ty = tvar } = translateVar venv tenv var { level = level, breakLabel = breakLabel }
+          val { exp = translatedVar, ty = tvar } = translateVar venv tenv var { level = level, breakLabel = breakLabel }
           fun typecheckRecord fields =
             let
-              val field = L.find (fn (sym, ty) => sym = name) fields
+              fun findTypeAndIndex fields index =
+                case fields of
+                  [] => NONE
+                | (sym, ty) :: xs =>
+                  if sym = name
+                  then SOME (ty, index)
+                  else findTypeAndIndex xs (index + 1)
             in
-              case field of
-                SOME ((_, ty)) => {
-                  exp = Translate.fieldVar (exp, 0),
+              case findTypeAndIndex fields 0 of
+                SOME (ty, index) => {
+                  exp = Translate.fieldVar (translatedVar, index),
                   ty = ty
                 }
               | NONE => error pos ("no such field on record\n"
@@ -73,9 +79,9 @@ struct
         end
     in
       case var of
-        Ast.SimpleVar(name, pos) => simpleVar name pos
-      | Ast.FieldVar(var, name, pos) => fieldVar var name pos
-      | Ast.SubscriptVar(var, exp, pos) => subscriptVar var exp pos
+        Ast.SimpleVar (name, pos) => simpleVar name pos
+      | Ast.FieldVar (var, name, pos) => fieldVar var name pos
+      | Ast.SubscriptVar (var, exp, pos) => subscriptVar var exp pos
     end
 
   and translateExp venv tenv ast { level, breakLabel } =
