@@ -183,7 +183,21 @@ struct
       Ex (T.ESEQ (T.seq (start :: initializeFields), r))
     end
 
-  fun seqExp exps = raise Fail "not implemented"
+  fun seqExp exps =
+    let
+      fun loop exps prev =
+        case exps of
+          x :: [] => T.ESEQ (prev, unEx x)
+        | x :: rest => loop rest (T.SEQ (prev, unNx x))
+        | _ => raise Fail "bug: list should have at least one element"
+
+      fun init exps =
+        case exps of
+          x :: (rest as _ :: _) => loop rest (unNx x)
+        | _ => raise Fail "bug: list should have at least two elements"
+    in
+      Ex (init (List.rev exps))
+    end
 
   fun assignExp (destination, value) =
     Nx (T.MOVE (T.MEM (unEx destination), T.MEM (unEx value)))
