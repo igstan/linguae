@@ -7,6 +7,8 @@ is
   $SMACKAGE/sml-extras/v0.1.2/sources.sml.cm
 
   ast.sml
+  canon.sig
+  canon.sml
   env.sig
   env.sml
   frame.sig
