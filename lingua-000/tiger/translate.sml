@@ -214,16 +214,23 @@ struct
       Ex (T.ESEQ (T.seq instructions, result))
     end
 
+  (*
+   * Translate while loops using the two-test approach described in Engineering
+   * a Compiler, § 7.8.2. There, it's being argued that this form allows for
+   * more optimizations as it creates a single basic block, instead of two.
+   *
+   * Additionaly, putting the loop test at the bottom helps with the translation
+   * of "for" expressions, where care must be taken to not overflow the loop var
+   * when incrementing it.
+   *)
   fun whileExp (test, body, doneLabel) =
     let
-      val testLabel = Temp.newLabel ()
       val bodyLabel = Temp.newLabel ()
       val instructions = [
-        T.LABEL testLabel,
         unCx test (bodyLabel, doneLabel),
         T.LABEL bodyLabel,
         unNx body,
-        T.JUMP (T.NAME testLabel, [testLabel]),
+        unCx test (bodyLabel, doneLabel),
         T.LABEL doneLabel
       ]
     in
