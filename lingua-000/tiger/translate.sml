@@ -301,7 +301,10 @@ struct
       Nx (T.seq instructions)
     end
 
-  fun letExp (decs, body) = raise Fail "not implemented"
+  fun letExp (decs, body) =
+    case decs of
+      [] => body
+    | decs => Ex (T.ESEQ (List.map unNx decs |> T.seq, unEx body))
 
   fun arrayExp (size, init) =
     Ex (Frame.externalCall ("initArray", [unEx size, unEx init]))
