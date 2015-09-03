@@ -1,8 +1,8 @@
 structure Translate :> TRANSLATE =
 struct
-  open Fn
   infix 1 |>
 
+  open Fn
   structure T = Tree
   structure Frame = Frame
 
@@ -324,6 +324,20 @@ struct
 
   fun funDec (level, body) = raise Fail "not implemented"
 
-  fun procEntryExit { level, body } = raise Fail "not implemented"
+  fun procEntryExit { level, body } =
+    case level of
+      Top => raise Case.Unreachable
+    | Level { index, parent, frame } =>
+      let
+        val body = T.MOVE (T.TEMP Frame.RV, unEx body)
+        val body = Frame.procEntryExit1 (frame, body)
+        val fragment = Frame.PROC {
+          body = body,
+          frame = frame
+        }
+      in
+        fragments := fragment :: !fragments
+      end
+
   fun getResult () = !fragments
 end

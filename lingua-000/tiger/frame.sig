@@ -26,6 +26,11 @@ sig
   val FP : Temp.temp
 
   (**
+   * The return value of a function.
+   *)
+  val RV : Temp.temp
+
+  (**
    * Machine's word size.
    *)
   val wordSize : int
@@ -55,4 +60,6 @@ sig
    * The boolean parameter tells whether the local escapes.
    *)
   val allocLocal : frame -> bool -> access
+
+  val procEntryExit1 : frame * Tree.stm -> Tree.stm
 end

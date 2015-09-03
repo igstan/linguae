@@ -28,6 +28,7 @@ struct
   | STRING of Temp.label * string
 
   val FP = MipsRegister.FP
+  val RV = MipsRegister.RA
   val wordSize = 4
 
   fun exp access framePointer =
@@ -98,4 +99,6 @@ struct
     if escapes
     then InFrame (Ref.getAndIncrement inFrameCount)
     else InRegister (Temp.newTemp ())
+
+  fun procEntryExit1 (frame, body) = body
 end
