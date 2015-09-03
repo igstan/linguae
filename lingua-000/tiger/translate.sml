@@ -217,9 +217,11 @@ struct
   fun whileExp (test, body, doneLabel) =
     let
       val testLabel = Temp.newLabel ()
+      val bodyLabel = Temp.newLabel ()
       val instructions = [
-        T.LABEL doneLabel,
-        unCx test (testLabel, doneLabel),
+        T.LABEL testLabel,
+        unCx test (bodyLabel, doneLabel),
+        T.LABEL bodyLabel,
         unNx body,
         T.JUMP (T.NAME testLabel, [testLabel]),
         T.LABEL doneLabel
