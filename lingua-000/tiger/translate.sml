@@ -178,7 +178,7 @@ struct
         in
           T.MOVE (offset, unEx fieldExp)
         end
-      val initializeFields = ListPair.zipWithIndex fieldExps |> List.map initialize
+      val initializeFields = ListPairs.zipWithIndex fieldExps |> List.map initialize
     in
       Ex (T.ESEQ (T.seq (start :: initializeFields), r))
     end

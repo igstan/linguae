@@ -4,10 +4,8 @@ is
   $/basis.cm
   $/smlnj-lib.cm
 
-  $SMACKAGE/sml-extras/v0.1.0/sources.sml.cm
+  $SMACKAGE/sml-extras/v0.1.2/sources.sml.cm
 
-  ref.sig
-  ref.sml
   ast.sml
   env.sig
   env.sml
@@ -19,8 +17,6 @@ is
   free-var-analysis.sml
   escape-analysis.sig
   escape-analysis.sml
-  list-pair.sig
-  list-pair.sml
   main.sml
   semant.sig
   semant.sml

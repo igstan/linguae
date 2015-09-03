@@ -97,7 +97,7 @@ struct
           case tfunc of
             SOME (Env.FunEntry { formals, result, label, level as funLevel, ... }) =>
               let
-                val mismatched = L.filter (not o Types.areEqual) (ListPair.zip (formals, targs))
+                val mismatched = L.filter (not o Types.areEqual) (ListPairs.zip (formals, targs))
                 fun detail (formal, actual) =
                   "argument mismatch\n"
                 ^ "  required: "^ (Syntax.showType actual) ^"\n"
@@ -167,7 +167,7 @@ struct
                   (symbol, ty, pos, translatedField)
                 end
               val typedFields = L.map mapper fields
-              val zipped = ListPair.zipOption (definitionFields, typedFields)
+              val zipped = ListPairs.zipOption (definitionFields, typedFields)
 
               fun equalFields fields =
                 case fields of

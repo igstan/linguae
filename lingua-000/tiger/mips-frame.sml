@@ -78,7 +78,7 @@ struct
         else InFrame (Ref.getAndIncrement frameArgsCount)
 
       fun allocFormals formals =
-        ListPair.zipWithIndex formals |> List.map allocFormal
+        ListPairs.zipWithIndex formals |> List.map allocFormal
     in
       StackFrame {
         label = name,
