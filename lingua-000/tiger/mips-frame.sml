@@ -1,7 +1,9 @@
 structure MipsFrame :> FRAME =
 struct
-  open Fn
   infix 1 |>
+
+  open Fn
+  structure T = Tree
 
   (**
    * Where this local will be stored — stack frame or register.
@@ -28,11 +30,14 @@ struct
   val FP = MipsRegister.FP
   val wordSize = 32
 
-  fun exp access exp = raise Fail "not implemented"
+  fun exp access framePointer =
+    case access of
+      InFrame offset => T.MEM (T.BINOP (T.PLUS, framePointer, T.CONST offset))
+    | InRegister temp => T.TEMP temp
 
   fun externalCall (name, args) =
     (* TODO: verify we don't need to adjust the label name *)
-    Tree.CALL (Tree.NAME (Temp.namedLabel name), args)
+    T.CALL (T.NAME (Temp.namedLabel name), args)
 
   (*
    * The MIPS calling conventions reserves 4 registers for procedure arguments,
