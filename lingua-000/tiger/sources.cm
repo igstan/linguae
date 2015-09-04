@@ -6,25 +6,24 @@ is
 
   $SMACKAGE/sml-extras/v0.1.2/sources.sml.cm
 
-  parse.sml
   assem.sml
   ast.sml
-  codegen.sig
   canon.sig
   canon.sml
+  codegen.sig
   env.sig
   env.sml
+  escape-analysis.sig
+  escape-analysis.sml
   frame.sig
-  mips-register.sml
-  mips-codegen.sml
-  mips-frame.sml
   frame.sml
   free-var-analysis.sig
   free-var-analysis.sml
-  escape-analysis.sig
-  escape-analysis.sml
-  test.sml
   main.sml
+  mips-codegen.sml
+  mips-frame.sml
+  mips-register.sml
+  parse.sml
   semant.sig
   semant.sml
   showast.sig
@@ -37,10 +36,11 @@ is
   table.sml
   temp.sig
   temp.sml
+  test.sml
   translate.sig
   translate.sml
-  types.sml
-  tree.sig
-  tree.sml
   tree-printer.sig
   tree-printer.sml
+  tree.sig
+  tree.sml
+  types.sml
