@@ -31,6 +31,10 @@ struct
   val RV = MipsRegister.RA
   val wordSize = 4
 
+  fun string (label, string) = string
+
+  fun name (StackFrame { label, ... }) = Symbol.name label
+
   fun exp access framePointer =
     case access of
       InFrame offset => T.MEM (T.BINOP (T.PLUS, framePointer, T.CONST offset))

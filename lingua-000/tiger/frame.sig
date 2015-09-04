@@ -37,6 +37,10 @@ sig
 
   val outermost : frame
 
+  val string : Temp.label * string -> string
+
+  val name : frame -> string
+
   val exp : access -> Tree.exp -> Tree.exp
 
   val externalCall : string * Tree.exp list -> Tree.exp

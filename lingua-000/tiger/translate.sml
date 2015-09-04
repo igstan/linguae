@@ -1,4 +1,4 @@
-structure Translate :> TRANSLATE =
+structure Translate : TRANSLATE =
 struct
   infix 1 |>
 

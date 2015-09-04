@@ -6,19 +6,24 @@ is
 
   $SMACKAGE/sml-extras/v0.1.2/sources.sml.cm
 
+  parse.sml
+  assem.sml
   ast.sml
+  codegen.sig
   canon.sig
   canon.sml
   env.sig
   env.sml
   frame.sig
   mips-register.sml
+  mips-codegen.sml
   mips-frame.sml
   frame.sml
   free-var-analysis.sig
   free-var-analysis.sml
   escape-analysis.sig
   escape-analysis.sml
+  test.sml
   main.sml
   semant.sig
   semant.sml
