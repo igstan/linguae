@@ -47,8 +47,7 @@ struct
           assem |> explode |> replace |> implode
         end
     in
-      fn OPER { assem, dst, src, jump = NONE } => speak (assem, dst, src, [])
-       | OPER { assem, dst, src, jump = SOME j } => speak (assem, dst, src, j)
+      fn OPER { assem, dst, src, jump } => speak (assem, dst, src, Option.getOpt (jump, []))
        | LABEL { assem, ... } => assem
        | MOVE { assem, dst, src } => speak (assem, [dst], [src], [])
     end
