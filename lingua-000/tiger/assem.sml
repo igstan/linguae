@@ -34,17 +34,17 @@ struct
        *)
       fun speak (assem, dst, src, jump) =
         let
-          fun f instruction =
+          fun replace instruction =
             case instruction of
-              #"`" :: #"s" :: i :: rest => explode (saytemp (List.nth (src, ord i - ord #"0"))) @ f rest
-            | #"`" :: #"d" :: i :: rest => explode (saytemp (List.nth (dst, ord i - ord #"0"))) @ f rest
-            | #"`" :: #"j" :: i :: rest => explode (saylab (List.nth (jump, ord i - ord #"0"))) @ f rest
-            | #"`" :: #"`" :: rest => #"`" :: f rest
+              #"`" :: #"s" :: i :: rest => explode (saytemp (List.nth (src, ord i - ord #"0"))) @ replace rest
+            | #"`" :: #"d" :: i :: rest => explode (saytemp (List.nth (dst, ord i - ord #"0"))) @ replace rest
+            | #"`" :: #"j" :: i :: rest => explode (saylab (List.nth (jump, ord i - ord #"0"))) @ replace rest
+            | #"`" :: #"`" :: rest => #"`" :: replace rest
             | #"`" :: _ :: rest => raise Fail "bad assem format"
-            | c :: rest => c :: f rest
+            | c :: rest => c :: replace rest
             | [] => []
         in
-          assem |> explode |> f |> implode
+          assem |> explode |> replace |> implode
         end
     in
       fn OPER { assem, dst, src, jump = NONE } => speak (assem, dst, src, [])
