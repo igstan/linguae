@@ -27,6 +27,7 @@ struct
 
   fun format saytemp =
     let
+      val saylab = Symbol.name
       (**
        * Replaces `s, `d and `j placeholders with values calculated by in the
        * child expressions.
@@ -37,7 +38,7 @@ struct
             case instruction of
               #"`" :: #"s" :: i :: rest => explode (saytemp (List.nth (src, ord i - ord #"0"))) @ f rest
             | #"`" :: #"d" :: i :: rest => explode (saytemp (List.nth (dst, ord i - ord #"0"))) @ f rest
-            | #"`" :: #"j" :: i :: rest => explode (Symbol.name (List.nth (jump, ord i - ord #"0"))) @ f rest
+            | #"`" :: #"j" :: i :: rest => explode (saylab (List.nth (jump, ord i - ord #"0"))) @ f rest
             | #"`" :: #"`" :: rest => #"`" :: f rest
             | #"`" :: _ :: rest => raise Fail "bad assem format"
             | c :: rest => c :: f rest
