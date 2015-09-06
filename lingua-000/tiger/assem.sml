@@ -1,5 +1,9 @@
 structure Assem =
 struct
+  infix 1 |>
+
+  open Fn
+
   type reg = string
   type temp = Temp.temp
   type label = Temp.label
@@ -23,20 +27,23 @@ struct
 
   fun format saytemp =
     let
+      (**
+       * Replaces `s, `d and `j placeholders with values calculated by in the
+       * child expressions.
+       *)
       fun speak (assem, dst, src, jump) =
         let
-          fun f (#"`" :: #"s" :: i :: rest) =
-              explode (saytemp (List.nth (src, ord i - ord #"0"))) @ f rest
-            | f (#"`" :: #"d" :: i :: rest) =
-              explode (saytemp (List.nth (dst, ord i - ord #"0"))) @ f rest
-            | f ( #"`":: #"j":: i:: rest) =
-              explode (Symbol.name (List.nth (jump, ord i - ord #"0"))) @ f rest
-            | f ( #"`":: #"`":: rest) = #"`" :: f rest
-            | f ( #"`":: _ :: rest) = raise Fail "bad assem format"
-            | f (c :: rest) = c :: f rest
-            | f [] = []
+          fun f instruction =
+            case instruction of
+              #"`" :: #"s" :: i :: rest => explode (saytemp (List.nth (src, ord i - ord #"0"))) @ f rest
+            | #"`" :: #"d" :: i :: rest => explode (saytemp (List.nth (dst, ord i - ord #"0"))) @ f rest
+            | #"`" :: #"j" :: i :: rest => explode (Symbol.name (List.nth (jump, ord i - ord #"0"))) @ f rest
+            | #"`" :: #"`" :: rest => #"`" :: f rest
+            | #"`" :: _ :: rest => raise Fail "bad assem format"
+            | c :: rest => c :: f rest
+            | [] => []
         in
-          implode (f (explode assem))
+          assem |> explode |> f |> implode
         end
     in
       fn OPER { assem, dst, src, jump = NONE } => speak (assem, dst, src, [])
