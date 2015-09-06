@@ -37,7 +37,7 @@ struct
               (stms % T.MOVE (T.TEMP t, e) % stms', T.TEMP t :: el)
             end
         end
-      | reorder nil = (nop, nil)
+      | reorder [] = (nop, [])
 
     and reorder_exp (el, build) =
       let
@@ -80,7 +80,7 @@ struct
     fun linear (T.SEQ (a, b), l) = linear (a, linear (b, l))
       | linear (s, l) = s :: l
   in (* body of linearize *)
-    linear (do_stm stm0, nil)
+    linear (do_stm stm0, [])
   end
 
   type block = T.stm list
@@ -94,15 +94,15 @@ struct
               | next ((s as (T.CJUMP _)) :: rest, thisblock) = endblock( rest, s :: thisblock)
               | next (stms as (T.LABEL lab :: _), thisblock) = next (T.JUMP (T.NAME lab, [lab]) :: stms, thisblock)
               | next (s :: rest, thisblock) = next (rest, s :: thisblock)
-              | next (nil, thisblock) = next([T.JUMP (T.NAME done, [done])], thisblock)
+              | next ([], thisblock) = next([T.JUMP (T.NAME done, [done])], thisblock)
             and endblock(stms, thisblock) = blocks(stms, rev thisblock :: blist)
           in
             next (tail, [head])
           end
-        | blocks (nil, blist) = rev blist
+        | blocks ([], blist) = rev blist
         | blocks (stms, blist) = blocks (T.LABEL (Temp.newLabel ()) :: stms, blist)
     in
-      (blocks (stms, nil), done)
+      (blocks (stms, []), done)
     end
 
 
@@ -111,7 +111,7 @@ struct
       fun enterblock (b as (T.LABEL s :: _), table) = Symbol.set table s b
         | enterblock (_, table) = table
 
-      fun splitlast ([x]) = (nil, x)
+      fun splitlast ([x]) = ([], x)
         | splitlast (h :: t) =
           let
             val (t', last) = splitlast t
@@ -121,7 +121,7 @@ struct
 
       fun trace (table, b as (T.LABEL lab :: _), rest) =
         let
-          val table = Symbol.set table lab nil
+          val table = Symbol.set table lab []
         in
           case splitlast b of
             (most, T.JUMP (T.NAME lab, _)) =>
@@ -155,7 +155,7 @@ struct
               SOME (_ :: _) => trace (table, b, rest)
             | _ => getnext(table,rest)
           end
-        | getnext (table, nil) = nil
+        | getnext (table, []) = []
     in
       getnext (foldr enterblock Symbol.empty blocks, blocks) @ [T.LABEL done]
     end

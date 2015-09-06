@@ -35,14 +35,14 @@ struct
             | f ( #"`":: #"`":: rest) = #"`" :: f rest
             | f ( #"`":: _ :: rest) = raise Fail "bad assem format"
             | f (c :: rest) = c :: f rest
-            | f nil = nil
+            | f [] = []
         in
           implode (f (explode assem))
         end
     in
-      fn OPER { assem, dst, src, jump = NONE } => speak (assem, dst, src, nil)
+      fn OPER { assem, dst, src, jump = NONE } => speak (assem, dst, src, [])
        | OPER { assem, dst, src, jump = SOME j } => speak (assem, dst, src, j)
        | LABEL { assem, ... } => assem
-       | MOVE { assem, dst, src } => speak (assem, [dst], [src], nil)
+       | MOVE { assem, dst, src } => speak (assem, [dst], [src], [])
     end
 end
