@@ -110,7 +110,7 @@ struct
             val condition = Temp.newTemp ()
           in
             emit $ A.OPER {
-              assem = "slti `s0, `s1, " ^ immediate c,
+              assem = "slti `d0, `s0, " ^ immediate c,
               src = [munchExp a],
               dst = [condition],
               jump = SOME []
@@ -122,7 +122,7 @@ struct
             val condition = Temp.newTemp ()
           in
             emit $ A.OPER {
-              assem = "slt `s0, `s1, `s2",
+              assem = "slt `d0, `s0, `s1",
               src = [munchExp a, munchExp b],
               dst = [condition],
               jump = SOME []
