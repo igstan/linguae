@@ -36,6 +36,8 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.GE, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.LE, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.GT, a, T.CONST 0, tLabel, fLabel) =>
             A.OPER {
               assem = "bgtz `s0, `j0",
@@ -43,6 +45,8 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.GT, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.LT, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.LE, a, T.CONST 0, tLabel, fLabel) =>
             A.OPER {
               assem = "blez `s0, `j0",
@@ -50,6 +54,8 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.LE, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.GE, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.LT, a, T.CONST 0, tLabel, fLabel) =>
             A.OPER {
               assem = "bltz `s0, `j0",
@@ -57,6 +63,8 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.LT, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.GT, T.CONST 0, a, tLabel, fLabel))
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
         | T.EXP exp => raise Fail "not implemented"
