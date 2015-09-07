@@ -11,7 +11,7 @@ struct
         val instrs = List.concat (map (MipsCodegen.codegen frame) stms')
         val format0 = Assem.format (Temp.makeString)
       in
-        app (fn i => TextIO.output (out, format0 i)) instrs
+        List.app (fn i => TextIO.output (out, format0 i)) instrs
       end
 
   fun withOpenFile fname f =

@@ -11,8 +11,8 @@ struct
   datatype instr =
     OPER of {
       assem : string,
-      dst : temp list,
       src : temp list,
+      dst : temp list,
       jump : label list option
     }
   | LABEL of {
