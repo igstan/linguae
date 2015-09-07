@@ -28,7 +28,7 @@ struct
               dst = [],
               jump = SOME [label]
             }
-        | T.JUMP (exp, labels) => raise Fail "not implemented"
+        | T.JUMP _ => raise Fail "bug: can only jump to labels"
         | T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "beq `s0, $zero, `j0",
