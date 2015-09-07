@@ -99,7 +99,7 @@ struct
             munchStm (T.CJUMP (T.GT, T.CONST 0, a, tLabel, fLabel))
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
-        | T.EXP exp => raise Fail "not implemented"
+        | T.EXP exp => ignore (munchExp exp)
 
       and munchExp exp =
         case exp of
