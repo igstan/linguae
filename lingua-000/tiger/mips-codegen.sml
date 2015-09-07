@@ -43,6 +43,13 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.LT, a, T.CONST 0, tLabel, fLabel) =>
+            A.OPER {
+              assem = "bltz `s0, `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
         | T.EXP exp => raise Fail "not implemented"
