@@ -8,6 +8,13 @@ struct
   structure T = Tree
   structure Frame = Frame
 
+  fun immediate c =
+    let
+      val s = Int.toString (Int.abs c)
+    in
+      if c >= 0 then s else "-" ^ s
+    end
+
   fun codegen frame tree =
     let
       val instructions : A.instr list ref = ref []
@@ -88,6 +95,7 @@ struct
             }
         | T.CJUMP (T.LE, T.CONST 0, a, tLabel, fLabel) =>
             munchStm (T.CJUMP (T.GE, a, T.CONST 0, tLabel, fLabel))
+
         | T.CJUMP (T.LT, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bltz `s0, `j0",
@@ -97,6 +105,18 @@ struct
             }
         | T.CJUMP (T.LT, T.CONST 0, a, tLabel, fLabel) =>
             munchStm (T.CJUMP (T.GT, T.CONST 0, a, tLabel, fLabel))
+        | T.CJUMP (T.LT, a, T.CONST c, tLabel, fLabel) =>
+          let
+            val condition = Temp.newTemp ()
+          in
+            emit $ A.OPER {
+              assem = "slti `s0, `s1, " ^ immediate c,
+              src = [munchExp a],
+              dst = [condition],
+              jump = SOME []
+            }
+          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
+          end
         | T.CJUMP (T.LT, a, b, tLabel, fLabel) =>
           let
             val condition = Temp.newTemp ()
@@ -109,6 +129,7 @@ struct
             }
           ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
           end
+
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
         | T.EXP exp => ignore (munchExp exp)
