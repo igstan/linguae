@@ -115,7 +115,7 @@ struct
               dst = [condition],
               jump = SOME []
             }
-          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
+          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, fLabel, tLabel))
           end
         | T.CJUMP (T.LT, a, b, tLabel, fLabel) =>
           let
@@ -127,7 +127,7 @@ struct
               dst = [condition],
               jump = SOME []
             }
-          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
+          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, fLabel, tLabel))
           end
 
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
