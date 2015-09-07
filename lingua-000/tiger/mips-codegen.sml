@@ -13,7 +13,8 @@ struct
       fun munchStm stm =
         case stm of
           T.SEQ (a, b) => raise Fail "not implemented"
-        | T.LABEL label => raise Fail "not implemented"
+        | T.LABEL label =>
+            A.LABEL { assem = Symbol.name label ^ ":\n", lab = label }
         | T.JUMP (T.NAME label, _) =>
             A.OPER {
               assem = "j `j0",
