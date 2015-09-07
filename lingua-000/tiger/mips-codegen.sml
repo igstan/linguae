@@ -22,6 +22,13 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
+        | T.CJUMP (T.NE, a, b, tLabel, fLabel) =>
+            A.OPER {
+              assem = "bne `s0, `s1, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
         | T.CJUMP (T.GE, a, T.CONST 0, tLabel, fLabel) =>
             A.OPER {
               assem = "bgez `s0, `j0",
