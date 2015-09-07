@@ -97,6 +97,18 @@ struct
             }
         | T.CJUMP (T.LT, T.CONST 0, a, tLabel, fLabel) =>
             munchStm (T.CJUMP (T.GT, T.CONST 0, a, tLabel, fLabel))
+        | T.CJUMP (T.LT, a, b, tLabel, fLabel) =>
+          let
+            val condition = Temp.newTemp ()
+          in
+            emit $ A.OPER {
+              assem = "slt `s0, `s1, `s2",
+              src = [munchExp a, munchExp b],
+              dst = [condition],
+              jump = SOME []
+            }
+          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
+          end
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
         | T.EXP exp => ignore (munchExp exp)
