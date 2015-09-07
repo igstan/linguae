@@ -96,6 +96,18 @@ struct
             }
         | T.CJUMP (T.LE, T.CONST 0, a, tLabel, fLabel) =>
             munchStm (T.CJUMP (T.GE, a, T.CONST 0, tLabel, fLabel))
+        | T.CJUMP (T.LE, a, T.CONST c, tLabel, fLabel) =>
+          let
+            val condition = Temp.newTemp ()
+          in
+            emit $ A.OPER {
+              assem = "slti `d0, " ^ immediate c ^ ", `s0",
+              src = [munchExp a],
+              dst = [condition],
+              jump = SOME []
+            }
+          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, fLabel, tLabel))
+          end
         | T.CJUMP (T.LE, a, b, tLabel, fLabel) =>
           let
             val condition = Temp.newTemp ()
