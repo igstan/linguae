@@ -14,6 +14,13 @@ struct
         case stm of
           T.SEQ (a, b) => raise Fail "not implemented"
         | T.LABEL label => raise Fail "not implemented"
+        | T.JUMP (T.NAME label, _) =>
+            A.OPER {
+              assem = "j `j0",
+              src = [],
+              dst = [],
+              jump = SOME [label]
+            }
         | T.JUMP (exp, labels) => raise Fail "not implemented"
         | T.CJUMP (T.EQ, a, b, tLabel, fLabel) =>
             A.OPER {
