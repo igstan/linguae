@@ -15,6 +15,13 @@ struct
           T.SEQ (a, b) => raise Fail "not implemented"
         | T.LABEL label => raise Fail "not implemented"
         | T.JUMP (exp, labels) => raise Fail "not implemented"
+        | T.CJUMP (T.EQ, a, b, tLabel, fLabel) =>
+            A.OPER {
+              assem = "beq `s0, `s1, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
         | T.CJUMP (relop, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.MOVE (dst, src) => raise Fail "not implemented"
         | T.EXP exp => raise Fail "not implemented"
