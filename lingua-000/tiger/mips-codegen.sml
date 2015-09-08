@@ -236,7 +236,7 @@ struct
           T.BINOP (binop, a, b) => raise Fail "not implemented"
         | T.MEM exp => raise Fail "not implemented"
         | T.TEMP temp => temp
-        | T.ESEQ (stm, exp) => raise Fail "not implemented"
+        | T.ESEQ (stm, exp) => (munchStm stm ; munchExp exp)
         | T.NAME label =>
             withTemporary (fn temp =>
               emit $ A.OPER {
