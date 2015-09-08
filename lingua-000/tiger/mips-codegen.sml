@@ -233,7 +233,36 @@ struct
 
       and munchExp exp =
         case exp of
-          T.BINOP (binop, a, b) => raise Fail "not implemented"
+          T.BINOP (T.PLUS, T.CONST 0, a) => munchExp a
+        | T.BINOP (T.PLUS, a, T.CONST 0) => munchExp a
+        | T.BINOP (T.PLUS, c as T.CONST _, a) => munchExp (T.BINOP (T.PLUS, a, c))
+        | T.BINOP (T.PLUS, a, T.CONST c) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "addiu `d0, `s0, " ^ immediate c,
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.BINOP (T.PLUS, a, b) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "addu `d0, `s0, `s1",
+                src = [munchExp a, munchExp b],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.BINOP (T.MINUS, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.MUL, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.DIV, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.AND, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.OR, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.LSHIFT, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.RSHIFT, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.ARSHIFT, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.XOR, a, b) => raise Fail "not implemented"
         | T.MEM exp => raise Fail "not implemented"
         | T.TEMP temp => temp
         | T.ESEQ (stm, exp) => (munchStm stm ; munchExp exp)
