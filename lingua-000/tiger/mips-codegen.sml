@@ -235,7 +235,7 @@ struct
         case exp of
           T.BINOP (binop, a, b) => raise Fail "not implemented"
         | T.MEM exp => raise Fail "not implemented"
-        | T.TEMP temp => raise Fail "not implemented"
+        | T.TEMP temp => temp
         | T.ESEQ (stm, exp) => raise Fail "not implemented"
         | T.NAME label =>
             withTemporary (fn temp =>
