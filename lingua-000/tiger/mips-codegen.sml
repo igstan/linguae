@@ -19,7 +19,7 @@ struct
     let
       val instructions : A.instr list ref = ref []
 
-      fun result gen = let val t = Temp.newTemp () in gen t ; t end
+      fun withTemporary f = let val t = Temp.newTemp () in f t ; t end
 
       fun emit instruction = instructions := instruction :: (!instructions)
 
@@ -238,7 +238,15 @@ struct
         | T.TEMP temp => raise Fail "not implemented"
         | T.ESEQ (stm, exp) => raise Fail "not implemented"
         | T.NAME label => raise Fail "not implemented"
-        | T.CONST c => raise Fail "not implemented"
+        | T.CONST c =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "addiu `d0, $zero, " ^ immediate c,
+                src = [],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
         | T.CALL (func, args) => raise Fail "not implemented"
     in
       munchStm tree
