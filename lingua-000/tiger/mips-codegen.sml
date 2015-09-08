@@ -254,7 +254,25 @@ struct
                 jump = SOME []
               }
             )
-        | T.BINOP (T.MINUS, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.MINUS, a, T.CONST 0) => munchExp a
+        | T.BINOP (T.MINUS, a, T.CONST c) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "subiu `d0, `s0, " ^ immediate c,
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.BINOP (T.MINUS, a, b) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "subu `d0, `s0, `s1",
+                src = [munchExp a, munchExp b],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
         | T.BINOP (T.MUL, a, b) => raise Fail "not implemented"
         | T.BINOP (T.DIV, a, b) => raise Fail "not implemented"
         | T.BINOP (T.AND, a, b) => raise Fail "not implemented"
