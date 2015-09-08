@@ -421,7 +421,44 @@ struct
                 jump = SOME []
               }
             )
-        | T.MEM exp => raise Fail "not implemented"
+        | T.MEM (T.CONST c) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "lw `d0, " ^ immediate c,
+                src = [],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.MEM (T.BINOP (T.PLUS, a, c as T.CONST _)) =>
+            munchExp (T.MEM (T.BINOP (T.PLUS, c, a)))
+        | T.MEM (T.BINOP (T.PLUS, T.CONST c, a)) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "lw `d0, " ^ immediate c ^ "(`s0)",
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.MEM (T.BINOP (T.MINUS, a, T.CONST c)) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "lw `d0, " ^ immediate (~ c) ^ "(`s0)",
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.MEM a =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "lw `d0, (`s0)",
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
         | T.TEMP temp => temp
         | T.ESEQ (stm, exp) => (munchStm stm ; munchExp exp)
         | T.NAME label =>
