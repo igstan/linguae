@@ -367,7 +367,24 @@ struct
                 jump = SOME []
               }
             )
-        | T.BINOP (T.RSHIFT, a, b) => raise Fail "not implemented"
+        | T.BINOP (T.RSHIFT, a, T.CONST c) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "srl `d0, `s0, " ^ immediate c,
+                src = [munchExp a],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
+        | T.BINOP (T.RSHIFT, a, b) =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "srlv `d0, `s0, `s1",
+                src = [munchExp a, munchExp b],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
         | T.BINOP (T.ARSHIFT, a, b) => raise Fail "not implemented"
         | T.BINOP (T.XOR, a, b) => raise Fail "not implemented"
         | T.MEM exp => raise Fail "not implemented"
