@@ -237,7 +237,15 @@ struct
         | T.MEM exp => raise Fail "not implemented"
         | T.TEMP temp => raise Fail "not implemented"
         | T.ESEQ (stm, exp) => raise Fail "not implemented"
-        | T.NAME label => raise Fail "not implemented"
+        | T.NAME label =>
+            withTemporary (fn temp =>
+              emit $ A.OPER {
+                assem = "la `d0, " ^ Symbol.name label,
+                src = [],
+                dst = [temp],
+                jump = SOME []
+              }
+            )
         | T.CONST c =>
             withTemporary (fn temp =>
               emit $ A.OPER {
