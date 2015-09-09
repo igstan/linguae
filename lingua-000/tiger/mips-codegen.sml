@@ -28,14 +28,27 @@ struct
           T.SEQ (a, b) => (munchStm a ; munchStm b)
         | T.LABEL label =>
             emit $ A.LABEL { assem = Symbol.name label ^ ":\n", lab = label }
-        | T.JUMP (T.NAME label, _) =>
+        | T.JUMP (T.NAME label, labels) =>
             emit $ A.OPER {
               assem = "j `j0",
               src = [],
               dst = [],
-              jump = SOME [label]
+              jump = SOME labels
             }
-        | T.JUMP _ => raise Fail "bug: can only jump to labels"
+        | T.JUMP (T.TEMP temp, labels) =>
+            emit $ A.OPER {
+              assem = "jr `s0",
+              src = [temp],
+              dst = [],
+              jump = SOME labels
+            }
+        | T.JUMP (target, labels) =>
+            emit $ A.OPER {
+              assem = "jr `s0",
+              src = [munchExp target],
+              dst = [],
+              jump = SOME labels
+            }
         | T.CJUMP (T.EQ, T.CONST 0, a, tLabel, fLabel) =>
             munchStm (T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel) =>
