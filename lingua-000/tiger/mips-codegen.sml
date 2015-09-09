@@ -224,10 +224,62 @@ struct
           ; munchStm (T.CJUMP (T.NE, T.TEMP condition, T.CONST 0, tLabel, fLabel))
           end
 
-        | T.CJUMP (T.ULT, a, b, tLabel, fLabel) => raise Fail "not implemented"
-        | T.CJUMP (T.ULE, a, b, tLabel, fLabel) => raise Fail "not implemented"
-        | T.CJUMP (T.UGT, a, b, tLabel, fLabel) => raise Fail "not implemented"
-        | T.CJUMP (T.UGE, a, b, tLabel, fLabel) => raise Fail "not implemented"
+        | T.CJUMP (T.ULT, a, T.CONST c, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bltu `d0, " ^ immediate c ^ ", `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.ULT, a, b, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bltu `d0, `s0, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.ULE, a, T.CONST c, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bleu `d0, " ^ immediate c ^ ", `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.ULE, a, b, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bleu `d0, `s0, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.UGT, a, T.CONST c, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bgtu `d0, " ^ immediate c ^ ", `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.UGT, a, b, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bgtu `d0, `s0, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.UGE, a, T.CONST c, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bgeu `d0, " ^ immediate c ^ ", `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
+        | T.CJUMP (T.UGE, a, b, tLabel, fLabel) =>
+            emit $ A.OPER {
+              assem = "bgeu `d0, `s0, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
         | T.MOVE (T.TEMP temp, T.CONST c) =>
             emit $ A.OPER {
               assem = "li `d0, " ^ immediate c,
