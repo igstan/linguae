@@ -36,10 +36,8 @@ struct
               jump = SOME [label]
             }
         | T.JUMP _ => raise Fail "bug: can only jump to labels"
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a == b                                                             *)
-        (* —————————————————————————————————————————————————————————————————— *)
+        | T.CJUMP (T.EQ, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "beq `s0, $zero, `j0",
@@ -47,8 +45,6 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
-        | T.CJUMP (T.EQ, T.CONST 0, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.EQ, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.EQ, a, b, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "beq `s0, `s1, `j0",
@@ -56,10 +52,8 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a != b                                                             *)
-        (* —————————————————————————————————————————————————————————————————— *)
+        | T.CJUMP (T.NE, T.CONST 0, a, tLabel, fLabel) =>
+            munchStm (T.CJUMP (T.NE, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.NE, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bne `s0, $zero, `j0",
@@ -67,8 +61,6 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
-        | T.CJUMP (T.NE, T.CONST 0, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.NE, a, T.CONST 0, tLabel, fLabel))
         | T.CJUMP (T.NE, a, b, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bne `s0, `s1, `j0",
@@ -76,12 +68,6 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a >= b                                                             *)
-        (* —————————————————————————————————————————————————————————————————— *)
-        | T.CJUMP (T.GE, c as T.CONST _, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.LE, a, c, tLabel, fLabel))
         | T.CJUMP (T.GE, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bgez `s0, `j0",
@@ -90,35 +76,19 @@ struct
               jump = SOME [tLabel, fLabel]
             }
         | T.CJUMP (T.GE, a, T.CONST c, tLabel, fLabel) =>
-          let
-            val condition = Temp.newTemp ()
-          in
             emit $ A.OPER {
-              assem = "slti `d0, `s0, " ^ immediate c,
+              assem = "bge `d0, " ^ immediate c ^ ", `j0",
               src = [munchExp a],
-              dst = [condition],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.NE, T.TEMP condition, T.CONST 0, tLabel, fLabel))
-          end
         | T.CJUMP (T.GE, a, b, tLabel, fLabel) =>
-          let
-            val condition = Temp.newTemp ()
-          in
             emit $ A.OPER {
-              assem = "slt `d0, `s0, `s1",
+              assem = "bge `d0, `s0, `j0",
               src = [munchExp a, munchExp b],
-              dst = [condition],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, tLabel, fLabel))
-          end
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a > b                                                              *)
-        (* —————————————————————————————————————————————————————————————————— *)
-        | T.CJUMP (T.GT, c as T.CONST _, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.LT, a, c, tLabel, fLabel))
         | T.CJUMP (T.GT, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bgtz `s0, `j0",
@@ -126,27 +96,20 @@ struct
               dst = [],
               jump = SOME [tLabel, fLabel]
             }
-        | T.CJUMP (T.GT, a, c as T.CONST _, tLabel, fLabel) =>
-          let
-            val tempResult = Temp.newTemp ()
-            val condition = Temp.newTemp ()
-          in
+        | T.CJUMP (T.GT, a, T.CONST c, tLabel, fLabel) =>
             emit $ A.OPER {
-              assem = "addi `d0, $zero, $s0",
-              src = [munchExp c],
-              dst = [tempResult],
-              jump = SOME []
+              assem = "bgt `d0, " ^ immediate c ^ ", `j0",
+              src = [munchExp a],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.LT, T.TEMP tempResult, a, tLabel, fLabel))
-          end
         | T.CJUMP (T.GT, a, b, tLabel, fLabel) =>
-          munchStm (T.CJUMP (T.LT, b, a, tLabel, fLabel))
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a <= b                                                             *)
-        (* —————————————————————————————————————————————————————————————————— *)
-        | T.CJUMP (T.LE, c as T.CONST _, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.GE, a, c, tLabel, fLabel))
+            emit $ A.OPER {
+              assem = "bgt `d0, `s0, `j0",
+              src = [munchExp a, munchExp b],
+              dst = [],
+              jump = SOME [tLabel, fLabel]
+            }
         | T.CJUMP (T.LE, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "blez `s0, `j0",
@@ -155,43 +118,19 @@ struct
               jump = SOME [tLabel, fLabel]
             }
         | T.CJUMP (T.LE, a, T.CONST c, tLabel, fLabel) =>
-          let
-            val decrement = Temp.newTemp ()
-            val condition = Temp.newTemp ()
-          in
-            (* `a <= b` is equivalent to `(a - 1) < b` *)
             emit $ A.OPER {
-              assem = "addi `d0, `s0, 0xffffffff",
+              assem = "ble `d0, " ^ immediate c ^ ", `j0",
               src = [munchExp a],
-              dst = [decrement],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; emit $ A.OPER {
-              assem = "slti `d0, `s0, " ^ immediate c,
-              src = [decrement],
-              dst = [condition],
-              jump = SOME []
-            }
-          ; munchStm (T.CJUMP (T.NE, T.TEMP condition, T.CONST 0, tLabel, fLabel))
-          end
         | T.CJUMP (T.LE, a, b, tLabel, fLabel) =>
-          let
-            val condition = Temp.newTemp ()
-          in
             emit $ A.OPER {
-              assem = "slt `d0, `s1, `s0",
+              assem = "ble `d0, `s0, `j0",
               src = [munchExp a, munchExp b],
-              dst = [condition],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.EQ, T.TEMP condition, T.CONST 0, fLabel, tLabel))
-          end
-
-        (* —————————————————————————————————————————————————————————————————— *)
-        (* a < b                                                              *)
-        (* —————————————————————————————————————————————————————————————————— *)
-        | T.CJUMP (T.LT, c as T.CONST _, a, tLabel, fLabel) =>
-            munchStm (T.CJUMP (T.GT, a, c, tLabel, fLabel))
         | T.CJUMP (T.LT, a, T.CONST 0, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bltz `s0, `j0",
@@ -200,30 +139,19 @@ struct
               jump = SOME [tLabel, fLabel]
             }
         | T.CJUMP (T.LT, a, T.CONST c, tLabel, fLabel) =>
-          let
-            val condition = Temp.newTemp ()
-          in
             emit $ A.OPER {
-              assem = "slti `d0, `s0, " ^ immediate c,
+              assem = "blt `d0, " ^ immediate c ^ ", `j0",
               src = [munchExp a],
-              dst = [condition],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.NE, T.TEMP condition, T.CONST 0, tLabel, fLabel))
-          end
         | T.CJUMP (T.LT, a, b, tLabel, fLabel) =>
-          let
-            val condition = Temp.newTemp ()
-          in
             emit $ A.OPER {
-              assem = "slt `d0, `s0, `s1",
+              assem = "blt `d0, `s0, `j0",
               src = [munchExp a, munchExp b],
-              dst = [condition],
-              jump = SOME []
+              dst = [],
+              jump = SOME [tLabel, fLabel]
             }
-          ; munchStm (T.CJUMP (T.NE, T.TEMP condition, T.CONST 0, tLabel, fLabel))
-          end
-
         | T.CJUMP (T.ULT, a, T.CONST c, tLabel, fLabel) =>
             emit $ A.OPER {
               assem = "bltu `d0, " ^ immediate c ^ ", `j0",
