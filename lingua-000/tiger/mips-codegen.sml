@@ -228,7 +228,71 @@ struct
         | T.CJUMP (T.ULE, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.CJUMP (T.UGT, a, b, tLabel, fLabel) => raise Fail "not implemented"
         | T.CJUMP (T.UGE, a, b, tLabel, fLabel) => raise Fail "not implemented"
-        | T.MOVE (dst, src) => raise Fail "not implemented"
+        | T.MOVE (T.TEMP temp, T.CONST c) =>
+            emit $ A.OPER {
+              assem = "li `d0, " ^ immediate c,
+              src = [],
+              dst = [temp],
+              jump = SOME []
+            }
+        | T.MOVE (T.TEMP temp, src) =>
+            emit $ A.OPER {
+              assem = "move `d0, `s0",
+              src = [munchExp src],
+              dst = [temp],
+              jump = SOME []
+            }
+        | T.MOVE (src, T.CONST c) =>
+          let
+            val result = munchExp src
+          in
+            emit $ A.OPER {
+              assem = "sw `d0, " ^ immediate c,
+              src = [result],
+              dst = [result],
+              jump = SOME []
+            }
+          end
+        | T.MOVE (T.BINOP (T.PLUS, c as T.CONST _, a), src) =>
+            munchStm (T.MOVE (T.BINOP (T.PLUS, a, c), src))
+        | T.MOVE (T.BINOP (T.PLUS, a, T.CONST c), src) =>
+          let
+            val dst = munchExp a
+            val src = munchExp src
+          in
+            emit $ A.OPER {
+              assem = "sw `d0, " ^ immediate c ^ "(`s0)",
+              src = [dst, src],
+              dst = [src],
+              jump = SOME []
+            }
+          end
+        | T.MOVE (T.BINOP (T.MINUS, a, T.CONST c), src) =>
+          let
+            val dst = munchExp a
+            val src = munchExp src
+          in
+            emit $ A.OPER {
+              assem = "sw `d0, " ^ immediate (~ c) ^ "(`s0)",
+              src = [dst, src],
+              dst = [dst],
+              jump = SOME []
+            }
+          end
+        | T.MOVE (T.MEM dst, src) =>
+            munchStm (T.MOVE (dst, src))
+        | T.MOVE (dst, src) =>
+          let
+            val dst = munchExp dst
+            val src = munchExp src
+          in
+            emit $ A.OPER {
+              assem = "sw `d0, (`s0)",
+              src = [dst, src],
+              dst = [dst],
+              jump = SOME []
+            }
+          end
         | T.EXP exp => ignore (munchExp exp)
 
       and munchExp exp =
