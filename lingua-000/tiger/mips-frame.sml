@@ -4,6 +4,7 @@ struct
 
   open Fn
   structure T = Tree
+  structure R = MipsRegister
 
   (**
    * Where this local will be stored — stack frame or register.
@@ -27,8 +28,8 @@ struct
     PROC of { body : Tree.stm, frame : frame }
   | STRING of Temp.label * string
 
-  val FP = MipsRegister.FP
-  val RV = MipsRegister.RA
+  val FP = R.FP
+  val RV = R.V0
   val wordSize = 4
 
   fun string (label, string) = string
