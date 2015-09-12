@@ -539,13 +539,17 @@ struct
         | T.CALL (T.NAME label, args) =>
           let
             val calldefs = [Frame.RV, Frame.RA] @ Frame.Registers.callerSave
+            val mapping = List.map (fn r => (r, Temp.newTemp ())) Frame.Registers.callerSave
+            fun move a b = T.MOVE (T.TEMP a, T.TEMP b)
           in
-            emit $ A.OPER {
+            List.app (fn (r, t) => munchStm (move r t)) mapping
+          ; emit $ A.OPER {
               assem = "jal " ^ Symbol.name label,
               src = munchArgs args,
               dst = calldefs,
               jump = SOME []
             }
+          ; List.app (fn (r, t) => munchStm (move t r)) mapping
           ; Frame.RV
           end
         | T.CALL (func, args) =>
