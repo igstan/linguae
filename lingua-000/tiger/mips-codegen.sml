@@ -536,7 +536,64 @@ struct
                 jump = SOME []
               }
             )
-        | T.CALL (func, args) => raise Fail "not implemented"
+        | T.CALL (T.NAME label, args) =>
+          let
+            val calldefs = [Frame.RV, Frame.RA] @ Frame.Registers.callerSave
+          in
+            emit $ A.OPER {
+              assem = "jal " ^ Symbol.name label,
+              src = munchArgs args,
+              dst = calldefs,
+              jump = SOME []
+            }
+          ; Frame.RV
+          end
+        | T.CALL (func, args) =>
+          let
+            val calldefs = [Frame.RV, Frame.RA] @ Frame.Registers.callerSave
+          in
+            emit $ A.OPER {
+              assem = "jalr `s0",
+              src = (munchExp func) :: munchArgs args,
+              dst = calldefs,
+              jump = SOME []
+            }
+          ; Frame.RV
+          end
+
+      and munchArgs args =
+        let
+          fun loop i args argRegisters usedTemps =
+            case (args, argRegisters) of
+              ([], _) => usedTemps
+            | (arg :: args, argRegister :: argRegisters) =>
+              let in
+                emit $ A.OPER {
+                  assem = "move `d0, `s0",
+                  src = [munchExp arg],
+                  dst = [argRegister],
+                  jump = SOME []
+                }
+              ; loop (i + 1) args argRegisters (argRegister :: usedTemps)
+              end
+            | (arg :: args, []) => (* Pass arguments via the stack. *)
+              let in
+                emit $ A.OPER {
+                  (*
+                   * Because the stack grows from higher to lower address and
+                   * the arguments are stored closer to the stack pointer, the
+                   * offsets are positive, not negative.
+                   *)
+                  assem = "sw `s0, " ^ immediate (i * Frame.wordSize) ^ "(`d0)",
+                  src = [munchExp arg],
+                  dst = [Frame.SP],
+                  jump = SOME []
+                }
+              ; loop (i + 1) args [] usedTemps
+              end
+        in
+          List.rev (loop 0 args Frame.Registers.arguments [])
+        end
     in
       munchStm tree
     ; List.rev (!instructions)

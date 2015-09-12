@@ -9,7 +9,7 @@ struct
         val _ = app (fn s => TreePrinter.print (out, s)) stms
         val stms' = Canon.traceSchedule (Canon.basicBlocks stms)
         val instrs = List.concat (map (MipsCodegen.codegen frame) stms')
-        val format0 = Assem.format (Temp.makeString)
+        val format0 = Assem.format Frame.tempName
       in
         List.app (fn i => TextIO.output (out, format0 i)) instrs
       end

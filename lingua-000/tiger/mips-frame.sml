@@ -3,6 +3,7 @@ struct
   infix 1 |>
 
   open Fn
+  structure A = Assem
   structure T = Tree
   structure R = MipsRegister
 
@@ -28,9 +29,62 @@ struct
     PROC of { body : Tree.stm, frame : frame }
   | STRING of Temp.label * string
 
+  type register = string
+
+  val SP = R.SP
   val FP = R.FP
   val RV = R.V0
+  val RA = R.RA
   val wordSize = 4
+
+  val tempMap =
+    let
+      fun enter ((k, v), table) = Temp.Table.enter (table, k, v)
+    in
+      List.foldl enter Temp.Table.empty [
+        (R.ZERO, "$zero"),
+        (R.V0, "$v0"),
+        (R.V1, "$v1"),
+        (R.A0, "$a0"),
+        (R.A1, "$a1"),
+        (R.A2, "$a2"),
+        (R.A3, "$a3"),
+        (R.T0, "$t0"),
+        (R.T1, "$t1"),
+        (R.T2, "$t2"),
+        (R.T3, "$t3"),
+        (R.T4, "$t4"),
+        (R.T5, "$t5"),
+        (R.T6, "$t6"),
+        (R.T7, "$t7"),
+        (R.T8, "$t8"),
+        (R.T9, "$t9"),
+        (R.S0, "$s0"),
+        (R.S1, "$s1"),
+        (R.S2, "$s2"),
+        (R.S3, "$s3"),
+        (R.S4, "$s4"),
+        (R.S5, "$s5"),
+        (R.S6, "$s6"),
+        (R.S7, "$s7"),
+        (R.SP, "$sp"),
+        (R.FP, "$fp"),
+        (R.RA, "$ra")
+      ]
+    end
+
+  fun tempName temp =
+    case Temp.Table.look (tempMap, temp) of
+      NONE => Temp.makeString temp
+    | SOME name => name
+
+  structure Registers =
+  struct
+    val special = [R.V0, R.FP, R.SP, R.RA, R.ZERO]
+    val arguments = [R.A0, R.A1, R.A2, R.A3]
+    val calleeSave = [R.S0, R.S1, R.S2, R.S3, R.S4, R.S5, R.S6, R.S7]
+    val callerSave = [R.T0, R.T1, R.T2, R.T3, R.T4, R.T5, R.T6, R.T7, R.T8, R.T9]
+  end
 
   fun string (label, string) = string
 
@@ -105,5 +159,27 @@ struct
     then InFrame (Ref.getAndIncrement inFrameCount)
     else InRegister (Temp.newTemp ())
 
+  type proc = {
+    prolog : string,
+    body : Assem.instr list,
+    epilog : string
+  }
+
   fun procEntryExit1 (frame, body) = body
+
+  fun procEntryExit2 (frame, body) =
+    body @ [
+      A.OPER {
+        assem = "",
+        src = [R.ZERO, R.RA, R.SP] @ Registers.calleeSave,
+        dst = [],
+        jump = SOME []
+      }
+    ]
+
+  fun procEntryExit3 (StackFrame { label, ... }, body) = {
+    prolog = "PROCEDURE " ^ Symbol.name label ^ "\n",
+    body = body,
+    epilog = "END " ^ Symbol.name label ^ "\n"
+  }
 end

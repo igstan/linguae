@@ -16,9 +16,16 @@ sig
    *)
   type access
 
+  type register = string
+
   datatype frag =
     PROC of { body : Tree.stm, frame : frame }
   | STRING of Temp.label * string
+
+  (**
+   * The stack pointer.
+   *)
+  val SP : Temp.temp
 
   (**
    * The frame pointer.
@@ -31,9 +38,25 @@ sig
   val RV : Temp.temp
 
   (**
+   * The return address of a function.
+   *)
+  val RA : Temp.temp
+
+  (**
    * Machine's word size.
    *)
   val wordSize : int
+
+  val tempMap : register Temp.Table.table
+
+  val tempName : Temp.temp -> string
+
+  structure Registers : sig
+    val special : Temp.temp list
+    val arguments : Temp.temp list
+    val callerSave : Temp.temp list
+    val calleeSave : Temp.temp list
+  end
 
   val outermost : frame
 
@@ -65,5 +88,13 @@ sig
    *)
   val allocLocal : frame -> bool -> access
 
+  type proc = {
+    prolog : string,
+    body : Assem.instr list,
+    epilog : string
+  }
+
   val procEntryExit1 : frame * Tree.stm -> Tree.stm
+  val procEntryExit2 : frame * Assem.instr list -> Assem.instr list
+  val procEntryExit3 : frame * Assem.instr list -> proc
 end
