@@ -19,6 +19,8 @@ is
   frame.sml
   free-var-analysis.sig
   free-var-analysis.sml
+  graph.sig
+  graph.sml
   main.sml
   mips-codegen.sml
   mips-frame.sml
