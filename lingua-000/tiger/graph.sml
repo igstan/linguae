@@ -25,7 +25,7 @@ struct
 
   structure Table = IntMapTable(
     type key = node
-    fun getInt(g,n) = n
+    fun getInt (g, n) = n
   )
 
   exception GraphEdge

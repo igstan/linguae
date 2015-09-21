@@ -15,6 +15,7 @@ is
   env.sml
   escape-analysis.sig
   escape-analysis.sml
+  flow.sml
   frame.sig
   frame.sml
   free-var-analysis.sig
@@ -22,6 +23,8 @@ is
   graph.sig
   graph.sml
   main.sml
+  make-graph.sig
+  make-graph.sml
   mips-codegen.sml
   mips-frame.sml
   mips-register.sml
