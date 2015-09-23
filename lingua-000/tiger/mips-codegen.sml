@@ -226,14 +226,14 @@ struct
               assem = "li `d0, " ^ immediate c,
               src = [],
               dst = [temp],
-              jump = SOME []
+              jump = NONE
             }
         | T.MOVE (T.TEMP temp, src) =>
             emit $ A.OPER {
               assem = "move `d0, `s0",
               src = [munchExp src],
               dst = [temp],
-              jump = SOME []
+              jump = NONE
             }
         | T.MOVE (src, T.CONST c) =>
           let
@@ -243,7 +243,7 @@ struct
               assem = "sw `d0, " ^ immediate c,
               src = [result],
               dst = [result],
-              jump = SOME []
+              jump = NONE
             }
           end
         | T.MOVE (T.BINOP (T.PLUS, c as T.CONST _, a), src) =>
@@ -257,7 +257,7 @@ struct
               assem = "sw `d0, " ^ immediate c ^ "(`s0)",
               src = [dst, src],
               dst = [src],
-              jump = SOME []
+              jump = NONE
             }
           end
         | T.MOVE (T.BINOP (T.MINUS, a, T.CONST c), src) =>
@@ -269,7 +269,7 @@ struct
               assem = "sw `d0, " ^ immediate (~ c) ^ "(`s0)",
               src = [dst, src],
               dst = [dst],
-              jump = SOME []
+              jump = NONE
             }
           end
         | T.MOVE (T.MEM dst, src) =>
@@ -283,7 +283,7 @@ struct
               assem = "sw `d0, (`s0)",
               src = [dst, src],
               dst = [dst],
-              jump = SOME []
+              jump = NONE
             }
           end
         | T.EXP exp => ignore (munchExp exp)
@@ -299,7 +299,7 @@ struct
                 assem = "addiu `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.PLUS, a, b) =>
@@ -308,7 +308,7 @@ struct
                 assem = "addu `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.MINUS, a, T.CONST 0) => munchExp a
@@ -318,7 +318,7 @@ struct
                 assem = "subiu `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.MINUS, a, b) =>
@@ -327,7 +327,7 @@ struct
                 assem = "subu `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.MUL, T.CONST 1, a) => munchExp a
@@ -339,7 +339,7 @@ struct
                 assem = "mul `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.MUL, a, b) =>
@@ -348,7 +348,7 @@ struct
                 assem = "mul `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.DIV, a, T.CONST 1) => munchExp a
@@ -358,7 +358,7 @@ struct
                 assem = "div `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.DIV, a, b) =>
@@ -367,7 +367,7 @@ struct
                 assem = "div `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.AND, a, T.CONST c) =>
@@ -376,7 +376,7 @@ struct
                 assem = "andi `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.AND, a, b) =>
@@ -385,7 +385,7 @@ struct
                 assem = "and `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.OR, a, T.CONST c) =>
@@ -394,7 +394,7 @@ struct
                 assem = "ori `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.OR, a, b) =>
@@ -403,7 +403,7 @@ struct
                 assem = "or `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.LSHIFT, a, T.CONST c) =>
@@ -412,7 +412,7 @@ struct
                 assem = "sll `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.LSHIFT, a, b) =>
@@ -421,7 +421,7 @@ struct
                 assem = "sllv `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.RSHIFT, a, T.CONST c) =>
@@ -430,7 +430,7 @@ struct
                 assem = "srl `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.RSHIFT, a, b) =>
@@ -439,7 +439,7 @@ struct
                 assem = "srlv `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.ARSHIFT, a, T.CONST c) =>
@@ -448,7 +448,7 @@ struct
                 assem = "sra `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.ARSHIFT, a, b) =>
@@ -457,7 +457,7 @@ struct
                 assem = "srav `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.XOR, a, T.CONST c) =>
@@ -466,7 +466,7 @@ struct
                 assem = "xori `d0, `s0, " ^ immediate c,
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.BINOP (T.XOR, a, b) =>
@@ -475,7 +475,7 @@ struct
                 assem = "xor `d0, `s0, `s1",
                 src = [munchExp a, munchExp b],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.MEM (T.CONST c) =>
@@ -484,7 +484,7 @@ struct
                 assem = "lw `d0, " ^ immediate c,
                 src = [],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.MEM (T.BINOP (T.PLUS, a, c as T.CONST _)) =>
@@ -495,7 +495,7 @@ struct
                 assem = "lw `d0, " ^ immediate c ^ "(`s0)",
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.MEM (T.BINOP (T.MINUS, a, T.CONST c)) =>
@@ -504,7 +504,7 @@ struct
                 assem = "lw `d0, " ^ immediate (~ c) ^ "(`s0)",
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.MEM a =>
@@ -513,7 +513,7 @@ struct
                 assem = "lw `d0, (`s0)",
                 src = [munchExp a],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.TEMP temp => temp
@@ -524,7 +524,7 @@ struct
                 assem = "la `d0, " ^ Symbol.name label,
                 src = [],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.CONST c =>
@@ -533,7 +533,7 @@ struct
                 assem = "addiu `d0, $zero, " ^ immediate c,
                 src = [],
                 dst = [temp],
-                jump = SOME []
+                jump = NONE
               }
             )
         | T.CALL (T.NAME label, args) =>
@@ -547,7 +547,7 @@ struct
               assem = "jal " ^ Symbol.name label,
               src = munchArgs args,
               dst = calldefs,
-              jump = SOME []
+              jump = NONE
             }
           ; List.app (fn (r, t) => munchStm (move t r)) mapping
           ; Frame.RV
@@ -560,7 +560,7 @@ struct
               assem = "jalr `s0",
               src = (munchExp func) :: munchArgs args,
               dst = calldefs,
-              jump = SOME []
+              jump = NONE
             }
           ; Frame.RV
           end
@@ -576,7 +576,7 @@ struct
                   assem = "move `d0, `s0",
                   src = [munchExp arg],
                   dst = [argRegister],
-                  jump = SOME []
+                  jump = NONE
                 }
               ; loop (i + 1) args argRegisters (argRegister :: usedTemps)
               end
@@ -591,7 +591,7 @@ struct
                   assem = "sw `s0, " ^ immediate (i * Frame.wordSize) ^ "(`d0)",
                   src = [munchExp arg],
                   dst = [Frame.SP],
-                  jump = SOME []
+                  jump = NONE
                 }
               ; loop (i + 1) args [] usedTemps
               end
