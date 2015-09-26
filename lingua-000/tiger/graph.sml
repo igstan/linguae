@@ -10,7 +10,7 @@ struct
 
   val bogusNode = NODE { succ = [~1], pred = [] }
 
-  fun isBogus (NODE { succ = ~1 :: _, ... }) = true
+  fun isBogus (NODE { succ = [~1], ... }) = true
     | isBogus _ = false
 
   structure A = DynamicArrayFn(struct

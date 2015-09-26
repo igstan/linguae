@@ -42,6 +42,7 @@ is
   temp.sig
   temp.sml
   test.sml
+  topo-sort.sml
   translate.sig
   translate.sml
   tree-printer.sig
