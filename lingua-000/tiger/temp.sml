@@ -2,11 +2,6 @@ structure Temp : TEMP =
 struct
   structure F = Format
 
-  structure Table = IntMapTable(
-    type key = int
-    fun getInt n = n
-  )
-
   type temp = int
 
   val temps = ref 100

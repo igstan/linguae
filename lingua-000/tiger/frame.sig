@@ -47,7 +47,9 @@ sig
    *)
   val wordSize : int
 
-  val tempMap : register Temp.Table.table
+  structure TempMap : ORD_MAP where type Key.ord_key = Temp.temp
+
+  val tempMap : register TempMap.map
 
   val tempName : Temp.temp -> string
 

@@ -37,11 +37,16 @@ struct
   val RA = R.RA
   val wordSize = 4
 
+  structure TempMap = BinaryMapFn(struct
+    type ord_key = Temp.temp
+    val compare = Int.compare
+  end)
+
   val tempMap =
     let
-      fun enter ((k, v), table) = Temp.Table.enter (table, k, v)
+      fun enter ((k, v), table) = TempMap.insert (table, k, v)
     in
-      List.foldl enter Temp.Table.empty [
+      List.foldl enter TempMap.empty [
         (R.ZERO, "$zero"),
         (R.V0, "$v0"),
         (R.V1, "$v1"),
@@ -74,7 +79,7 @@ struct
     end
 
   fun tempName temp =
-    case Temp.Table.look (tempMap, temp) of
+    case TempMap.find (tempMap, temp) of
       NONE => Temp.makeString temp
     | SOME name => name
 

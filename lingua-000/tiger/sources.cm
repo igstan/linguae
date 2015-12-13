@@ -37,8 +37,6 @@ is
   symbol.sml
   syntax.sig
   syntax.sml
-  table.sig
-  table.sml
   temp.sig
   temp.sml
   test.sml
