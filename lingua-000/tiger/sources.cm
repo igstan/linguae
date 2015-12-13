@@ -22,6 +22,8 @@ is
   free-var-analysis.sml
   graph.sig
   graph.sml
+  liveness-analysis.sig
+  liveness-analysis.sml
   main.sml
   make-graph.sig
   make-graph.sml
