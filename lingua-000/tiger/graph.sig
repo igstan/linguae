@@ -3,7 +3,11 @@ sig
   type node
   type graph
 
-  structure Table : TABLE where type key = node
+  structure NodeMap : ORD_MAP where type Key.ord_key = node
+  structure TempSet : ORD_SET where type Key.ord_key = Temp.temp
+
+  type 'a node_map = 'a NodeMap.map
+  type temp_set = TempSet.set
 
   exception GraphEdge
 

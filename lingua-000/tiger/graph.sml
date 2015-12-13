@@ -23,10 +23,18 @@ struct
   type graph = A.array
   type node = graph * node'
 
-  structure Table = IntMapTable(
-    type key = node
-    fun getInt (g, n) = n
-  )
+  structure NodeMap = BinaryMapFn(struct
+    type ord_key = node
+    fun compare ((_, a), (_, b)) = Int.compare (a, b)
+  end)
+
+  structure TempSet = BinarySetFn(struct
+    type ord_key = Temp.temp
+    val compare = Int.compare
+  end)
+
+  type 'a node_map = 'a NodeMap.map
+  type temp_set = TempSet.set
 
   exception GraphEdge
 

@@ -6,25 +6,25 @@ struct
   open Fn infix 1 |>
 
   structure G = Graph
-  structure T = Graph.Table
+  structure M = Graph.NodeMap
 
   fun sort (graph : G.graph) : G.node list =
     let
       fun fold (node, (result, marked)) =
-        case T.look (marked, node) of
+        case M.find (marked, node) of
           SOME _ => (result, marked)
         | NONE => dfs node marked result
 
       and dfs node marked result =
         let
           val nodes = G.succ node
-          val marked = T.enter (marked, node, true)
+          val marked = M.insert (marked, node, true)
           val (result, marked) = List.foldl fold (result, marked) nodes
         in
           (node :: result, marked)
         end
 
-      val seed = ([], T.empty)
+      val seed = ([], M.empty)
       val nodes = G.nodes graph
     in
       List.foldl fold seed nodes |> #1

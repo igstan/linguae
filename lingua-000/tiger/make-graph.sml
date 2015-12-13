@@ -1,11 +1,18 @@
 structure MakeGraph :> MAKE_GRAPH =
 struct
   structure A = Assem
+  structure NodeMap = Graph.NodeMap
+  structure TempSet = Graph.TempSet
 
-  fun concatList table key list =
-    case Graph.Table.look (table, key) of
-      NONE => Graph.Table.enter (table, key, list)
-    | SOME value => Graph.Table.enter (table, key, value @ list)
+  fun unionKeyedSet table key list =
+    let
+      val set =
+        case NodeMap.find (table, key) of
+          NONE => list
+        | SOME value => TempSet.union (value, list)
+    in
+      NodeMap.insert (table, key, set)
+    end
 
   fun instrs2graph instrs =
     let
@@ -41,9 +48,9 @@ struct
                   end
               val newFlowGraph = Flow.FGRAPH {
                 control = control,
-                def = concatList def instrNode dst,
-                use = concatList use instrNode src,
-                isMove = Graph.Table.enter (isMove, instrNode, false)
+                def = unionKeyedSet def instrNode (TempSet.fromList dst),
+                use = unionKeyedSet use instrNode (TempSet.fromList src),
+                isMove = NodeMap.insert (isMove, instrNode, false)
               }
             in
               (newFlowGraph, resultNodes, sourceNodesForLabel, targetNodeForLabel, SOME instrNode)
@@ -62,7 +69,7 @@ struct
                 control = control,
                 def = def,
                 use = use,
-                isMove = Graph.Table.enter (isMove, instrNode, false)
+                isMove = NodeMap.insert (isMove, instrNode, false)
               }
             in
               (newFlowGraph, resultNodes, sourceNodesForLabel, newTargetNodeForLabel, SOME instrNode)
@@ -71,9 +78,9 @@ struct
             let
               val newFlowGraph = Flow.FGRAPH {
                 control = control,
-                def = concatList def instrNode [dst],
-                use = concatList def instrNode [src],
-                isMove = Graph.Table.enter (isMove, instrNode, true)
+                def = unionKeyedSet def instrNode (TempSet.singleton dst),
+                use = unionKeyedSet use instrNode (TempSet.singleton src),
+                isMove = NodeMap.insert (isMove, instrNode, true)
               }
             in
               (newFlowGraph, resultNodes, sourceNodesForLabel, targetNodeForLabel, SOME instrNode)
@@ -85,9 +92,9 @@ struct
       val targetNodeForLabel = Symbol.empty : Graph.node Symbol.table
       val flowGraph = Flow.FGRAPH {
         control = control,
-        def = Graph.Table.empty,
-        use = Graph.Table.empty,
-        isMove = Graph.Table.empty
+        def = NodeMap.empty,
+        use = NodeMap.empty,
+        isMove = NodeMap.empty
       }
       val seed = (flowGraph, [], sourceNodesForLabel, targetNodeForLabel, NONE)
       val (flowGraph, nodes, _, _, _) = List.foldl fold seed instrs

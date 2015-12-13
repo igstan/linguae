@@ -5,8 +5,8 @@ struct
   datatype flowgraph =
     FGRAPH of {
       control : Graph.graph,
-      def : Temp.temp list Graph.Table.table,
-      use : Temp.temp list Graph.Table.table,
-      isMove : bool Graph.Table.table
+      def : Graph.temp_set Graph.node_map,
+      use : Graph.temp_set Graph.node_map,
+      isMove : bool Graph.node_map
     }
 end
