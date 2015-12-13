@@ -11,6 +11,7 @@ is
   canon.sig
   canon.sml
   codegen.sig
+  color.sig
   env.sig
   env.sml
   escape-analysis.sig
@@ -31,6 +32,7 @@ is
   mips-frame.sml
   mips-register.sml
   parse.sml
+  reg-alloc.sig
   semant.sig
   semant.sml
   showast.sig
