@@ -1,7 +1,7 @@
 # Debugger
 
 ```bash
-sbt ~fastOptJs
+$ sbt ~fastOptJS
 ```
 
 Open http://localhost:12345/target/scala-2.11/classes/index.html.
