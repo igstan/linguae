@@ -18,4 +18,3 @@ case class TypeEnv(bindings: Map[String, TypeScheme]) {
 object TypeEnv {
   def empty = TypeEnv(Map.empty)
 }
-
