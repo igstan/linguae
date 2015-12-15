@@ -11,3 +11,5 @@ To launch the debugger:
 ```js
 ro.igstan.debugger.Main().main();
 ```
+
+![Debugger Screenshot](doc/debugger.gif)
