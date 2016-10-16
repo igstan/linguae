@@ -1,10 +1,7 @@
 group
 
 is
-  $/basis.cm
-  $/smlnj-lib.cm
-
-  $SMACKAGE/sml-extras/v0.1.0/sources.sml.cm
+  $SMACKAGE/sml-foundation/v0.1.4/lib.cm (version: 0.1.4)
 
   src/term.sml
   src/type.sml

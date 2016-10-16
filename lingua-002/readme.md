@@ -4,6 +4,7 @@
 
 ```
 $ sml -Cprint.depth=20
+- CM.make "sources.cm";
 - open Terms;
 opening Terms
   val predef : TypeEnv.ty
