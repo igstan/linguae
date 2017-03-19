@@ -12,5 +12,6 @@ focusing on a single concept or implementation detail.
 - [lingua-003](lingua-003) — Tree-based interpreter for a language supporting closures, mutation and recursive let bindings.
 - [lingua-004](lingua-004) — Parser for a LISP-like language.
 - [lingua-005](lingua-005) — Incomplete debugger for an ML-like language.
+- [lingua-006](lingua-006) — Damas-Hindley-Milner type inference in Scala.
 
 [0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
