@@ -13,5 +13,6 @@ focusing on a single concept or implementation detail.
 - [lingua-004](lingua-004) — Parser for a LISP-like language.
 - [lingua-005](lingua-005) — Incomplete debugger for an ML-like language in Scala.js.
 - [lingua-006](lingua-006) — Damas-Hindley-Milner type inference in Scala.
+- [lingua-007](lingua-007) — A small ML written in Apple's Swift.
 
 [0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
