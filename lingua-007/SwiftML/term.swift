@@ -11,6 +11,15 @@ indirect enum Value {
   func success() -> Result<Value, String> {
     return .Success(self)
   }
+
+  func toString() -> String {
+    switch self {
+      case .Num(let n): return String(n)
+      case .Bool(true): return "true"
+      case .Bool(false): return "false"
+      case .Fun(_, _, _), .Primitive(_): return "fn"
+    }
+  }
 }
 
 indirect enum Term {

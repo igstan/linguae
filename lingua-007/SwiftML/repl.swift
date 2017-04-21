@@ -11,10 +11,12 @@ func repl(prompt: String) {
       return
     case .some(let source):
       switch parse(scanAll(source.characters)) {
-        case .none:
-          print("syntax error")
+        case .none: print("syntax error")
         case let .some((term, _)):
-          print("val it =", String(describing: term.eval(env: [:])))
+          switch term.eval(env: [:]) {
+            case .Failure(let f): print("error:", f)
+            case .Success(let s): print("val it =", s.toString())
+          }
       }
       repl(prompt: prompt)
   }
