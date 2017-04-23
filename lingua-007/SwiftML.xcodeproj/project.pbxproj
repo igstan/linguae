@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1301812A1EACF8B100226BF4 /* substitution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130181291EACF8B100226BF4 /* substitution.swift */; };
 		1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1329B1631EAC5521009E4AB9 /* dictionary.swift */; };
 		1367B2C91EAA44E3002054BF /* annotate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2C81EAA44E3002054BF /* annotate.swift */; };
 		136A19581EABD74C00CF071B /* unify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A19571EABD74C00CF071B /* unify.swift */; };
@@ -33,6 +34,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		130181291EACF8B100226BF4 /* substitution.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = substitution.swift; sourceTree = "<group>"; };
 		1329B1631EAC5521009E4AB9 /* dictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dictionary.swift; sourceTree = "<group>"; };
 		1367B2C81EAA44E3002054BF /* annotate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = annotate.swift; sourceTree = "<group>"; };
 		136A19571EABD74C00CF071B /* unify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unify.swift; sourceTree = "<group>"; };
@@ -71,6 +73,7 @@
 			children = (
 				1367B2C81EAA44E3002054BF /* annotate.swift */,
 				13A66E561EABC7D3001BF4B4 /* constrain.swift */,
+				130181291EACF8B100226BF4 /* substitution.swift */,
 				136A19571EABD74C00CF071B /* unify.swift */,
 			);
 			name = Elaborator;
@@ -177,6 +180,7 @@
 				13CBF7F71EAA36BB00D7AA12 /* result.swift in Sources */,
 				13CBF7F41EAA36BB00D7AA12 /* main.swift in Sources */,
 				1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */,
+				1301812A1EACF8B100226BF4 /* substitution.swift in Sources */,
 				13A66E571EABC7D3001BF4B4 /* constrain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

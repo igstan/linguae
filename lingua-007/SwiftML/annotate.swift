@@ -39,6 +39,27 @@ indirect enum Type: Equatable, CustomStringConvertible {
         }
     }
   }
+
+  func substitute(tvar: Int, with: Type) -> Type {
+    switch self {
+      case .Int, .Bool: return self
+      case let .Fun(p, r):
+        return .Fun(
+          p.substitute(tvar: tvar, with: with),
+          r.substitute(tvar: tvar, with: with)
+        )
+      case let .Var(w) where tvar == w: return with
+      case .Var(_): return self
+    }
+  }
+
+  func contains(tvar: Int) -> Bool {
+    switch self {
+      case let .Fun(p, r): return p.contains(tvar: tvar) || r.contains(tvar: tvar)
+      case let .Var(w): return w == tvar
+      case _: return false
+    }
+  }
 }
 
 struct Binder {
