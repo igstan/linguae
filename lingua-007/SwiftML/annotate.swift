@@ -2,76 +2,49 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-struct Binder {
-  let name: String
-  let type: Type
-}
-
-indirect enum TypedTerm {
-  case Num(Type, Int)
-  case Var(Type, String)
-  case Def(Type, Binder, TypedTerm)
-  case App(Type, TypedTerm, TypedTerm)
-  case Bool(Type, Bool)
-  case When(Type, TypedTerm, TypedTerm, TypedTerm)
-  case Let(Type, Binder, TypedTerm, TypedTerm)
-
-  func type() -> Type {
-    switch self {
-      case let .Num(type, _): return type
-      case let .Var(type, _): return type
-      case let .Def(type, _, _): return type
-      case let .App(type, _, _): return type
-      case let .Bool(type, _): return type
-      case let .When(type, _, _, _): return type
-      case let .Let(type, _, _, _): return type
-    }
-  }
-}
-
-func annotate(term: Term) -> Result<TypedTerm, String> {
-  func loop(_ term: Term, _ env: [String:Type], _ tvarCounter: Int) -> Result<(TypedTerm, Int), String> {
+func annotate<Meta>(term: Term<Meta>) -> Result<Term<(Meta, Type)>, String> {
+  func loop(_ term: Term<Meta>, _ env: [String:Type], _ tvarCounter: Int) -> Result<(Term<(Meta, Type)>, Int), String> {
     switch term {
-      case let .Num(n): return .Success(.Num(.Var(tvarCounter), n), tvarCounter + 1)
-      case let .Bool(n): return .Success(.Bool(.Var(tvarCounter), n), tvarCounter + 1)
-      case let .Var(n):
+      case let .Num(meta, n): return .Success(.Num((meta, .Var(tvarCounter)), n), tvarCounter + 1)
+      case let .Bool(meta, n): return .Success(.Bool((meta, .Var(tvarCounter)), n), tvarCounter + 1)
+      case let .Var(meta, n):
         return Result.fromOptional(env[n], "unbound identifier: \(n)").map { type in
-          return (.Var(type, n), tvarCounter)
+          return (.Var((meta, type), n), tvarCounter)
         }
-      case let .Def(param, body):
+      case let .Def(meta, param, body):
         let defType = Type.Var(tvarCounter)
         let paramType = Type.Var(tvarCounter + 1)
         var env = env
-        env[param] = paramType
+        env[param.name] = paramType
         return loop(body, env, tvarCounter + 2).map { (typedBody, tvarCounter) in
-          let binder = Binder(name: param, type: paramType)
-          return (.Def(defType, binder, typedBody), tvarCounter)
+          let binder = Binder(name: param.name, meta: (param.meta, paramType))
+          return (.Def((meta, defType), binder, typedBody), tvarCounter)
         }
-      case let .App(fun, arg):
+      case let .App(meta, fun, arg):
         let appType = Type.Var(tvarCounter)
         return loop(fun, env, tvarCounter + 1).flatMap { (fun, tvarCounter) in
           return loop(arg, env, tvarCounter).map { (arg, tvarCounter) in
-            return (TypedTerm.App(appType, fun, arg), tvarCounter + 1)
+            return (.App((meta, appType), fun, arg), tvarCounter + 1)
           }
         }
-      case let .When(cond, test, otherwise):
+      case let .When(meta, cond, test, otherwise):
         let whenType = Type.Var(tvarCounter)
         return loop(cond, env, tvarCounter + 1).flatMap { (cond, tvarCounter) in
           return loop(test, env, tvarCounter).flatMap { (test, tvarCounter) in
             return loop(otherwise, env, tvarCounter).map { (otherwise, tvarCounter) in
-              return (.When(whenType, cond, test, otherwise), tvarCounter)
+              return (.When((meta, whenType), cond, test, otherwise), tvarCounter)
             }
           }
         }
-      case let .Let(name, value, body):
+      case let .Let(meta, name, value, body):
         let letType = Type.Var(tvarCounter)
         let valueType = Type.Var(tvarCounter + 1)
         return loop(value, env, tvarCounter + 2).flatMap { (value, tvarCounter) in
           var env = env
-          env[name] = value.type()
+          env[name.name] = value.meta.1
           return loop(body, env, tvarCounter).map { (body, tvarCounter) in
-            let binder = Binder(name: name, type: valueType)
-            return (.Let(letType, binder, value, body), tvarCounter)
+            let binder = Binder(name: name.name, meta: (name.meta, valueType))
+            return (.Let((meta, letType), binder, value, body), tvarCounter)
           }
         }
     }

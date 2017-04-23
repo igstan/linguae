@@ -2,22 +2,39 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-indirect enum Term {
-  case Num(Int)
-  case Var(String)
-  case Def(String, Term)
-  case App(Term, Term)
-  case Bool(Bool)
-  case When(Term, Term, Term)
-  case Let(String, Term, Term)
+struct Binder<Meta> {
+  let name: String
+  let meta: Meta
+}
 
-  func eval(env: [String:Value]) -> Result<Value, String> {
+indirect enum Term<Meta> {
+  case Num(Meta, Int)
+  case Var(Meta, String)
+  case Def(Meta, Binder<Meta>, Term<Meta>)
+  case App(Meta, Term<Meta>, Term<Meta>)
+  case Bool(Meta, Bool)
+  case When(Meta, Term<Meta>, Term<Meta>, Term<Meta>)
+  case Let(Meta, Binder<Meta>, Term<Meta>, Term<Meta>)
+
+  var meta: Meta {
     switch self {
-      case let .Num(n): return Value.Num(n).success()
-      case let .Var(n): return Result.fromOptional(env[n], "unbound variable: \(n)")
-      case let .Def(param, body): return Value.Fun(param, body, env).success()
-      case let .Bool(b): return Value.Bool(b).success()
-      case let .App(def, arg):
+      case .Num(let meta, _): return meta
+      case .Var(let meta, _): return meta
+      case .Def(let meta, _, _): return meta
+      case .App(let meta, _, _): return meta
+      case .Bool(let meta, _): return meta
+      case .When(let meta, _, _, _): return meta
+      case .Let(let meta, _, _, _): return meta
+    }
+  }
+
+  func eval(env: [String : Value<Meta>]) -> Result<Value<Meta>, String> {
+    switch self {
+      case let .Num(_, n): return Value.Num(n).success()
+      case let .Var(_, n): return Result.fromOptional(env[n], "unbound variable: \(n)")
+      case let .Def(_, param, body): return Value.Fun(param.name, body, env).success()
+      case let .Bool(_, b): return Value.Bool(b).success()
+      case let .App(_, def, arg):
         return def.eval(env: env).flatMap { def in
           switch def {
             case .Primitive(let fn): return arg.eval(env: env).flatMap(fn)
@@ -29,7 +46,7 @@ indirect enum Term {
             case _: return .Failure("function required")
           }
         }
-      case let .When(cond, then, otherwise):
+      case let .When(_, cond, then, otherwise):
         return cond.eval(env: env).flatMap { value in
           switch value {
             case .Bool(true): return then.eval(env: env)
@@ -37,10 +54,10 @@ indirect enum Term {
             case _: return .Failure("boolean expected")
           }
         }
-      case let .Let(name, value, body):
+      case let .Let(_, name, value, body):
         return value.eval(env: env).flatMap { value in
           var env = env
-          env[name] = value
+          env[name.name] = value
           return body.eval(env: env)
         }
     }

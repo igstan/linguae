@@ -36,29 +36,29 @@ enum Constraint: Hashable, CustomStringConvertible {
   }
 }
 
-func constrain(_ term: TypedTerm) -> Set<Constraint> {
+func constrain<Meta>(_ term: Term<(Meta, Type)>) -> Set<Constraint> {
   switch term {
     case .Var(_): return []
-    case let .Num(type, _): return [.Equal(type, .Int)]
-    case let .Bool(type, _): return [.Equal(type, .Bool)]
-    case let .Def(type, param, body):
+    case let .Num(meta, _): return [.Equal(meta.1, .Int)]
+    case let .Bool(meta, _): return [.Equal(meta.1, .Bool)]
+    case let .Def(meta, param, body):
       return constrain(body).union([
-        .Equal(type, .Fun(param.type, body.type()))
+        .Equal(meta.1, .Fun(param.meta.1, body.meta.1))
       ])
-    case let .App(type, fun, arg):
+    case let .App(meta, fun, arg):
       return constrain(fun).union(constrain(arg)).union([
-        .Equal(fun.type(), .Fun(arg.type(), type))
+        .Equal(fun.meta.1, .Fun(arg.meta.1, meta.1))
       ])
-    case let .When(type, cond, then, otherwise):
+    case let .When(meta, cond, then, otherwise):
       return constrain(cond).union(constrain(then)).union(constrain(otherwise)).union([
-        .Equal(cond.type(), .Bool),
-        .Equal(type, then.type()),
-        .Equal(type, otherwise.type())
+        .Equal(cond.meta.1, .Bool),
+        .Equal(meta.1, then.meta.1),
+        .Equal(meta.1, otherwise.meta.1)
       ])
-    case let .Let(type, binder, value, body):
+    case let .Let(meta, binder, value, body):
       return constrain(value).union(constrain(body)).union([
-        .Equal(type, body.type()),
-        .Equal(binder.type, value.type())
+        .Equal(meta.1, body.meta.1),
+        .Equal(binder.meta.1, value.meta.1)
       ])
   }
 }

@@ -2,7 +2,9 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-func arithmetic(_ a: Value, _ op: @escaping (Int, Int) -> Int) -> Result<Value, String> {
+private typealias TypedValue = Value<(Position, Type)>
+
+private func arithmetic(_ a: TypedValue, _ op: @escaping (Int, Int) -> Int) -> Result<TypedValue, String> {
   switch a {
     case let .Num(a): return Value.Primitive({ b in
       switch b {

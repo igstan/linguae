@@ -2,10 +2,10 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-indirect enum Value {
+indirect enum Value<Meta> {
   case Num(Int)
   case Bool(Bool)
-  case Fun(String, Term, [String:Value])
+  case Fun(String, Term<Meta>, [String:Value])
   case Primitive((Value) -> Result<Value, String>)
 
   func success() -> Result<Value, String> {

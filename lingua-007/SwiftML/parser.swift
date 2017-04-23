@@ -2,8 +2,15 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-func parse(_ tokens: [Token]) -> (Term, Tokens)? {
-  func parseWhen(_ tokens: Tokens) -> (Term, Tokens)? {
+struct Position {
+  let row: Int
+  let col: Int
+
+  static let unknown = Position(row: -1, col: -1)
+}
+
+func parse(_ tokens: [Token]) -> (Term<Position>, Tokens)? {
+  func parseWhen(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch parseExpr(tokens) {
       case .none: return nil
       case .some(let cond, let tokens):
@@ -17,7 +24,8 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
                     switch parseExpr(tokens.dropFirst()) {
                       case .none: return nil
                       case .some(let otherwise, let tokens):
-                        return (.When(cond, then, otherwise), tokens)
+                        let pos = Position.unknown
+                        return (.When(pos, cond, then, otherwise), tokens)
                     }
                   case _: return nil
                 }
@@ -27,11 +35,13 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseApp(_ tokens: Tokens) -> (Term, Tokens)? {
-    func loop(_ exp: Term, _ tokens: Tokens) -> (Term, Tokens)? {
+  func parseApp(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
+    func loop(_ exp: Term<Position>, _ tokens: Tokens) -> (Term<Position>, Tokens)? {
       switch parseAtexp(tokens) {
         case .none: return (exp, tokens)
-        case .some(let arg, let tokens): return loop(.App(exp, arg), tokens)
+        case .some(let arg, let tokens):
+          let pos = Position.unknown
+          return loop(.App(pos, exp, arg), tokens)
       }
     }
 
@@ -41,7 +51,7 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseFn(_ tokens: Tokens) -> (Term, Tokens)? {
+  func parseFn(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch tokens.first {
       case .some(.ID(let param)):
         let tokens = tokens.dropFirst()
@@ -49,7 +59,10 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
           case .some(.DARROW):
             switch parseExpr(tokens.dropFirst()) {
               case .none: return nil
-              case .some(let body, let tokens): return (.Def(param, body), tokens)
+              case .some(let body, let tokens):
+                let pos = Position.unknown
+                let param = Binder(name: param, meta: pos)
+                return (.Def(pos, param, body), tokens)
             }
           case _: return nil
         }
@@ -57,7 +70,7 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseExpr(_ tokens: Tokens) -> (Term, Tokens)? {
+  func parseExpr(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch parseApp(tokens) {
       case .some(let term, let tokens): return (term, tokens)
       case .none:
@@ -69,7 +82,7 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseParens(_ tokens: Tokens) -> (Term, Tokens)? {
+  func parseParens(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch parseExpr(tokens) {
       case .none: return nil
       case .some(let exp, let tokens):
@@ -80,7 +93,7 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseLet(_ tokens: Tokens) -> (Term, Tokens)? {
+  func parseLet(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch tokens.first {
       case .some(.VAL):
         let tokens = tokens.dropFirst()
@@ -95,7 +108,9 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
                       case .some(.IN):
                         switch parseExpr(tokens.dropFirst()) {
                           case .some(let body, let tokens):
-                            return (.Let(name, value, body), tokens)
+                            let pos = Position.unknown
+                            let name = Binder(name: name, meta: pos)
+                            return (.Let(pos, name, value, body), tokens)
                           case _: return nil
                         }
                       case _: return nil
@@ -110,15 +125,16 @@ func parse(_ tokens: [Token]) -> (Term, Tokens)? {
     }
   }
 
-  func parseAtexp(_ tokens: Tokens) -> (Term, Tokens)? {
+  func parseAtexp(_ tokens: Tokens) -> (Term<Position>, Tokens)? {
     switch tokens.first {
       case .none: return nil
       case .some(let token):
+        let pos = Position.unknown
         switch token {
-          case .NUM(let n): return (.Num(n), tokens.dropFirst())
-          case .TRUE: return (.Bool(true), tokens.dropFirst())
-          case .FALSE: return (.Bool(false), tokens.dropFirst())
-          case .ID(let id): return (.Var(id), tokens.dropFirst())
+          case .NUM(let n): return (.Num(pos, n), tokens.dropFirst())
+          case .TRUE: return (.Bool(pos, true), tokens.dropFirst())
+          case .FALSE: return (.Bool(pos, false), tokens.dropFirst())
+          case .ID(let id): return (.Var(pos, id), tokens.dropFirst())
           case .LPAREN: return parseParens(tokens.dropFirst())
           case .LET: return parseLet(tokens.dropFirst())
           case _: return nil
