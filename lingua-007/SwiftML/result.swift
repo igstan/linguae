@@ -13,6 +13,13 @@ indirect enum Result<S, F> {
     }
   }
 
+  func map<T>(_ fn: (S) -> T) -> Result<T, F> {
+    switch self {
+      case .Success(let s): return .Success(fn(s))
+      case .Failure(let f): return .Failure(f)
+    }
+  }
+
   func flatMap<T>(_ fn: (S) -> Result<T, F>) -> Result<T, F> {
     switch self {
       case .Success(let s): return fn(s)
