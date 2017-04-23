@@ -34,7 +34,7 @@ indirect enum Type: Equatable, CustomStringConvertible {
       case .Var(let v): return "var(\(v))"
       case .Fun(let p, let r):
         switch p {
-          case .Fun(_): return "(\(p)) → \(r)"
+          case .Fun: return "(\(p)) → \(r)"
           case _: return "\(p) → \(r)"
         }
     }
