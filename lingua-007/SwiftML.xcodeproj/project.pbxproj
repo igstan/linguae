@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1329B1631EAC5521009E4AB9 /* dictionary.swift */; };
+		1367B2C91EAA44E3002054BF /* annotate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2C81EAA44E3002054BF /* annotate.swift */; };
+		136A19581EABD74C00CF071B /* unify.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A19571EABD74C00CF071B /* unify.swift */; };
+		13A66E571EABC7D3001BF4B4 /* constrain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13A66E561EABC7D3001BF4B4 /* constrain.swift */; };
 		13CBF7F41EAA36BB00D7AA12 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBF7ED1EAA36BB00D7AA12 /* main.swift */; };
 		13CBF7F51EAA36BB00D7AA12 /* parser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBF7EE1EAA36BB00D7AA12 /* parser.swift */; };
 		13CBF7F61EAA36BB00D7AA12 /* repl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 13CBF7EF1EAA36BB00D7AA12 /* repl.swift */; };
@@ -29,6 +33,10 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1329B1631EAC5521009E4AB9 /* dictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dictionary.swift; sourceTree = "<group>"; };
+		1367B2C81EAA44E3002054BF /* annotate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = annotate.swift; sourceTree = "<group>"; };
+		136A19571EABD74C00CF071B /* unify.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unify.swift; sourceTree = "<group>"; };
+		13A66E561EABC7D3001BF4B4 /* constrain.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = constrain.swift; sourceTree = "<group>"; };
 		13CBF7E31EAA369200D7AA12 /* SwiftML */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = SwiftML; sourceTree = BUILT_PRODUCTS_DIR; };
 		13CBF7ED1EAA36BB00D7AA12 /* main.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		13CBF7EE1EAA36BB00D7AA12 /* parser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = parser.swift; sourceTree = "<group>"; };
@@ -50,6 +58,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1329B1621EAC5514009E4AB9 /* Extension */ = {
+			isa = PBXGroup;
+			children = (
+				1329B1631EAC5521009E4AB9 /* dictionary.swift */,
+			);
+			name = Extension;
+			sourceTree = "<group>";
+		};
+		1367B2C71EAA448C002054BF /* Elaborator */ = {
+			isa = PBXGroup;
+			children = (
+				1367B2C81EAA44E3002054BF /* annotate.swift */,
+				13A66E561EABC7D3001BF4B4 /* constrain.swift */,
+				136A19571EABD74C00CF071B /* unify.swift */,
+			);
+			name = Elaborator;
+			sourceTree = "<group>";
+		};
 		13CBF7DA1EAA369200D7AA12 = {
 			isa = PBXGroup;
 			children = (
@@ -69,6 +95,8 @@
 		13CBF7E51EAA369200D7AA12 /* SwiftML */ = {
 			isa = PBXGroup;
 			children = (
+				1329B1621EAC5514009E4AB9 /* Extension */,
+				1367B2C71EAA448C002054BF /* Elaborator */,
 				13CBF7ED1EAA36BB00D7AA12 /* main.swift */,
 				13CBF7EE1EAA36BB00D7AA12 /* parser.swift */,
 				13CBF7EF1EAA36BB00D7AA12 /* repl.swift */,
@@ -142,10 +170,14 @@
 				13CBF7FA1EAA36BB00D7AA12 /* scanner.swift in Sources */,
 				13CBF7F61EAA36BB00D7AA12 /* repl.swift in Sources */,
 				13CBF7F91EAA36BB00D7AA12 /* term.swift in Sources */,
+				1367B2C91EAA44E3002054BF /* annotate.swift in Sources */,
 				13CBF7F51EAA36BB00D7AA12 /* parser.swift in Sources */,
+				136A19581EABD74C00CF071B /* unify.swift in Sources */,
 				13CBF7F81EAA36BB00D7AA12 /* stdlib.swift in Sources */,
 				13CBF7F71EAA36BB00D7AA12 /* result.swift in Sources */,
 				13CBF7F41EAA36BB00D7AA12 /* main.swift in Sources */,
+				1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */,
+				13A66E571EABC7D3001BF4B4 /* constrain.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
