@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		1301812A1EACF8B100226BF4 /* substitution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130181291EACF8B100226BF4 /* substitution.swift */; };
 		1301812C1EACFF0F00226BF4 /* type.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1301812B1EACFF0F00226BF4 /* type.swift */; };
+		1301812E1EAD000D00226BF4 /* value.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1301812D1EAD000D00226BF4 /* value.swift */; };
 		1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1329B1631EAC5521009E4AB9 /* dictionary.swift */; };
 		1367B2C91EAA44E3002054BF /* annotate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2C81EAA44E3002054BF /* annotate.swift */; };
 		136A19581EABD74C00CF071B /* unifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A19571EABD74C00CF071B /* unifier.swift */; };
@@ -37,6 +38,7 @@
 /* Begin PBXFileReference section */
 		130181291EACF8B100226BF4 /* substitution.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = substitution.swift; sourceTree = "<group>"; };
 		1301812B1EACFF0F00226BF4 /* type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = type.swift; sourceTree = "<group>"; };
+		1301812D1EAD000D00226BF4 /* value.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = value.swift; sourceTree = "<group>"; };
 		1329B1631EAC5521009E4AB9 /* dictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dictionary.swift; sourceTree = "<group>"; };
 		1367B2C81EAA44E3002054BF /* annotate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = annotate.swift; sourceTree = "<group>"; };
 		136A19571EABD74C00CF071B /* unifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unifier.swift; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 				13CBF7F31EAA36BB00D7AA12 /* scanner.swift */,
 				13CBF7F11EAA36BB00D7AA12 /* stdlib.swift */,
 				13CBF7F21EAA36BB00D7AA12 /* term.swift */,
+				1301812D1EAD000D00226BF4 /* value.swift */,
 			);
 			path = SwiftML;
 			sourceTree = "<group>";
@@ -180,6 +183,7 @@
 				1301812C1EACFF0F00226BF4 /* type.swift in Sources */,
 				13CBF7F51EAA36BB00D7AA12 /* parser.swift in Sources */,
 				136A19581EABD74C00CF071B /* unifier.swift in Sources */,
+				1301812E1EAD000D00226BF4 /* value.swift in Sources */,
 				13CBF7F81EAA36BB00D7AA12 /* stdlib.swift in Sources */,
 				13CBF7F71EAA36BB00D7AA12 /* result.swift in Sources */,
 				13CBF7F41EAA36BB00D7AA12 /* main.swift in Sources */,
