@@ -95,15 +95,15 @@
 		13CBF7E51EAA369200D7AA12 /* SwiftML */ = {
 			isa = PBXGroup;
 			children = (
-				1329B1621EAC5514009E4AB9 /* Extension */,
 				1367B2C71EAA448C002054BF /* Elaborator */,
+				1329B1621EAC5514009E4AB9 /* Extension */,
 				13CBF7ED1EAA36BB00D7AA12 /* main.swift */,
 				13CBF7EE1EAA36BB00D7AA12 /* parser.swift */,
 				13CBF7EF1EAA36BB00D7AA12 /* repl.swift */,
 				13CBF7F01EAA36BB00D7AA12 /* result.swift */,
+				13CBF7F31EAA36BB00D7AA12 /* scanner.swift */,
 				13CBF7F11EAA36BB00D7AA12 /* stdlib.swift */,
 				13CBF7F21EAA36BB00D7AA12 /* term.swift */,
-				13CBF7F31EAA36BB00D7AA12 /* scanner.swift */,
 			);
 			path = SwiftML;
 			sourceTree = "<group>";
