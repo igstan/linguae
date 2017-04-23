@@ -61,7 +61,7 @@ func parse(_ tokens: [Token]) -> (Term<Position>, Tokens)? {
               case .none: return nil
               case .some(let body, let tokens):
                 let pos = Position.unknown
-                let param = Binder(name: param, meta: pos)
+                let param = Binder(name: param, attr: pos)
                 return (.Def(pos, param, body), tokens)
             }
           case _: return nil
@@ -109,7 +109,7 @@ func parse(_ tokens: [Token]) -> (Term<Position>, Tokens)? {
                         switch parseExpr(tokens.dropFirst()) {
                           case .some(let body, let tokens):
                             let pos = Position.unknown
-                            let name = Binder(name: name, meta: pos)
+                            let name = Binder(name: name, attr: pos)
                             return (.Let(pos, name, value, body), tokens)
                           case _: return nil
                         }

@@ -2,33 +2,33 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-struct Binder<Meta> {
+struct Binder<Attr> {
   let name: String
-  let meta: Meta
+  let attr: Attr
 }
 
-indirect enum Term<Meta> {
-  case Num(Meta, Int)
-  case Var(Meta, String)
-  case Def(Meta, Binder<Meta>, Term<Meta>)
-  case App(Meta, Term<Meta>, Term<Meta>)
-  case Bool(Meta, Bool)
-  case When(Meta, Term<Meta>, Term<Meta>, Term<Meta>)
-  case Let(Meta, Binder<Meta>, Term<Meta>, Term<Meta>)
+indirect enum Term<Attr> {
+  case Num(Attr, Int)
+  case Var(Attr, String)
+  case Def(Attr, Binder<Attr>, Term<Attr>)
+  case App(Attr, Term<Attr>, Term<Attr>)
+  case Bool(Attr, Bool)
+  case When(Attr, Term<Attr>, Term<Attr>, Term<Attr>)
+  case Let(Attr, Binder<Attr>, Term<Attr>, Term<Attr>)
 
-  var meta: Meta {
+  var attr: Attr {
     switch self {
-      case .Num(let meta, _): return meta
-      case .Var(let meta, _): return meta
-      case .Def(let meta, _, _): return meta
-      case .App(let meta, _, _): return meta
-      case .Bool(let meta, _): return meta
-      case .When(let meta, _, _, _): return meta
-      case .Let(let meta, _, _, _): return meta
+      case .Num(let attr, _): return attr
+      case .Var(let attr, _): return attr
+      case .Def(let attr, _, _): return attr
+      case .App(let attr, _, _): return attr
+      case .Bool(let attr, _): return attr
+      case .When(let attr, _, _, _): return attr
+      case .Let(let attr, _, _, _): return attr
     }
   }
 
-  func eval(env: [String : Value<Meta>]) -> Result<Value<Meta>, String> {
+  func eval(env: [String : Value<Attr>]) -> Result<Value<Attr>, String> {
     switch self {
       case let .Num(_, n): return Value.Num(n).success()
       case let .Var(_, n): return Result.fromOptional(env[n], "unbound variable: \(n)")
