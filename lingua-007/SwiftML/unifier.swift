@@ -8,10 +8,10 @@ enum Unifier {
       return .Success(Substitution.empty)
     }
 
-    return constraint.solve().flatMap { substHead in
-      let tail = substHead.applyTo(constraints: Set(constraints.dropFirst()))
-      return solve(constraints: tail).map { substTail in
-        return substHead.compose(with: substTail)
+    return constraint.solve().flatMap { headSubstitution in
+      let tail = headSubstitution.applyTo(constraints: Set(constraints.dropFirst()))
+      return solve(constraints: tail).map { tailSubstitution in
+        return headSubstitution.compose(with: tailSubstitution)
       }
     }
   }
