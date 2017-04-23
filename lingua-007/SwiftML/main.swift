@@ -16,7 +16,7 @@ switch parse(tokens) {
         print("annotated: \(annotated)")
         let constraints = constrain(annotated)
         print("constraints: \(constraints)")
-        let solutions = unify(constraints)
+        let solutions = Unifier.solve(constraints: constraints)
         print("solutions: \(solutions)")
     }
 }

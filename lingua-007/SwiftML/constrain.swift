@@ -22,6 +22,18 @@ enum Constraint: Hashable, CustomStringConvertible {
       case let .Equal(a, b): return "\(a) ≣ \(b)"
     }
   }
+
+  func solve() -> Result<Substitution, String> {
+    switch self {
+      case .Equal(.Int, .Int): return .Success(Substitution.empty)
+      case .Equal(.Bool, .Bool): return .Success(Substitution.empty)
+      case let .Equal(.Fun(p1, r1), .Fun(p2, r2)):
+        return Unifier.solve(constraints: [.Equal(p1, p2), .Equal(r1, r2)])
+      case let .Equal(.Var(v), type): return type.solve(tvar: v)
+      case let .Equal(type, .Var(v)): return type.solve(tvar: v)
+      case let .Equal(a, b): return .Failure("cannot unify \(a) with \(b)")
+    }
+  }
 }
 
 func constrain(_ term: TypedTerm) -> Set<Constraint> {

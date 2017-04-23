@@ -60,6 +60,15 @@ indirect enum Type: Equatable, CustomStringConvertible {
       case _: return false
     }
   }
+
+  func solve(tvar: Int) -> Result<Substitution, String> {
+    switch self {
+      case .Var(let w) where tvar == w: return .Success(Substitution.empty)
+      case .Var(_): return .Success(Substitution(solutions: [tvar : self]))
+      case _ where contains(tvar: tvar): return .Failure("circular use: \(tvar) occurs in \(self)")
+      case _: return .Success(Substitution(solutions: [tvar : self]))
+    }
+  }
 }
 
 struct Binder {
