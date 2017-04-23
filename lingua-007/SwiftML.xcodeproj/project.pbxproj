@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1301812A1EACF8B100226BF4 /* substitution.swift in Sources */ = {isa = PBXBuildFile; fileRef = 130181291EACF8B100226BF4 /* substitution.swift */; };
+		1301812C1EACFF0F00226BF4 /* type.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1301812B1EACFF0F00226BF4 /* type.swift */; };
 		1329B1641EAC5521009E4AB9 /* dictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1329B1631EAC5521009E4AB9 /* dictionary.swift */; };
 		1367B2C91EAA44E3002054BF /* annotate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1367B2C81EAA44E3002054BF /* annotate.swift */; };
 		136A19581EABD74C00CF071B /* unifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 136A19571EABD74C00CF071B /* unifier.swift */; };
@@ -35,6 +36,7 @@
 
 /* Begin PBXFileReference section */
 		130181291EACF8B100226BF4 /* substitution.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = substitution.swift; sourceTree = "<group>"; };
+		1301812B1EACFF0F00226BF4 /* type.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = type.swift; sourceTree = "<group>"; };
 		1329B1631EAC5521009E4AB9 /* dictionary.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = dictionary.swift; sourceTree = "<group>"; };
 		1367B2C81EAA44E3002054BF /* annotate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = annotate.swift; sourceTree = "<group>"; };
 		136A19571EABD74C00CF071B /* unifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = unifier.swift; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 				1367B2C81EAA44E3002054BF /* annotate.swift */,
 				13A66E561EABC7D3001BF4B4 /* constrain.swift */,
 				130181291EACF8B100226BF4 /* substitution.swift */,
+				1301812B1EACFF0F00226BF4 /* type.swift */,
 				136A19571EABD74C00CF071B /* unifier.swift */,
 			);
 			name = Elaborator;
@@ -174,6 +177,7 @@
 				13CBF7F61EAA36BB00D7AA12 /* repl.swift in Sources */,
 				13CBF7F91EAA36BB00D7AA12 /* term.swift in Sources */,
 				1367B2C91EAA44E3002054BF /* annotate.swift in Sources */,
+				1301812C1EACFF0F00226BF4 /* type.swift in Sources */,
 				13CBF7F51EAA36BB00D7AA12 /* parser.swift in Sources */,
 				136A19581EABD74C00CF071B /* unifier.swift in Sources */,
 				13CBF7F81EAA36BB00D7AA12 /* stdlib.swift in Sources */,
