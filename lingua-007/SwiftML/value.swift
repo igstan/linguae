@@ -14,10 +14,10 @@ indirect enum Value<Meta> {
 
   func toString() -> String {
     switch self {
-    case .Num(let n): return String(n)
-    case .Bool(true): return "true"
-    case .Bool(false): return "false"
-    case .Fun(_, _, _), .Primitive(_): return "fn"
+      case .Num(let n): return String(n)
+      case .Bool(true): return "true"
+      case .Bool(false): return "false"
+      case .Fun(_, _, _), .Primitive(_): return "fn"
     }
   }
 }
