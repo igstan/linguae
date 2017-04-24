@@ -24,7 +24,7 @@ func repl(prompt: String) {
             case .Failure(let f):
               print("type error:", f)
             case .Success(let (type, value)):
-              print("val it =", value.toString(), ":", type)
+              print("val it = \(value) : \(type)")
           }
       }
 

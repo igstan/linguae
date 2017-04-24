@@ -2,7 +2,7 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-indirect enum Value<Meta> {
+indirect enum Value<Meta>: CustomStringConvertible {
   case Num(Int)
   case Bool(Bool)
   case Fun(String, Term<Meta>, [String:Value])
@@ -12,12 +12,12 @@ indirect enum Value<Meta> {
     return .Success(self)
   }
 
-  func toString() -> String {
+  var description: String {
     switch self {
-      case .Num(let n): return String(n)
+      case .Num(let n): return String(n, radix: 10)
       case .Bool(true): return "true"
       case .Bool(false): return "false"
-      case .Fun(_, _, _), .Primitive(_): return "fn"
+      case .Fun, .Primitive: return "fn"
     }
   }
 }
