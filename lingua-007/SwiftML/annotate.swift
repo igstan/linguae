@@ -2,13 +2,13 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, String> {
-  func loop(_ term: Term<Attr>, _ env: [String:Type], _ tvarCounter: Int) -> Result<(Term<(Attr, Type)>, Int), String> {
+func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, TypeError> {
+  func loop(_ term: Term<Attr>, _ env: [String:Type], _ tvarCounter: Int) -> Result<(Term<(Attr, Type)>, Int), TypeError> {
     switch term {
       case let .Num(attr, n): return .Success(.Num((attr, .Var(tvarCounter)), n), tvarCounter + 1)
       case let .Bool(attr, n): return .Success(.Bool((attr, .Var(tvarCounter)), n), tvarCounter + 1)
       case let .Var(attr, n):
-        return Result.fromOptional(env[n], "unbound identifier: \(n)").map { type in
+        return Result.fromOptional(env[n], TypeError.Unbound(identifier: n)).map { type in
           return (.Var((attr, type), n), tvarCounter)
         }
       case let .Def(attr, param, body):

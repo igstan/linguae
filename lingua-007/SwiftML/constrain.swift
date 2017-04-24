@@ -23,7 +23,7 @@ enum Constraint: Hashable, CustomStringConvertible {
     }
   }
 
-  func solve() -> Result<Substitution, String> {
+  func solve() -> Result<Substitution, TypeError> {
     switch self {
       case .Equal(.Int, .Int): return .Success(Substitution.empty)
       case .Equal(.Bool, .Bool): return .Success(Substitution.empty)
@@ -31,7 +31,7 @@ enum Constraint: Hashable, CustomStringConvertible {
         return Unifier.solve(constraints: [.Equal(p1, p2), .Equal(r1, r2)])
       case let .Equal(.Var(v), type): return type.solve(tvar: v)
       case let .Equal(type, .Var(v)): return type.solve(tvar: v)
-      case let .Equal(a, b): return .Failure("cannot unify \(a) with \(b)")
+      case let .Equal(a, b): return .Failure(.Conflict(a, b))
     }
   }
 }

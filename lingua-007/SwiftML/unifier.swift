@@ -3,7 +3,7 @@
 // -------------------------------------------------------------------------- //
 
 enum Unifier {
-  static func solve(constraints: Set<Constraint>) -> Result<Substitution, String> {
+  static func solve(constraints: Set<Constraint>) -> Result<Substitution, TypeError> {
     guard let constraint = constraints.first else {
       return .Success(Substitution.empty)
     }
