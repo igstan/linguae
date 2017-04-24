@@ -12,7 +12,7 @@ indirect enum Type: Equatable, CustomStringConvertible {
     switch (lhs, rhs) {
       case (.Bool, .Bool): return true
       case (.Int, .Int): return true
-      case let (.Fun(p1, r1), .Fun(p2, r2)): return p1 == p2 && r1 == r2
+      case let (.Fun(f1), .Fun(f2)): return f1 == f2
       case let (.Var(a), .Var(b)): return a == b
       case _: return false
     }
