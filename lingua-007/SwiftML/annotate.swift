@@ -9,7 +9,7 @@ func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, TypeError> {
       case let .Bool(attr, n): return .Success(.Bool((attr, .Var(tvarCounter)), n), tvarCounter + 1)
       case let .Var(attr, n):
         return Result.fromOptional(env[n], TypeError.Unbound(identifier: n)).map { type in
-          return (.Var((attr, type), n), tvarCounter)
+          (.Var((attr, type), n), tvarCounter)
         }
       case let .Def(attr, param, body):
         let defType = Type.Var(tvarCounter)
@@ -23,16 +23,16 @@ func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, TypeError> {
       case let .App(attr, fun, arg):
         let appType = Type.Var(tvarCounter)
         return loop(fun, env, tvarCounter + 1).flatMap { (fun, tvarCounter) in
-          return loop(arg, env, tvarCounter).map { (arg, tvarCounter) in
-            return (.App((attr, appType), fun, arg), tvarCounter + 1)
+          loop(arg, env, tvarCounter).map { (arg, tvarCounter) in
+            (.App((attr, appType), fun, arg), tvarCounter + 1)
           }
         }
       case let .When(attr, cond, test, otherwise):
         let whenType = Type.Var(tvarCounter)
         return loop(cond, env, tvarCounter + 1).flatMap { (cond, tvarCounter) in
-          return loop(test, env, tvarCounter).flatMap { (test, tvarCounter) in
-            return loop(otherwise, env, tvarCounter).map { (otherwise, tvarCounter) in
-              return (.When((attr, whenType), cond, test, otherwise), tvarCounter)
+          loop(test, env, tvarCounter).flatMap { (test, tvarCounter) in
+            loop(otherwise, env, tvarCounter).map { (otherwise, tvarCounter) in
+              (.When((attr, whenType), cond, test, otherwise), tvarCounter)
             }
           }
         }

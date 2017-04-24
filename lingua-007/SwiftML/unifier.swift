@@ -11,7 +11,7 @@ enum Unifier {
     return constraint.solve().flatMap { headSubstitution in
       let tail = headSubstitution.applyTo(constraints: Set(constraints.dropFirst()))
       return solve(constraints: tail).map { tailSubstitution in
-        return headSubstitution.compose(with: tailSubstitution)
+        headSubstitution.compose(with: tailSubstitution)
       }
     }
   }
