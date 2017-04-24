@@ -39,9 +39,9 @@ func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, String> {
       case let .Let(attr, name, value, body):
         let letType = Type.Var(tvarCounter)
         let valueType = Type.Var(tvarCounter + 1)
+        var env = env
+        env[name.name] = valueType
         return loop(value, env, tvarCounter + 2).flatMap { (value, tvarCounter) in
-          var env = env
-          env[name.name] = value.attr.1
           return loop(body, env, tvarCounter).map { (body, tvarCounter) in
             let binder = Binder(name: name.name, attr: (name.attr, valueType))
             return (.Let((attr, letType), binder, value, body), tvarCounter)
