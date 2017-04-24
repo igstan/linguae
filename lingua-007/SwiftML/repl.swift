@@ -9,15 +9,25 @@ func repl(prompt: String) {
     case .none, .some(":q"), .some(":quit"):
       print("Bye!")
       return
+    case .some(let source) where source.isEmpty: repl(prompt: prompt)
     case .some(let source):
       switch parse(scanAll(source.characters)) {
-        case .none: print("syntax error")
-        case let .some((term, _)):
-          switch term.eval(env: [:]) {
-            case .Failure(let f): print("error:", f)
-            case .Success(let s): print("val it =", s.toString())
+        case .none: print("unknown parse error")
+        case .some(let term, _):
+          let r = elaborate(term: term).flatMap { typedTerm in
+            return typedTerm.eval(env: [:]).map { value in
+              return (typedTerm.attr.1, value)
+            }
+          }
+
+          switch r {
+            case .Failure(let f):
+              print("type error:", f)
+            case .Success(let (type, value)):
+              print("val it =", value.toString(), ":", type)
           }
       }
+
       repl(prompt: prompt)
   }
 }
