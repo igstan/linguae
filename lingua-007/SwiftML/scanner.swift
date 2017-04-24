@@ -74,49 +74,50 @@ func number(_ stream: Stream) -> (Int, Stream)? {
   }
 }
 
-func scan(source: Stream) -> (Token, Stream)? {
+func scan(source: Stream) -> Result<(Token, Stream), String>? {
   switch source.first {
     case .none: return nil
-    case .some("("): return (.LPAREN, source.dropFirst())
-    case .some(")"): return (.RPAREN, source.dropFirst())
+    case .some("("): return .Success(.LPAREN, source.dropFirst())
+    case .some(")"): return .Success(.RPAREN, source.dropFirst())
     case .some("="):
       let source = source.dropFirst()
       switch source.first {
-        case .some(">"): return (.DARROW, source.dropFirst())
-        case _: return (.EQUAL, source)
+        case .some(">"): return .Success(.DARROW, source.dropFirst())
+        case _: return .Success(.EQUAL, source)
       }
-    case .some(_):
+    case .some(let char):
       switch identifier(source) {
-        case .some(("when", let rest)): return (.WHEN, rest)
-        case .some(("then", let rest)): return (.THEN, rest)
-        case .some(("else", let rest)): return (.ELSE, rest)
-        case .some(("fn", let rest)): return (.FN, rest)
-        case .some(("true", let rest)): return (.TRUE, rest)
-        case .some(("false", let rest)): return (.FALSE, rest)
-        case .some(("let", let rest)): return (.LET, rest)
-        case .some(("in", let rest)): return (.IN, rest)
-        case .some(("end", let rest)): return (.END, rest)
-        case .some(("val", let rest)): return (.VAL, rest)
-        case .some((let id, let rest)): return (.ID(id), rest)
+        case .some(("when", let rest)): return .Success(.WHEN, rest)
+        case .some(("then", let rest)): return .Success(.THEN, rest)
+        case .some(("else", let rest)): return .Success(.ELSE, rest)
+        case .some(("fn", let rest)): return .Success(.FN, rest)
+        case .some(("true", let rest)): return .Success(.TRUE, rest)
+        case .some(("false", let rest)): return .Success(.FALSE, rest)
+        case .some(("let", let rest)): return .Success(.LET, rest)
+        case .some(("in", let rest)): return .Success(.IN, rest)
+        case .some(("end", let rest)): return .Success(.END, rest)
+        case .some(("val", let rest)): return .Success(.VAL, rest)
+        case .some((let id, let rest)): return .Success(.ID(id), rest)
         case .none:
           switch number(source) {
-            case .none: return nil
-            case .some(let n, let rest): return (.NUM(n), rest)
+            case .some(let n, let rest): return .Success(.NUM(n), rest)
+            case .none: return .Failure("unexpected char: \(char)")
           }
       }
   }
 }
 
-func scanAll(_ source: Stream) -> [Token] {
-  func loop(_ source: Stream, _ acc: [Token]) -> [Token] {
+func scanAll(_ source: Stream) -> Result<[Token], String> {
+  func loop(_ source: Stream, _ acc: [Token]) -> Result<[Token], String> {
     let trimmed = source.drop(while: isSpace)
 
     if trimmed.isEmpty {
-      return acc
+      return .Success(acc)
     } else {
       switch scan(source: trimmed) {
-        case .none: return acc
-        case .some(let token, let rest):
+        case .none: return .Success(acc)
+        case .some(.Failure(let f)): return .Failure(f)
+        case .some(.Success(let token, let rest)):
           var acc = acc
           acc.append(token)
           return loop(rest, acc)
