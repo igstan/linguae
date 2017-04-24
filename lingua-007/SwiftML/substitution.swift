@@ -25,6 +25,10 @@ struct Substitution {
     }
   }
 
+  func applyTo<A>(term: Term<(A, Type)>) -> Term<(A, Type)> {
+    return term.mapAttr { (a, type) in (a, applyTo(type: type)) }
+  }
+
   func compose(with: Substitution) -> Substitution {
     var substituted = solutions.mapValues { value in
       return with.applyTo(type: value)

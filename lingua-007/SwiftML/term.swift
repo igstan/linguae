@@ -5,6 +5,10 @@
 struct Binder<Attr> {
   let name: String
   let attr: Attr
+
+  func mapAttr<A>(_ fn: (Attr) -> A) -> Binder<A> {
+    return Binder<A>(name: name, attr: fn(attr))
+  }
 }
 
 indirect enum Term<Attr> {
@@ -25,6 +29,18 @@ indirect enum Term<Attr> {
       case .Bool(let attr, _): return attr
       case .When(let attr, _, _, _): return attr
       case .Let(let attr, _, _, _): return attr
+    }
+  }
+
+  func mapAttr<A>(_ fn: (Attr) -> A) -> Term<A> {
+    switch self {
+      case let .Num(attr, n): return .Num(fn(attr), n)
+      case let .Var(attr, v): return .Var(fn(attr), v)
+      case let .Def(attr, p, b): return .Def(fn(attr), p.mapAttr(fn), b.mapAttr(fn))
+      case let .App(attr, f, a): return .App(fn(attr), f.mapAttr(fn), a.mapAttr(fn))
+      case let .Bool(attr, b): return .Bool(fn(attr), b)
+      case let .When(attr, c, t, o): return .When(fn(attr), c.mapAttr(fn), t.mapAttr(fn), o.mapAttr(fn))
+      case let .Let(attr, n, v, b): return .Let(fn(attr), n.mapAttr(fn), v.mapAttr(fn), b.mapAttr(fn))
     }
   }
 
