@@ -27,14 +27,38 @@ indirect enum Type: Equatable, CustomStringConvertible {
     }
   }
 
-  var description: String {
-    switch self {
-      case .Bool: return "bool"
-      case .Int: return "int"
-      case .Var(let v): return "var(\(v))"
-      case .Fun(.Fun(let p, let q), let r): return "(\(p) -> \(q)) -> \(r)"
-      case .Fun(let p, let r): return "\(p) -> \(r)"
+  private static let letters = Array("abcdefghijklmnopqrstuvwxyz".characters)
+
+  private func letter(_ n: Int) -> String {
+    func recur(_ n: Int, _ str: String) -> String {
+      let letter = Type.letters[n % Type.letters.count]
+      let result = String(letter) + str
+      return n <= 25 ? result : recur(n / Type.letters.count - 1, result)
     }
+
+    return recur(n, "")
+  }
+
+  var description: String {
+    func traverse(type: Type, vars: [Int : String]) -> (desc: String, vars: [Int : String]) {
+      switch type {
+        case .Bool: return ("bool", vars)
+        case .Int: return ("int", vars)
+        case .Var(let v):
+          var vars = vars
+          let tvar = vars.get(key: v, orUpdate: letter(vars.count))
+          return ("'\(tvar)", vars)
+        case .Fun(let p, let r):
+          let b = traverse(type: r, vars: vars)
+          let a = traverse(type: p, vars: b.vars)
+          switch p {
+            case .Fun: return ("(\(a.desc)) -> \(b.desc)", a.vars)
+            case _: return ("\(a.desc) -> \(b.desc)", a.vars)
+          }
+      }
+    }
+
+    return traverse(type: self, vars: [:]).desc
   }
 
   func substitute(tvar: Int, with: Type) -> Type {
