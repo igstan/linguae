@@ -14,4 +14,14 @@ extension Dictionary {
   func mapValues<T>(fn: @escaping (Value) -> T) -> Dictionary<Key, T> {
     return Dictionary<Key, T>(self.map { (k, v) in (k, fn(v)) })
   }
+
+  mutating func get(key: Key, orUpdate: @autoclosure () -> Value) -> Value {
+    if let value = self[key] {
+      return value
+    } else {
+      let value = orUpdate()
+      self[key] = value
+      return value
+    }
+  }
 }
