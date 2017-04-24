@@ -32,11 +32,8 @@ indirect enum Type: Equatable, CustomStringConvertible {
       case .Bool: return "bool"
       case .Int: return "int"
       case .Var(let v): return "var(\(v))"
-      case .Fun(let p, let r):
-        switch p {
-          case .Fun: return "(\(p)) → \(r)"
-          case _: return "\(p) → \(r)"
-        }
+      case .Fun(.Fun(let p, let q), let r): return "(\(p) -> \(q)) -> \(r)"
+      case .Fun(let p, let r): return "\(p) -> \(r)"
     }
   }
 
