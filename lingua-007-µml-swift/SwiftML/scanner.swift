@@ -77,30 +77,30 @@ func number(_ stream: Stream) -> (Int, Stream)? {
 func scan(source: Stream) -> Result<(Token, Stream), String>? {
   switch source.first {
     case .none: return nil
-    case .some("("): return .Success(.LPAREN, source.dropFirst())
-    case .some(")"): return .Success(.RPAREN, source.dropFirst())
+    case .some("("): return .Success((.LPAREN, source.dropFirst()))
+    case .some(")"): return .Success((.RPAREN, source.dropFirst()))
     case .some("="):
       let source = source.dropFirst()
       switch source.first {
-        case .some(">"): return .Success(.DARROW, source.dropFirst())
-        case _: return .Success(.EQUAL, source)
+        case .some(">"): return .Success((.DARROW, source.dropFirst()))
+        case _: return .Success((.EQUAL, source))
       }
     case .some(let char):
       switch identifier(source) {
-        case .some(("when", let rest)): return .Success(.WHEN, rest)
-        case .some(("then", let rest)): return .Success(.THEN, rest)
-        case .some(("else", let rest)): return .Success(.ELSE, rest)
-        case .some(("fn", let rest)): return .Success(.FN, rest)
-        case .some(("true", let rest)): return .Success(.TRUE, rest)
-        case .some(("false", let rest)): return .Success(.FALSE, rest)
-        case .some(("let", let rest)): return .Success(.LET, rest)
-        case .some(("in", let rest)): return .Success(.IN, rest)
-        case .some(("end", let rest)): return .Success(.END, rest)
-        case .some(("val", let rest)): return .Success(.VAL, rest)
-        case .some((let id, let rest)): return .Success(.ID(id), rest)
+        case .some(("when", let rest)): return .Success((.WHEN, rest))
+        case .some(("then", let rest)): return .Success((.THEN, rest))
+        case .some(("else", let rest)): return .Success((.ELSE, rest))
+        case .some(("fn", let rest)): return .Success((.FN, rest))
+        case .some(("true", let rest)): return .Success((.TRUE, rest))
+        case .some(("false", let rest)): return .Success((.FALSE, rest))
+        case .some(("let", let rest)): return .Success((.LET, rest))
+        case .some(("in", let rest)): return .Success((.IN, rest))
+        case .some(("end", let rest)): return .Success((.END, rest))
+        case .some(("val", let rest)): return .Success((.VAL, rest))
+        case .some((let id, let rest)): return .Success((.ID(id), rest))
         case .none:
           switch number(source) {
-            case .some(let n, let rest): return .Success(.NUM(n), rest)
+            case .some(let n, let rest): return .Success((.NUM(n), rest))
             case .none: return .Failure("unexpected char: \(char)")
           }
       }

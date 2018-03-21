@@ -5,8 +5,8 @@
 func annotate<Attr>(term: Term<Attr>) -> Result<Term<(Attr, Type)>, TypeError> {
   func loop(_ term: Term<Attr>, _ env: [String:Type], _ tvarCounter: Int) -> Result<(Term<(Attr, Type)>, Int), TypeError> {
     switch term {
-      case let .Num(attr, n): return .Success(.Num((attr, .Var(tvarCounter)), n), tvarCounter + 1)
-      case let .Bool(attr, n): return .Success(.Bool((attr, .Var(tvarCounter)), n), tvarCounter + 1)
+      case let .Num(attr, n): return .Success((.Num((attr, .Var(tvarCounter)), n), tvarCounter + 1))
+      case let .Bool(attr, n): return .Success((.Bool((attr, .Var(tvarCounter)), n), tvarCounter + 1))
       case let .Var(attr, n):
         return Result.fromOptional(env[n], TypeError.Unbound(identifier: n)).map { type in
           (.Var((attr, type), n), tvarCounter)

@@ -50,7 +50,7 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
   func parseApp(_ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
     func loop(_ exp: Term<Position>, _ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
       switch parseAtexp(tokens) {
-        case .Failure(_): return .Success(exp, tokens)
+        case .Failure(_): return .Success((exp, tokens))
         case .Success(let arg, let tokens):
           let pos = Position.unknown
           return loop(.App(pos, exp, arg), tokens)
@@ -79,7 +79,7 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
 
   func parseExpr(_ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
     switch parseApp(tokens) {
-      case .Success(let term, let tokens): return .Success(term, tokens)
+      case .Success(let term, let tokens): return .Success((term, tokens))
       case .Failure(let failure):
         switch tokens.first {
           case .some(.FN): return parseFn(tokens.dropFirst())
@@ -92,7 +92,7 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
   func parseParens(_ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
     return parseExpr(tokens).flatMap { (exp, tokens) in
       switch tokens.first {
-        case .some(.RPAREN): return .Success(exp, tokens.dropFirst())
+        case .some(.RPAREN): return .Success((exp, tokens.dropFirst()))
         case _: return .Failure("expected RPAREN")
       }
     }
@@ -132,10 +132,10 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
       case .some(let token):
         let pos = Position.unknown
         switch token {
-          case .NUM(let n): return .Success(.Num(pos, n), tokens.dropFirst())
-          case .TRUE: return .Success(.Bool(pos, true), tokens.dropFirst())
-          case .FALSE: return .Success(.Bool(pos, false), tokens.dropFirst())
-          case .ID(let id): return .Success(.Var(pos, id), tokens.dropFirst())
+          case .NUM(let n): return .Success((.Num(pos, n), tokens.dropFirst()))
+          case .TRUE: return .Success((.Bool(pos, true), tokens.dropFirst()))
+          case .FALSE: return .Success((.Bool(pos, false), tokens.dropFirst()))
+          case .ID(let id): return .Success((.Var(pos, id), tokens.dropFirst()))
           case .LPAREN: return parseParens(tokens.dropFirst())
           case .LET: return parseLet(tokens.dropFirst())
           case _: return .Failure("expected number, true, false, identifier, LPAREN or LET")
