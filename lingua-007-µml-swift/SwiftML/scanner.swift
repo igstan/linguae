@@ -21,12 +21,12 @@ enum Token {
   case EQUAL
 }
 
-typealias Stream = String.CharacterView
+typealias Stream = Substring
 typealias Tokens = Array<Token>.SubSequence
 
-let alphaChars = Set("abcdefghijklmnopqrstuvwxyz".characters)
-let digitChars = Set("0123456789".characters)
-let spaceChars = Set(" \n\r\t".characters)
+let alphaChars = Set("abcdefghijklmnopqrstuvwxyz")
+let digitChars = Set("0123456789")
+let spaceChars = Set(" \n\r\t")
 
 func isAlpha(_ char: Character) -> Bool {
   return alphaChars.contains(char)
@@ -52,7 +52,7 @@ func identifier(_ stream: Stream) -> (String, Stream)? {
   }
 
   switch stream.first {
-    case .some(let c) where isAlpha(c): return loop(stream.dropFirst(), String(c).characters)
+    case .some(let c) where isAlpha(c): return loop(stream.dropFirst(), Substring(String(c)))
     case _: return nil
   }
 }
@@ -69,7 +69,7 @@ func number(_ stream: Stream) -> (Int, Stream)? {
   }
 
   switch stream.first {
-    case .some(let c) where isDigit(c): return loop(stream.dropFirst(), String(c).characters)
+    case .some(let c) where isDigit(c): return loop(stream.dropFirst(), Substring(String(c)))
     case _: return nil
   }
 }

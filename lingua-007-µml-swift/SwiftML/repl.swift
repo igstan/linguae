@@ -11,7 +11,7 @@ func repl(prompt: String) {
       return
     case .some(let source) where source.isEmpty: repl(prompt: prompt)
     case .some(let source):
-      switch scanAll(source.characters) {
+      switch scanAll(Substring(source)) {
         case .Failure(let f): print(f)
         case .Success(let tokens):
           switch parse(tokens) {
