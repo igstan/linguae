@@ -27,6 +27,18 @@ typealias Tokens = Array<Token>.SubSequence
 let alphaChars = Set("abcdefghijklmnopqrstuvwxyz")
 let digitChars = Set("0123456789")
 let spaceChars = Set(" \n\r\t")
+let tokens: [String: Token] = [
+  "else": .ELSE,
+  "end": .END,
+  "false": .FALSE,
+  "fn": .FN,
+  "in": .IN,
+  "let": .LET,
+  "then": .THEN,
+  "true": .TRUE,
+  "val": .VAL,
+  "when": .WHEN,
+]
 
 func isAlpha(_ char: Character) -> Bool {
   return alphaChars.contains(char)
@@ -86,23 +98,14 @@ func scan(source: Stream) -> Result<(Token, Stream), String>? {
         case _: return .Success((.EQUAL, source))
       }
     case .some(let char):
-      switch identifier(source) {
-        case .some(("when", let rest)): return .Success((.WHEN, rest))
-        case .some(("then", let rest)): return .Success((.THEN, rest))
-        case .some(("else", let rest)): return .Success((.ELSE, rest))
-        case .some(("fn", let rest)): return .Success((.FN, rest))
-        case .some(("true", let rest)): return .Success((.TRUE, rest))
-        case .some(("false", let rest)): return .Success((.FALSE, rest))
-        case .some(("let", let rest)): return .Success((.LET, rest))
-        case .some(("in", let rest)): return .Success((.IN, rest))
-        case .some(("end", let rest)): return .Success((.END, rest))
-        case .some(("val", let rest)): return .Success((.VAL, rest))
-        case .some((let id, let rest)): return .Success((.ID(id), rest))
-        case .none:
-          switch number(source) {
-            case .some(let n, let rest): return .Success((.NUM(n), rest))
-            case .none: return .Failure("unexpected char: \(char)")
-          }
+      if let (id, rest) = identifier(source) {
+        let token = tokens[id] ?? .ID(id)
+        return .Success((token, rest))
+      } else {
+        switch number(source) {
+          case .some(let n, let rest): return .Success((.NUM(n), rest))
+          case .none: return .Failure("unexpected char: \(char)")
+        }
       }
   }
 }
