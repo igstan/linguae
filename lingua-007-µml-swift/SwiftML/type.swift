@@ -2,7 +2,7 @@
 // SwiftML                                                                    //
 // -------------------------------------------------------------------------- //
 
-indirect enum Type: Equatable, CustomStringConvertible {
+indirect enum Type: Hashable, CustomStringConvertible {
   case Bool
   case Int
   case Var(Int)
