@@ -27,7 +27,7 @@ indirect enum Type: Equatable, CustomStringConvertible {
     }
   }
 
-  private static let letters = Array("abcdefghijklmnopqrstuvwxyz".characters)
+  private static let letters = Array(Substring("abcdefghijklmnopqrstuvwxyz"))
 
   private func letter(_ n: Int) -> String {
     func recur(_ n: Int, _ str: String) -> String {
