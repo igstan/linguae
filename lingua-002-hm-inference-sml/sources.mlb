@@ -1,7 +1,11 @@
 $(SML_LIB)/basis/basis.mlb
 $(SML_LIB)/smlnj-lib/Util/smlnj-lib.mlb
 
-$(SMACKAGE)/sml-extras/v0.1.0/sources.mlb
+src/basis/tuples.sml
+src/basis/list.sig
+src/basis/list.sml
+src/basis/show.sig
+src/basis/show.sml
 
 src/term.sml
 src/type.sml
@@ -15,4 +19,5 @@ src/constraint.sml
 src/unify.sml
 src/infer.sml
 src/terms.sml
+
 src/mlton/main.sml

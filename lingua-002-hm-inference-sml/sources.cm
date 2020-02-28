@@ -1,18 +1,30 @@
 group
 
 is
-  $SMACKAGE/sml-foundation/v0.1.4/lib.cm (version: 0.1.4)
+  $/basis.cm
+  $/smlnj-lib.cm
 
-  src/term.sml
-  src/type.sml
-  src/subst.sig
-  src/subst.sml
-  src/type-scheme.sml
-  src/type-env.sig
-  src/type-env.fun
-  src/type-env.sml
-  src/constraint.sml
-  src/unify.sml
-  src/infer.sml
-  src/terms.sml
+  src (
+    term.sml
+    type.sml
+    subst.sig
+    subst.sml
+    type-scheme.sml
+    type-env.sig
+    type-env.fun
+    type-env.sml
+    constraint.sml
+    unify.sml
+    infer.sml
+    terms.sml
+  )
+
+  src/basis (
+    tuples.sml
+    list.sig
+    list.sml
+    show.sig
+    show.sml
+  )
+
   src/smlnj/main.sml
