@@ -32,14 +32,14 @@ object Scanner {
     val (tokens, stream) = consume(scanSingle(fromString), s)
 
     fromString(skipWhiteSpace(fromString, stream)) match {
-      case Some((c, s)) => throw new RuntimeException(s"unpexpected character: '$c'")
+      case Some((c, _)) => throw new RuntimeException(s"unpexpected character: '$c'")
       case None => tokens
     }
   }
 
   private val fromString: Reader[Char, String] = {
     string =>
-      string.size match {
+      string.length match {
         case 0 => None
         case 1 => Some(string.head -> "")
         case _ => Some(string.head -> string.substring(1))
@@ -143,7 +143,7 @@ object Scanner {
 
   private def scanDigit[S](nextChar: Reader[Char, S]): Reader[Int, S] = { stream =>
     nextChar(stream).flatMap {
-      case p @ (c, s) if isDigit(c) =>
+      case (c, s) if isDigit(c) =>
         Some(digit(c, 10) -> s)
       case _ => None
     }

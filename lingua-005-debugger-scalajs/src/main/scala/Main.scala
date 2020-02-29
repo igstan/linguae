@@ -1,14 +1,13 @@
 package ro.igstan.debugger
 
-import scala.scalajs.js.JSApp
-import org.scalajs.dom, dom.{ html, document, console }
+import org.scalajs.dom
+import org.scalajs.dom.{ document, html }
+import ro.igstan.debugger.display.HtmlRenderer
+import ro.igstan.debugger.eval.{ Env, Interpreter, Result, Resumption, Value }
+import ro.igstan.debugger.syntax.Parser
 
-import display._
-import eval._
-import syntax._, Term._
-
-object Main extends JSApp {
-  def main(): Unit = {
+object Main {
+  def main(args: Array[String]): Unit = {
     val source = """
       let
         val const = fn y =>
@@ -58,7 +57,7 @@ object Main extends JSApp {
     renderer.strokeStyle = "#FFC9D7"
 
     termElem.innerHTML = annotatedAST.meta
-    reset.addEventListener("click", (event: dom.MouseEvent) => main())
+    reset.addEventListener("click", (_: dom.MouseEvent) => main(Array.empty))
 
     var highlighted = document.getElementById(result.id)
 
@@ -81,22 +80,22 @@ object Main extends JSApp {
               renderer.stroke()
             }
           }
-        case other => ()
+        case _ => ()
       }
     })
 
-    termElem.addEventListener("mouseout", { (event: dom.MouseEvent) =>
+    termElem.addEventListener("mouseout", { event: dom.MouseEvent =>
       event.target match {
         case span: dom.html.Span =>
           renderer.clearRect(0, 0, overlay.width.toDouble, overlay.height.toDouble)
           Option(span.getAttribute("data-for-id")).filter(_.trim.nonEmpty).foreach { id =>
             document.getElementsByClassName(id).foreach(_.asInstanceOf[dom.Element].classList.remove("reference"))
           }
-        case other => ()
+        case _ => ()
       }
     })
 
-    next.addEventListener("click", (event: dom.MouseEvent) =>
+    next.addEventListener("click", (_: dom.MouseEvent) =>
       result.next() match {
         case Resumption.Done(v) =>
           next.setAttribute("disabled", "true")
@@ -125,7 +124,7 @@ object Main extends JSApp {
         value match {
           case Value.Num(value) => s"$value"
           case Value.Bool(value) => s"$value"
-          case Value.Fun(param, body, closure) => "ƒ"
+          case Value.Fun(_, _, _) => "ƒ"
         }
     }
   }

@@ -4,7 +4,7 @@ organization := "ro.igstan"
 
 version := "0.1.0"
 
-scalaVersion := "2.11.6"
+scalaVersion := "2.12.10"
 
 javacOptions ++= Seq("-Xlint:unchecked", "-Xlint:deprecation")
 
@@ -28,16 +28,11 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scala-js"  %%% "scalajs-dom" % "0.8.0",
-  "org.scalatest"  %% "scalatest"   % "2.2.4" % "test"
+  "org.scala-js"  %%% "scalajs-dom" % "1.0.0",
+  "org.scalatest"  %% "scalatest"   % "3.1.1" % "test"
 )
 
 enablePlugins(ScalaJSPlugin)
+enablePlugins(WorkbenchPlugin)
 
-graphSettings
-
-workbenchSettings
-
-bootSnippet := "ro.igstan.debugger.Main().main();"
-
-updateBrowsers <<= updateBrowsers.triggeredBy(fastOptJS in Compile)
+scalaJSUseMainModuleInitializer := true

@@ -1,7 +1,6 @@
 package ro.igstan.debugger
 package eval
 
-import display.HtmlRenderer
 import syntax.Term
 
 object Interpreter {
@@ -32,7 +31,7 @@ object Interpreter {
                 case Resumption.Done(v) =>
                   v match {
                     case Left(error) => kont(Resumption.Done(Left(error)))
-                    case Right(aValue @ Value.Num(a)) =>
+                    case Right(Value.Num(a)) =>
                       Resumption.Next {
                         loop(b, env, Some(v), {
                           case Resumption.Next(r) => r.next()

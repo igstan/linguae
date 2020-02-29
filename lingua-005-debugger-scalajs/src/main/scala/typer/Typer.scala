@@ -17,8 +17,8 @@ object Typer {
 
   def constrain(term: Term, tenv: TypeEnv, expectedTy: Type): Either[String, List[Constraint]] = {
     term match {
-      case INT(value) => Right(List(Constraint.EQ(expectedTy, TINT)))
-      case BOOL(value) => Right(List(Constraint.EQ(expectedTy, TBOOL)))
+      case INT(_) => Right(List(Constraint.EQ(expectedTy, TINT)))
+      case BOOL(_) => Right(List(Constraint.EQ(expectedTy, TBOOL)))
       case ADD(a, b) =>
         for {
           constraintsA <- constrain(a, tenv, TINT).right
@@ -167,7 +167,7 @@ object Typer {
                     case Right(s2) => Right(s1.compose(s2))
                   }
               }
-            case other => sys.error(s"bug: INST constraint seen before GEN constraint")
+            case _ => sys.error(s"bug: INST constraint seen before GEN constraint")
           }
       }
     }
