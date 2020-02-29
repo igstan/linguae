@@ -33,6 +33,5 @@ libraryDependencies ++= Seq(
 )
 
 enablePlugins(ScalaJSPlugin)
-enablePlugins(WorkbenchPlugin)
 
 scalaJSUseMainModuleInitializer := true
