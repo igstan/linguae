@@ -4,12 +4,7 @@
 $ sbt ~fastOptJS
 ```
 
-Open http://localhost:12345/target/scala-2.11/classes/index.html.
+Open `target/scala-2.13/classes/index.html` inside a browser.
 
-To launch the debugger:
-
-```js
-ro.igstan.debugger.Main().main();
-```
 
 ![Debugger Screenshot](doc/debugger.gif)
