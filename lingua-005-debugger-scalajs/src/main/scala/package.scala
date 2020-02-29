@@ -1,9 +1,12 @@
 package ro.igstan
 
-import org.scalajs.dom, dom.DOMList, dom.ext.EasySeq
+import scala.annotation.unused
+import org.scalajs.dom
+import dom.DOMList
+import dom.ext.EasySeq
 
 package object debugger {
-  def ignore[A](a: A): Unit = ()
+  def ignore[A](@unused a: A): Unit = ()
 
   implicit class Ignore[A](a: A) {
     def ignore(): Unit = ()

@@ -8,8 +8,8 @@ object Typer {
     val ty = Type.Var.fresh()
 
     for {
-      constraints <- constrain(term, tenv, ty).right
-      substitution <- unify(constraints).right
+      constraints <- constrain(term, tenv, ty)
+      substitution <- unify(constraints)
     } yield {
       tenv.generalize(substitution.apply(ty))
     }
@@ -21,15 +21,15 @@ object Typer {
       case BOOL(_) => Right(List(Constraint.EQ(expectedTy, TBOOL)))
       case ADD(a, b) =>
         for {
-          constraintsA <- constrain(a, tenv, TINT).right
-          constraintsB <- constrain(b, tenv, TINT).right
+          constraintsA <- constrain(a, tenv, TINT)
+          constraintsB <- constrain(b, tenv, TINT)
         } yield {
           Constraint.EQ(expectedTy, TINT) :: constraintsA ++ constraintsB
         }
       case SUB(a, b) =>
         for {
-          constraintsA <- constrain(a, tenv, TINT).right
-          constraintsB <- constrain(b, tenv, TINT).right
+          constraintsA <- constrain(a, tenv, TINT)
+          constraintsB <- constrain(b, tenv, TINT)
         } yield {
           Constraint.EQ(expectedTy, TINT) :: constraintsA ++ constraintsB
         }
@@ -46,9 +46,9 @@ object Typer {
         val yesTy = Type.Var.fresh()
         val noTy = Type.Var.fresh()
         for {
-          ifConstr <- constrain(test, tenv, TBOOL).right
-          yesConstr <- constrain(yes, tenv, yesTy).right
-          noConstr <- constrain(no, tenv, noTy).right
+          ifConstr <- constrain(test, tenv, TBOOL)
+          yesConstr <- constrain(yes, tenv, yesTy)
+          noConstr <- constrain(no, tenv, noTy)
         } yield {
           List(
             Constraint.EQ(expectedTy, yesTy),
@@ -61,7 +61,7 @@ object Typer {
         val extendedTenv = tenv.set(param, TypeScheme.FORALL(Set.empty, paramTy))
 
         for {
-          bodyConstr <- constrain(body, extendedTenv, bodyTy).right
+          bodyConstr <- constrain(body, extendedTenv, bodyTy)
         } yield {
           Constraint.EQ(expectedTy, TFUN(paramTy, bodyTy)) :: bodyConstr
         }
@@ -69,8 +69,8 @@ object Typer {
         val argTy = Type.Var.fresh()
 
         for {
-          fnConstr <- constrain(fn, tenv, TFUN(argTy, expectedTy)).right
-          argConstr <- constrain(arg, tenv, argTy).right
+          fnConstr <- constrain(fn, tenv, TFUN(argTy, expectedTy))
+          argConstr <- constrain(arg, tenv, argTy)
         } yield {
           fnConstr ++ argConstr
         }
@@ -80,8 +80,8 @@ object Typer {
         val extendedTenv = tenv.set(binding, bindingScheme)
 
         for {
-          valueConstr <- constrain(value, tenv, valueTy).right
-          bodyConstr <- constrain(body, extendedTenv, expectedTy).right
+          valueConstr <- constrain(value, tenv, valueTy)
+          bodyConstr <- constrain(body, extendedTenv, expectedTy)
         } yield {
           valueConstr ++ List(Constraint.GEN(tenv, bindingScheme, valueTy)) ++ bodyConstr
         }
@@ -177,9 +177,9 @@ object Typer {
 
   def substTenv(subst: Substitution, tenv: TypeEnv): TypeEnv = {
     TypeEnv {
-      tenv.bindings.mapValues {
-        case TypeScheme.FORALL(tvars, ty) => TypeScheme.FORALL(tvars, subst.apply(ty))
-        case tyScheme: TypeScheme.TSVAR => tyScheme
+      tenv.bindings.map {
+        case (k, TypeScheme.FORALL(tvars, ty)) => k -> TypeScheme.FORALL(tvars, subst.apply(ty))
+        case (k, tyScheme) => k -> tyScheme
       }
     }
   }
@@ -204,8 +204,8 @@ object Typer {
     }
 
     for {
-      s1 <- unify1(eqConstraints).right
-      s2 <- unify2(substituteConstraints(s1, otherConstraints)).right
+      s1 <- unify1(eqConstraints)
+      s2 <- unify2(substituteConstraints(s1, otherConstraints))
     } yield {
       s1.compose(s2)
     }
