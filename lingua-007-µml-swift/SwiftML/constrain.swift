@@ -11,9 +11,11 @@ enum Constraint: Hashable, CustomStringConvertible {
     }
   }
 
-  var hashValue: Int {
+  func hash(into hasher: inout Hasher) {
     switch self {
-      case let .Equal(r, p): return r.hashValue ^ p.hashValue
+      case let .Equal(r, p):
+        hasher.combine(r)
+        hasher.combine(p)
     }
   }
 

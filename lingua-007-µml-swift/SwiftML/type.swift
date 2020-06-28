@@ -18,12 +18,14 @@ indirect enum Type: Hashable, CustomStringConvertible {
     }
   }
 
-  var hashValue: Int {
+  func hash(into hasher: inout Hasher) {
     switch self {
-      case .Bool: return 0
-      case .Int: return 1
-      case .Var(let n): return n
-      case .Fun(let p, let r): return p.hashValue ^ r.hashValue
+      case .Bool: hasher.combine(0)
+      case .Int: hasher.combine(1)
+      case .Var(let n): hasher.combine(n)
+      case .Fun(let p, let r):
+        hasher.combine(p)
+        hasher.combine(r)
     }
   }
 
@@ -45,9 +47,9 @@ indirect enum Type: Hashable, CustomStringConvertible {
         case .Bool: return ("bool", vars)
         case .Int: return ("int", vars)
         case .Var(let v):
-          var vars = vars
-          let tvar = vars.get(key: v, orUpdate: letter(vars.count))
-          return ("'\(tvar)", vars)
+          var vars2 = vars
+          let tvar = vars2.get(key: v, orUpdate: letter(vars.count))
+          return ("'\(tvar)", vars2)
         case .Fun(let p, let r):
           let b = traverse(type: r, vars: vars)
           let a = traverse(type: p, vars: b.vars)
