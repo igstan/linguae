@@ -1,4 +1,4 @@
-name := "typer"
+name := "linguae:hm-inference-scala"
 
 organization := "ro.igstan"
 
