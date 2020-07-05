@@ -1,4 +1,4 @@
-name := "debugger"
+name := "linguae:debugger"
 organization := "ro.igstan"
 version := "0.1.0"
 
