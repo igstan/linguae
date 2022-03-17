@@ -6,7 +6,11 @@ final case class Program(defs: Program.Defs, main: Expr) {
       .map {
         case (name, body) => s"[def $name $body]"
       }
-      .mkString("", "\n\n", s"\n[def main [] $main]")
+      .mkString(
+        start = "",
+        sep = "\n\n",
+        end = s"\n[def main [] $main]",
+      )
   }
 }
 
