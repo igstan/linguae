@@ -4,7 +4,7 @@ package test
 final class NaiveSpecializerSuite extends munit.FunSuite {
 
   test("specializes file") {
-    val program = Parser(Reader.read(getClass.getResourceAsStream("./data/power.leesp")))
+    val program = Parser(Reader.read(getClass.getResourceAsStream("./data/exp.leesp")))
     val residual = NaiveSpecializer.specialize(program)
     val expected = Parser(Reader.read("[* x [* x [* x [* x [* x x]]]]]").head)
 
