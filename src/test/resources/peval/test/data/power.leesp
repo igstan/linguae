@@ -1,0 +1,12 @@
+[def factorial [n]
+  [if [= n 0]
+      1
+      [* n [factorial [- n 1]]]]]
+
+[def power [x n]
+  [if [= n 0]
+      1
+      [* x [power x [- n 1]]]]]
+
+[def main []
+  [power x [factorial 3]]]

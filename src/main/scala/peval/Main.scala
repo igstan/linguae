@@ -2,6 +2,16 @@ package peval
 
 object Main {
   def main(args: Array[String]): Unit = {
-    println("Hi!")
+    val source = getClass.getResourceAsStream("/leesp/power.leesp")
+    val program = Parser(Reader.read(source))
+    val residue = NaiveSpecializer.specialize(program)
+
+    println()
+    println("PROGRAM:")
+    println(program)
+    println()
+    println("RESIDUE:")
+    println(residue)
+    println()
   }
 }
