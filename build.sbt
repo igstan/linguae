@@ -3,7 +3,7 @@ name := "linguae:partial-evaluation"
 version := "0.1.0"
 scalaVersion := "2.13.8"
 
-addCompilerPlugin("org.typelevel"  %% "kind-projector" % "0.13.2" cross CrossVersion.full)
+addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVersion.full)
 
 // http://tpolecat.github.io/2017/04/25/scalac-flags.html
 scalacOptions ++= Seq(
