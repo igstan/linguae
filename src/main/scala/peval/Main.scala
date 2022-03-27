@@ -2,8 +2,15 @@ package peval
 
 object Main {
   def main(args: Array[String]): Unit = {
-    //naive()
+    println()
+    println("NAIVE SPECIALIZER")
+    println("=================")
+    naive()
+    println()
+    println("BETTER SPECIALIZER")
+    println("==================")
     better()
+    println()
   }
 
   def naive(): Unit = {
