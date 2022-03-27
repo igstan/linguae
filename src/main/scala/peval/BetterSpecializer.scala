@@ -47,6 +47,11 @@ object BetterSpecializer {
         case Prim(op, a, b) =>
           (go(a), go(b)).mapN {
             case (Const(a), Const(b)) => Const(op(a, b))
+            case (Const(Val.I(0)), a) if op == Op.Add => a
+            case (a, Const(Val.I(0))) if op == Op.Add => a
+            case (a, Const(Val.I(0))) if op == Op.Sub => a
+            case (Const(Val.I(1)), a) if op == Op.Mul => a
+            case (a, Const(Val.I(1))) if op == Op.Mul => a
             case (av, bv) => Prim(op, av, bv)
           }
 
