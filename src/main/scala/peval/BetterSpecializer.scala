@@ -90,46 +90,59 @@ object BetterSpecializer {
                   // generate a function name
                   val genFn = generateFn(fn, staticArgs)
 
-                  for {
-                    defs <- Specialized.get[Env, Log, Program.Defs]
-                    _ <- defs.get(genFn) match {
-                      case Some(_) =>
-                        // We've already specialized this.
-                        ().pure[Specialized]
-
-                      case None =>
-                        for {
-                          // Since functions can be recursive, we need to
-                          // put a placeholder of the function itself in
-                          // the fun env before specializing its body.
-                          //
-                          // Using null seems like a hack, but for the moment
-                          // I'm just following the paper, and they did the
-                          // same, only using Haskell's undefined instead.
-                          _ <- Specialized.set[Env, Log, Program.Defs](defs + (genFn -> null))
-
-                          // Now we can specialize the body over the arguments
-                          // that we already know.
-                          pbody <- go(body).local[Env](_ => Env(staticArgs.toMap))
-
-                          // Finally, generate a new function, which receives
-                          // just the dynamic subset of the arguments that the
-                          // original function expected. Its body is the
-                          // original specialized body.
-                          //
-                          // This part will also override the null entry we
-                          // created above.
-                          _ <- Specialized.modify[Env, Log, Program.Defs] { defs =>
-                            val argNames = dynamicArgs.map(_._1)
-                            defs + (genFn -> Def(argNames, pbody))
+                  Specialized
+                    .get[Env, Log, Program.Defs]
+                    .flatMap { defs =>
+                      defs.get(genFn) match {
+                        case Some(_) =>
+                          Specialized.pure {
+                            Apply(genFn, dynamicArgs.map(_._2))
                           }
-                        } yield ()
+
+                        case None =>
+                          for {
+                            // Since functions can be recursive, we need to
+                            // put a placeholder of the function itself in
+                            // the fun env before specializing its body.
+                            //
+                            // Using null seems like a hack, but for the moment
+                            // I'm just following the paper, and they did the
+                            // same, only using Haskell's undefined instead.
+                            _ <- Specialized.set[Env, Log, Program.Defs](defs + (genFn -> null))
+
+                            // Now we can specialize the body over the arguments
+                            // that we already know.
+                            pbody <- go(body).local[Env](_ => Env(staticArgs.toMap))
+
+                            expr <-
+                              if (!pbody.hasApplies) {
+                                // If we've got a "simple" body, i.e., one that
+                                // doesn't contain function calls, then we're
+                                // going to inline it and forgo defining the
+                                // extra function.
+                                Specialized
+                                  .modify[Env, Log, Program.Defs](_ - genFn)
+                                  .as(pbody)
+                              } else {
+                                // Finally, generate a new function, which receives
+                                // just the dynamic subset of the arguments that the
+                                // original function expected. Its body is the
+                                // original specialized body.
+                                //
+                                // This part will also override the null entry we
+                                // created above.
+                                Specialized
+                                  .modify[Env, Log, Program.Defs] { defs =>
+                                    val argNames = dynamicArgs.map(_._1)
+                                    defs + (genFn -> Def(argNames, pbody))
+                                  }
+                                  .as(Apply(genFn, dynamicArgs.map(_._2)))
+                              }
+                          } yield {
+                            expr
+                          }
+                      }
                     }
-                  } yield {
-                    // Call the generated function using the dynamic subset of
-                    // the arguments.
-                    Apply(genFn, dynamicArgs.map(_._2))
-                  }
                 }
               }
           }

@@ -13,18 +13,12 @@ final class BetterSpecializerSuite extends munit.FunSuite {
         [power x 3]]
     """
 
-    val expected = List(
-      "[def fn-872237902 [fun [x] [* x [fn-872238863 x]]]]",
-      "[def fn-872238863 [fun [x] [* x [fn-872239824 x]]]]",
-      "[def fn-872239824 [fun [x] [* x [fn-872240785 x]]]]",
-      "[def fn-872240785 [fun [x] 1]]",
-      "[def main [] [fn-872237902 x]]",
-    )
+    val expected = "\n[def main [] [* x [* x x]]]"
 
     val program = Parser(Reader.read(source))
     val residue = BetterSpecializer.specialize(program)
 
-    assertEquals(residue.program.toString, expected.mkString("\n"))
+    assertEquals(residue.program.toString, expected)
   }
 
   test("specializes: [power 3 n] (no stack overflow)") {

@@ -38,6 +38,16 @@ sealed trait Val extends Any with Product with Serializable {
 }
 
 sealed trait Expr extends Product with Serializable {
+  /** Determine whether the expression tree contains `Apply` nodes. */
+  def hasApplies: Boolean =
+    this match {
+      case Expr.Const(_) => false
+      case Expr.Var(_) => false
+      case Expr.Apply(_, _) => true
+      case Expr.Prim(_, a, b) => a.hasApplies || b.hasApplies
+      case Expr.If(a, b, c) => a.hasApplies || b.hasApplies || c.hasApplies
+    }
+
   override def toString: String =
     this match {
       case Expr.Const(value) => value.toString
