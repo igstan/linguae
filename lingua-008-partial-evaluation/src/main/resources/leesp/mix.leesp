@@ -1,0 +1,110 @@
+; Parigot Encoding? External Visitor as it were.
+[def null []
+  [fun [on-null _] [on-null]]]
+
+[def cons [head tail]
+  [fun [_ on-cons] [on-cons head tail]]]
+
+[def head [list]
+  [list
+    [def [] [fail "empty list"]]
+    [def [head _] c]]]
+
+[def tail [list]
+  [list
+    [def [] [fail "empty list"]]
+    [def [_ tail] tail]]]
+
+[def drop [list n]
+  [let
+    [loop [fun [list n] [if [= n 0] list [loop [tail list] [- n 1]]]]]
+    [loop list n]]]
+
+[def nth [list n]
+  [head [drop list n]]]
+
+[def size [list]
+  [list
+    [fun [] 0]
+    [fun [_ n] [+ 1 n]]]]
+
+[def not [bool]
+  [if bool] false true]]
+
+tree ::= "(" many ")" | leaf
+many ::= ε | tree many
+
+
+[def success [a]
+  [fun [file] [cons a file]]]
+
+[def failure [a]
+  [fun [file] [null]]]
+
+[def item []
+  [fun [file]
+    [let [[char [read-char file]]]
+      [if [not char]
+          [null]
+          [cons char file]]]]]
+
+[def bind [parser action]
+  [fun [file]
+    ]]
+
+[def char []
+  [fun [file]
+    [cons [read-char file] file]]]
+
+[def matches [c]
+  [fun [file]
+    [if [= c [read-char file]]
+        [cons c file]
+        null]]]
+
+[def read [file]
+  [let [
+      [empty-atom [null]]
+      [inside-comment true]
+      [outside-comment false]
+      [loop [fun [program comment atom list-stack]
+        [let
+          [[char [read-char file]]]
+          [if [> char -1]
+              program
+              [if comment
+                  [if [= char '\n']
+                      [loop program outside-comment]
+                      [loop program inside-comment]]
+                  [if [= char ';']
+                      [loop program true]
+                      [if [= char '(']
+                          [loop
+                            [cons [str atom] program]
+                            inside-comment
+                            empty-atom
+                            [cons null list-stack]]
+                          [if [= char ')']
+                              [loop
+                                [cons [str atom] program]
+                                inside-comment
+                                empty-atom
+                                [cons null list-stack]]
+
+                                ]]]]]]]]]
+    [loop null false]]]
+
+; ;; assumes all variables are defined
+; [define env:get [lambda [env k]
+;   [if [= k [head [head env]]]
+;       [tail [head env]]
+;       [env:get [tail env] k]]]]
+
+; [define env:put [lambda [env k v]
+;   [cons [list k v] env]
+
+; ; lexer == mărunțitor
+
+; ;; reader
+; [define read [lamdba chars
+;   [if [empty]]]]
