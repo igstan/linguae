@@ -1,6 +1,6 @@
 package peval
 
-import cats.data.State
+import cats.data.ReaderWriterState
 import cats.implicits._
 import peval.Expr.{ Apply, Const, If, Prim, Var }
 
@@ -14,29 +14,47 @@ object BetterSpecializer {
     val empty: Env = Env(Map.empty)
   }
 
-  def specialize(program: Program): Program = {
-    def go(expr: Expr, env: Env): State[Program.Defs, Expr] = {
-      //println(s"specializing: $expr")
-      val a: State[Program.Defs, Expr] = expr match {
-        case Const(_) => State.pure(expr)
+  final case class Residue(logs: Log, program: Program)
+
+  final case class Stage(env: Env, program: Expr, residue: Expr) {
+    override def toString: String =
+      List(
+        s"environ: $env",
+        s"program: $program",
+        s"residue: $residue",
+      ).mkString("\n")
+  }
+
+  private type Log = Vector[Stage]
+  private type Specialized[A] = ReaderWriterState[Env, Log, Program.Defs, A]
+
+  private val Specialized = ReaderWriterState
+  private val env = Specialized.ask[Env, Log, Program.Defs]
+
+  def specialize(program: Program): Residue = {
+    def go(expr: Expr): Specialized[Expr] = {
+      val residue: Specialized[Expr] = expr match {
+        case Const(_) => Specialized.pure(expr)
 
         case Var(v) =>
-          env.bindings.get(v) match {
-            case Some(e) => State.pure(Const(e))
-            case None => State.pure(expr)
+          env.flatMap { env =>
+            env.bindings.get(v) match {
+              case Some(e) => Specialized.pure(Const(e))
+              case None => Specialized.pure(expr)
+            }
           }
 
         case Prim(op, a, b) =>
-          (go(a, env), go(b, env)).mapN {
+          (go(a), go(b)).mapN {
             case (Const(a), Const(b)) => Const(op(a, b))
             case (av, bv) => Prim(op, av, bv)
           }
 
         case If(cond, condT, condF) =>
-          go(cond, env).flatMap {
-            case Const(Val.B(true)) => go(condT, env)
-            case Const(Val.B(false)) => go(condF, env)
-            case scond => (go(condT, env), go(condF, env)).mapN(If(scond, _, _))
+          go(cond).flatMap {
+            case Const(Val.B(true)) => go(condT)
+            case Const(Val.B(false)) => go(condF)
+            case scond => (go(condT), go(condF)).mapN(If(scond, _, _))
           }
 
         case Apply(fn, args) =>
@@ -45,7 +63,7 @@ object BetterSpecializer {
             case None => sys.error(s"undefined function: $fn")
             case Some(Def(argNames, body)) =>
               // partially evaluate arguments
-              args.traverse(go(_, env)).flatMap { argVals =>
+              args.traverse(go).flatMap { argVals =>
                 // partition arguments into static and dynamic
                 val (staticArgs, dynamicArgs) =
                   // It's important to use parMapN here instead of mapN, so
@@ -62,17 +80,17 @@ object BetterSpecializer {
                 if (dynamicArgs.isEmpty) {
                   // All arguments are statically known; we can completely
                   // inline the entire function body.
-                  go(body, Env(staticArgs.toMap))
+                  go(body).local(_ => Env(staticArgs.toMap))
                 } else {
                   // generate a function name
                   val genFn = generateFn(fn, staticArgs)
 
                   for {
-                    defs <- State.get[Program.Defs]
+                    defs <- Specialized.get[Env, Log, Program.Defs]
                     _ <- defs.get(genFn) match {
                       case Some(_) =>
                         // We've already specialized this.
-                        ().pure[State[Program.Defs, *]]
+                        ().pure[Specialized]
 
                       case None =>
                         for {
@@ -83,11 +101,11 @@ object BetterSpecializer {
                           // Using null seems like a hack, but for the moment
                           // I'm just following the paper, and they did the
                           // same, only using Haskell's undefined instead.
-                          _ <- State.set[Program.Defs](defs + (genFn -> null))
+                          _ <- Specialized.set[Env, Log, Program.Defs](defs + (genFn -> null))
 
                           // Now we can specialize the body over the arguments
                           // that we already know.
-                          pbody <- go(body, Env(staticArgs.toMap))
+                          pbody <- go(body).local[Env](_ => Env(staticArgs.toMap))
 
                           // Finally, generate a new function, which receives
                           // just the dynamic subset of the arguments that the
@@ -96,7 +114,7 @@ object BetterSpecializer {
                           //
                           // This part will also override the null entry we
                           // created above.
-                          _ <- State.modify[Program.Defs] { defs =>
+                          _ <- Specialized.modify[Env, Log, Program.Defs] { defs =>
                             val argNames = dynamicArgs.map(_._1)
                             defs + (genFn -> Def(argNames, pbody))
                           }
@@ -112,20 +130,23 @@ object BetterSpecializer {
           }
       }
 
-      a.map { residue =>
-        println(s"SPECIALIZED:\n" +
-          s"              env: $env\n" +
-          s"          program: $expr\n" +
-          s"          residue: $residue")
-        residue
+      for {
+        r <- residue
+        e <- env
+        _ <- log(e, expr, r)
+      } yield {
+        r
       }
     }
 
-    go(program.main, Env.empty)
-      .run(Map.empty)
-      .map((Program.apply _).tupled)
+    go(program.main)
+      .run(Env.empty, Map.empty)
+      .map { case (logs, defs, main) => Residue(logs, Program(defs, main)) }
       .value
   }
+
+  private def log(environ: Env, program: Expr, residue: Expr): Specialized[Unit] =
+    Specialized.tell(Vector(Stage(environ, program, residue)))
 
   private def generateFn(fn: String, staticArgs: List[(String, Val)]): String =
     "fn" + (fn + staticArgs).hashCode

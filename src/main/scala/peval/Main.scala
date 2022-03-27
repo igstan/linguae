@@ -39,7 +39,10 @@ object Main {
     println(program)
     println()
     println("RESIDUE:")
-    println(residue)
+    println(residue.program)
+    println()
+    println("LOGS:")
+    println(residue.logs.reverse.mkString("\n\n"))
     println()
   }
 }

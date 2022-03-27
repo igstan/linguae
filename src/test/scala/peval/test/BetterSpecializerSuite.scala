@@ -22,9 +22,9 @@ final class BetterSpecializerSuite extends munit.FunSuite {
     )
 
     val program = Parser(Reader.read(source))
-    val residual = BetterSpecializer.specialize(program)
+    val residue = BetterSpecializer.specialize(program)
 
-    assertEquals(residual.toString, expected.mkString("\n"))
+    assertEquals(residue.program.toString, expected.mkString("\n"))
   }
 
   test("specializes: [power 3 n] (no stack overflow)") {
@@ -44,8 +44,8 @@ final class BetterSpecializerSuite extends munit.FunSuite {
     )
 
     val program = Parser(Reader.read(source))
-    val residual = BetterSpecializer.specialize(program)
+    val residue = BetterSpecializer.specialize(program)
 
-    assertEquals(residual.toString, expected.mkString("\n"))
+    assertEquals(residue.program.toString, expected.mkString("\n"))
   }
 }
