@@ -1,5 +1,7 @@
 package peval
 
+import cats.implicits._
+
 final case class Program(defs: Program.Defs, main: Expr) {
   override def toString: String = {
     defs
@@ -8,7 +10,7 @@ final case class Program(defs: Program.Defs, main: Expr) {
       }
       .mkString(
         start = "",
-        sep = "\n\n",
+        sep = "\n",
         end = s"\n[def main [] $main]",
       )
   }
@@ -53,6 +55,25 @@ sealed trait Op extends Product with Serializable {
       case Op.Add => "+"
       case Op.Sub => "-"
       case Op.Mul => "*"
+    }
+
+  def apply(a: Val, b: Val): Val =
+    (a, b) match {
+      case (Val.I(va), Val.I(vb)) =>
+        this match {
+          case Op.Eqv => Val.B(va === vb)
+          case Op.Add => Val.I(va + vb)
+          case Op.Sub => Val.I(va - vb)
+          case Op.Mul => Val.I(va * vb)
+        }
+
+      case (Val.B(va), Val.B(vb)) =>
+        this match {
+          case Op.Eqv => Val.B(va === vb)
+          case _ => sys.error("boolean values can only be compared for equality")
+        }
+
+      case _ => sys.error("operands of different types")
     }
 }
 
