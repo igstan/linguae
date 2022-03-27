@@ -4,15 +4,11 @@ import cats.implicits._
 
 final case class Program(defs: Program.Defs, main: Expr) {
   override def toString: String = {
-    defs
+    (defs ++ Map("main" -> Def(List.empty, main)))
       .map {
         case (name, body) => s"[def $name $body]"
       }
-      .mkString(
-        start = "",
-        sep = "\n",
-        end = s"\n[def main [] $main]",
-      )
+      .mkString("\n")
   }
 }
 

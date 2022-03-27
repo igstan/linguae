@@ -13,7 +13,7 @@ final class BetterSpecializerSuite extends munit.FunSuite {
         [power x 3]]
     """
 
-    val expected = "\n[def main [] [* x [* x x]]]"
+    val expected = "[def main [fun [] [* x [* x x]]]]"
 
     val program = Parser(Reader.read(source))
     val residue = BetterSpecializer.specialize(program)
@@ -34,7 +34,7 @@ final class BetterSpecializerSuite extends munit.FunSuite {
 
     val expected = List(
       "[def fn-863002692 [fun [n] [if [= n 0] 1 [* 3 [fn-863002692 [- n 1]]]]]]",
-      "[def main [] [fn-863002692 n]]",
+      "[def main [fun [] [fn-863002692 n]]]",
     )
 
     val program = Parser(Reader.read(source))
