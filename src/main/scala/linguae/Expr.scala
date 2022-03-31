@@ -1,8 +1,9 @@
 package linguae
 
-import linguae.Expr.{ BinOp, Const }
+enum Expr {
+  case Const(value: Int)
+  case BinOp(value: String, a: Expr, b: Expr)
 
-sealed trait Expr extends Product with Serializable {
   def pretty(operatorTable: Map[String, Fixity]): String = {
     def parenthesize(a: Expr, parentFixity: Fixity) =
       a match {
@@ -22,9 +23,4 @@ sealed trait Expr extends Product with Serializable {
         s"$sa $op $sb"
     }
   }
-}
-
-object Expr {
-  final case class Const(value: Int) extends Expr
-  final case class BinOp(value: String, a: Expr, b: Expr) extends Expr
 }
