@@ -9,7 +9,7 @@ object Token {
   final case object RParen extends Token
 
   def parser: Parser[List[Token]] = {
-    import Parser._
+    import Parser.*
 
     def token[A](parser: Parser[A]): Parser[A] = spaces *> parser <* spaces
     def spaces: Parser[Unit] = satisfy(_.isWhitespace).optionalMany.void
