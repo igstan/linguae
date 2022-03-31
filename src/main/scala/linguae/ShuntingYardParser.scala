@@ -24,9 +24,7 @@ final case class ShuntingYardParser(operatorTable: Map[String, Fixity]) {
           val xFixity = operatorTable(opX)
           val yFixity = operatorTable(opY)
 
-          if (
-            (xFixity.isL && xFixity.precedence <= yFixity.precedence) || (xFixity.isR && xFixity.precedence < yFixity.precedence)
-          ) {
+          if (xFixity.appliesBefore(yFixity)) {
             binOp(opX, tokens, restOps, applyOp(opY, exprs))
           } else {
             loop(tokens, opX :: ops, exprs)

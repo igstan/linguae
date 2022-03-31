@@ -1,12 +1,18 @@
 package linguae
 
-sealed abstract class Fixity(
-  val precedence: Int,
-  val isL: Boolean,
-  val isR: Boolean,
-) extends Product with Serializable
+sealed trait Fixity extends Product with Serializable {
+  def precedence: Int
+  def appliesBefore(that: Fixity): Boolean
+}
 
 object Fixity {
-  final case class L(override val precedence: Int) extends Fixity(precedence, isL = true, isR = false)
-  final case class R(override val precedence: Int) extends Fixity(precedence, isL = false, isR = true)
+  final case class L(override val precedence: Int) extends Fixity {
+    override def appliesBefore(that: Fixity): Boolean =
+      this.precedence <= that.precedence
+  }
+
+  final case class R(override val precedence: Int) extends Fixity {
+    override def appliesBefore(that: Fixity): Boolean =
+      this.precedence < that.precedence
+  }
 }
