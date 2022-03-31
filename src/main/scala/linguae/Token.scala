@@ -15,20 +15,20 @@ object Token {
     def spaces: Parser[Unit] = satisfy(_.isWhitespace).optionalMany.void
     def lparen: Parser[Token] = char('(').as(Token.LParen)
     def rparen: Parser[Token] = char(')').as(Token.RParen)
-    def digit: Parser[Char] = satisfy(_.isDigit)
 
     def number: Parser[Token] =
       for {
         n <- char('-').optional.map(_.isDefined)
-        d <- digit.many.map(_.mkString.toInt)
+        d <- satisfy(_.isDigit).many.map(_.mkString.toInt)
       } yield {
         Token.Const(if (n) -d else d)
       }
 
     def operator: Parser[Token] =
-      (char('+') | char('-') | char('*') | char('/') | char('^')).map { op =>
-        Token.BinOp(op.toString)
-      }
+      Set('+', '-', '*', '/', '^')
+        .map(char)
+        .reduce(_ | _)
+        .map(op => Token.BinOp(op.toString))
 
     token(lparen | rparen | number | operator).optionalMany
   }
