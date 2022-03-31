@@ -2,7 +2,9 @@ package linguae
 
 import scala.annotation.tailrec
 
-final case class FunctionalShuntingYardParser(operatorTable: Map[String, Fixity]) {
+final case class FunctionalShuntingYardParser(operatorTable: Map[String, Fixity])
+  extends ExprParser {
+
   def parse(tokens: List[Token]): Expr = {
     def applyOp(op: String, exprs: List[Expr]): List[Expr] =
       exprs match {

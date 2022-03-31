@@ -2,7 +2,8 @@ package linguae
 
 import scala.collection.mutable
 
-final case class ImperativeShuntingYardParser(operatorTable: Map[String, Fixity]) {
+final case class ImperativeShuntingYardParser(operatorTable: Map[String, Fixity])
+  extends ExprParser {
 
   def parse(tokens: List[Token]): Expr = {
     val toknStack = mutable.Stack.from(tokens)
