@@ -7,6 +7,7 @@ addCompilerPlugin("org.typelevel" %% "kind-projector" % "0.13.2" cross CrossVers
 
 // http://tpolecat.github.io/2017/04/25/scalac-flags.html
 scalacOptions ++= Seq(
+  "-Xsource:3",                        // Use some of the Scala 3 features
   "-deprecation",                      // Emit warning and location for usages of deprecated APIs.
   "-encoding", "utf-8",                // Specify character encoding used by source files.
   "-explaintypes",                     // Explain type errors in more detail.
