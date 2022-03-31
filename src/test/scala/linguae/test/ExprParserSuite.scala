@@ -5,9 +5,9 @@ abstract class ExprParserSuite extends munit.FunSuite {
   def parser: ExprParser
 
   protected val operatorTable = Map(
-    "^" -> Fixity.R(10),
-    "*" -> Fixity.L(5),
-    "/" -> Fixity.L(5),
+    "^" -> Fixity.R(6),
+    "*" -> Fixity.L(3),
+    "/" -> Fixity.L(3),
     "+" -> Fixity.L(0),
     "-" -> Fixity.L(0),
   )
