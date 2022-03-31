@@ -5,8 +5,8 @@ sealed trait Token extends Product with Serializable
 object Token {
   final case class Const(value: Int) extends Token
   final case class BinOp(value: String) extends Token
-  final case object LParen extends Token
-  final case object RParen extends Token
+  case object LParen extends Token
+  case object RParen extends Token
 
   def parser: Parser[List[Token]] = {
     import Parser.*
