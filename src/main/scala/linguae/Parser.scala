@@ -3,7 +3,6 @@ package linguae
 import scala.annotation.tailrec
 
 final class Parser[A](val run: String => Either[String, (A, String)]) extends AnyVal {
-
   def consume(s: String): Either[String, A] =
     run(s) match {
       case Right((a, rest)) if rest.isEmpty => Right(a)
@@ -15,27 +14,27 @@ final class Parser[A](val run: String => Either[String, (A, String)]) extends An
 
   def void: Parser[Unit] = as(())
 
-  def *> [B](parser: Parser[B]): Parser[B] =
+  def *>[B](parser: Parser[B]): Parser[B] =
     flatMap(_ => parser)
 
-  def <* [B](parser: Parser[B]): Parser[A] =
+  def <*[B](parser: Parser[B]): Parser[A] =
     flatMap(b => parser.as(b))
 
   def map[B](fn: A => B): Parser[B] =
     Parser { stream =>
-      run(stream).map {
-        case (a, rest) => (fn(a), rest)
+      run(stream).map { case (a, rest) =>
+        (fn(a), rest)
       }
     }
 
   def flatMap[B](fn: A => Parser[B]): Parser[B] =
     Parser { stream =>
-      run(stream).flatMap {
-        case (a, rest) => fn(a).run(rest)
+      run(stream).flatMap { case (a, rest) =>
+        fn(a).run(rest)
       }
     }
 
-  def | (that: Parser[A]): Parser[A] =
+  def |(that: Parser[A]): Parser[A] =
     Parser { string =>
       run(string) match {
         case Left(_) => that.run(string) // backtracks

@@ -13,7 +13,12 @@ final case class ShuntingYardParser(operatorTable: Map[String, Fixity]) {
       }
 
     @tailrec
-    def binOp(opX: String, tokens: List[Token], ops: List[String], exprs: List[Expr]): Expr =
+    def binOp(
+      opX: String,
+      tokens: List[Token],
+      ops: List[String],
+      exprs: List[Expr],
+    ): Expr =
       ops match {
         case opY :: restOps if opY != "(" =>
           val xFixity = operatorTable(opX)
@@ -51,9 +56,9 @@ final case class ShuntingYardParser(operatorTable: Map[String, Fixity]) {
         case token :: restTokens =>
           token match {
             case Token.Const(value) => loop(restTokens, ops, Expr.Const(value) :: exprs)
-            case Token.LParen       => loop(restTokens, "(" :: ops, exprs)
-            case Token.RParen       => rparen(restTokens, ops, exprs)
-            case Token.BinOp(op)    => binOp(op, restTokens, ops, exprs)
+            case Token.LParen => loop(restTokens, "(" :: ops, exprs)
+            case Token.RParen => rparen(restTokens, ops, exprs)
+            case Token.BinOp(op) => binOp(op, restTokens, ops, exprs)
           }
       }
 

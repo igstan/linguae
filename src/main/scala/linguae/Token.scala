@@ -26,8 +26,8 @@ object Token {
       }
 
     def operator: Parser[Token] =
-      (char('+') | char('-') | char('*') | char('/') | char('^')).map {
-        op => Token.BinOp(op.toString)
+      (char('+') | char('-') | char('*') | char('/') | char('^')).map { op =>
+        Token.BinOp(op.toString)
       }
 
     token(lparen | rparen | number | operator).optionalMany
