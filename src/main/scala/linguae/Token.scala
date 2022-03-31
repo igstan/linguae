@@ -3,8 +3,8 @@ package linguae
 enum Token {
   case Const(value: Int)
   case BinOp(value: String)
-  case LParen
-  case RParen
+  case ParenL
+  case ParenR
 }
 
 object Token {
@@ -13,8 +13,8 @@ object Token {
 
     def token[A](parser: Parser[A]): Parser[A] = spaces *> parser <* spaces
     def spaces: Parser[Unit] = satisfy(_.isWhitespace).optionalMany.void
-    def lparen: Parser[Token] = char('(').as(LParen)
-    def rparen: Parser[Token] = char(')').as(RParen)
+    def lparen: Parser[Token] = char('(').as(ParenL)
+    def rparen: Parser[Token] = char(')').as(ParenR)
 
     def number: Parser[Token] =
       for {

@@ -56,8 +56,8 @@ final case class FunctionalShuntingYardParser(operatorTable: Map[String, Fixity]
         case token :: restTokens =>
           token match {
             case Token.Const(value) => loop(restTokens, ops, Expr.Const(value) :: exprs)
-            case Token.LParen => loop(restTokens, "(" :: ops, exprs)
-            case Token.RParen => rparen(restTokens, ops, exprs)
+            case Token.ParenL => loop(restTokens, "(" :: ops, exprs)
+            case Token.ParenR => rparen(restTokens, ops, exprs)
             case Token.BinOp(op) => binOp(op, restTokens, ops, exprs)
           }
       }

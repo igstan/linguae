@@ -20,9 +20,9 @@ final case class ImperativeShuntingYardParser(operatorTable: Map[String, Fixity]
     while (toknStack.nonEmpty) {
       toknStack.pop() match {
         case Token.Const(const) => exprStack.push(Expr.Const(const))
-        case Token.LParen => operStack.push("(")
+        case Token.ParenL => operStack.push("(")
 
-        case Token.RParen =>
+        case Token.ParenR =>
           while (operStack.nonEmpty && operStack.top != "(") {
             applyOperator()
           }
