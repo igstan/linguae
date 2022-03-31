@@ -1,7 +1,7 @@
 package linguae
 package test
 
-final class ShuntingYardParserSuite extends munit.FunSuite {
+final class FunctionalShuntingYardParserSuite extends munit.FunSuite {
   private val operatorTable = Map(
     "^" -> Fixity.R(10),
     "*" -> Fixity.L(5),
@@ -10,7 +10,7 @@ final class ShuntingYardParserSuite extends munit.FunSuite {
     "-" -> Fixity.L(0),
   )
 
-  private val parser = ShuntingYardParser(operatorTable)
+  private val parser = FunctionalShuntingYardParser(operatorTable)
 
   private val exprs = List(
     "1 + 2",

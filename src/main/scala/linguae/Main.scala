@@ -10,7 +10,7 @@ object Main {
       "-" -> Fixity.L(0),
     )
 
-    val parser = ShuntingYardParser(operatorTable = operatorTable)
+    val parser = FunctionalShuntingYardParser(operatorTable = operatorTable)
     val exprs = List(
       "         4 + -2 - 1",
       "          4 * 2 / 1",
