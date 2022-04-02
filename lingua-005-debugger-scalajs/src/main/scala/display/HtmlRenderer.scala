@@ -94,7 +94,7 @@ object HtmlRenderer {
           BOOL(value)(indent(level) + s"""<span id="$id" class="bool">$value</span>""", id)
         case VAR(name) =>
           val id = nextID()
-          val varID = env.get(name).getOrElse("")
+          val varID = env.getOrElse(name, "")
           VAR(name)(indent(level) + s"""<span id="$id" class="var $varID" data-for-id="$varID">$name</span>""", id)
         case IF(test, yes, no) =>
           val id = nextID()
@@ -103,7 +103,7 @@ object HtmlRenderer {
           val noR = loop(no, 0, env)
           val html = List(
                            s"""<span id="$id" class="if">""",
-            indent(level), s"""<span class="keyword if">if</span>""", " ",
+            indent(level), s"""<span class="keyword if">when</span>""", " ",
                            s"""<span class="if-test">${testR.meta}</span>""", "\n",
             indent(level), s"""<span class="keyword then">then</span>""", " ",
                            s"""<span class="if-then">${yesR.meta}</span>""", "\n",

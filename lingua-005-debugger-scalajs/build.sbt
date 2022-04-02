@@ -2,7 +2,7 @@ name := "linguae:debugger"
 organization := "ro.igstan"
 version := "0.1.0"
 
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.8"
 
 scalacOptions ++= Seq(
   "-deprecation",                  // Emit warning and location for usages of deprecated APIs.
@@ -48,11 +48,11 @@ Compile / console / scalacOptions --= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "1.0.0",
+  "org.scala-js" %%% "scalajs-dom" % "2.1.0",
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.1.1" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.11" % "test",
 )
 
 enablePlugins(ScalaJSPlugin)

@@ -50,8 +50,8 @@ object Main {
     val lastResult = document.getElementById("last-result")
     val overlay = document.getElementById("overlay").asInstanceOf[html.Canvas]
 
-    overlay.width = document.documentElement.clientWidth - 40   // body margins
-    overlay.height = document.documentElement.clientHeight - 40 // body margins
+    overlay.width = document.documentElement.clientWidth - 240   // body margins
+    overlay.height = document.documentElement.clientHeight - 240 // body margins
 
     val renderer = overlay.getContext("2d").asInstanceOf[dom.CanvasRenderingContext2D]
     renderer.strokeStyle = "#FFC9D7"
@@ -69,13 +69,12 @@ object Main {
             binder.classList.add("reference")
             val start = binder.getBoundingClientRect()
 
-            document.getElementsByClassName(id).filter(_ != binder).foreach { e =>
-              val elem = e.asInstanceOf[dom.Element]
+            document.getElementsByClassName(id).filter(_ != binder).foreach { elem =>
               elem.classList.add("reference")
               val end = elem.getBoundingClientRect()
               renderer.beginPath()
-              renderer.moveTo(start.left + start.width / 2 - 20, start.bottom - 20) // - 20, compenstate for body margin
-              renderer.lineTo(end.left + end.width / 2 - 20, end.top - 20)          // - 20, compenstate for body margin
+              renderer.moveTo(start.left + start.width / 2 - 120, start.bottom - 120) // - 20, compenstate for body margin
+              renderer.lineTo(end.left + end.width / 2 - 120, end.top - 120)          // - 20, compenstate for body margin
               renderer.closePath()
               renderer.stroke()
             }
@@ -89,7 +88,7 @@ object Main {
         case span: dom.html.Span =>
           renderer.clearRect(0, 0, overlay.width.toDouble, overlay.height.toDouble)
           Option(span.getAttribute("data-for-id")).filter(_.trim.nonEmpty).foreach { id =>
-            document.getElementsByClassName(id).foreach(_.asInstanceOf[dom.Element].classList.remove("reference"))
+            document.getElementsByClassName(id).foreach(_.classList.remove("reference"))
           }
         case _ => ()
       }
