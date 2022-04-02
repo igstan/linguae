@@ -41,7 +41,7 @@ struct
           in
             EQ (ty, instTy) :: constrs
           end
-        | _ => raise Fail "Bug: bad constraint type in instantiateAll."
+        | _ => raise Fail "Bug: bad constraint type in `instantiate`."
     in
       loop constraints
     end
