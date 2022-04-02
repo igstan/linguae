@@ -16,7 +16,7 @@ func repl(prompt: String) {
         case .Success(let tokens):
           switch parse(tokens) {
             case .Failure(let failure): print("parse error: \(failure)")
-            case .Success(let term, _):
+            case .Success((let term, _)):
               switch elaborate(term: term) {
                 case let .Failure(.Circular(a, b)): print("circular use: \(a) and \(b)")
                 case let .Failure(.Unbound(id)): print("unbound identifier: \(id)")

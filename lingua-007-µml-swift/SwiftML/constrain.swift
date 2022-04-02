@@ -40,7 +40,7 @@ enum Constraint: Hashable, CustomStringConvertible {
 
 func constrain<Attr>(_ term: Term<(Attr, Type)>) -> Set<Constraint> {
   switch term {
-    case .Var(_): return []
+    case .Var(_, _): return []
     case let .Num(attr, _): return [.Equal(attr.1, .Int)]
     case let .Bool(attr, _): return [.Equal(attr.1, .Bool)]
     case let .Def(attr, param, body):

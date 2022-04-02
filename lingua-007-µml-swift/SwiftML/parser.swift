@@ -16,7 +16,7 @@ func parseAll(tokens: [Token]) -> Result<[Term<Position>], String> {
     } else {
       switch parse(tokens) {
         case .Failure(let f): return .Failure(f)
-        case let .Success(term, tokens):
+        case .Success((let term, let tokens)):
           var terms = terms
           terms.append(term)
           return recur(Array(tokens), terms)
@@ -51,7 +51,7 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
     func loop(_ exp: Term<Position>, _ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
       switch parseAtexp(tokens) {
         case .Failure(_): return .Success((exp, tokens))
-        case .Success(let arg, let tokens):
+        case .Success((let arg, let tokens)):
           let pos = Position.unknown
           return loop(.App(pos, exp, arg), tokens)
       }
@@ -79,7 +79,7 @@ func parse(_ tokens: [Token]) -> Result<(Term<Position>, Tokens), String> {
 
   func parseExpr(_ tokens: Tokens) -> Result<(Term<Position>, Tokens), String> {
     switch parseApp(tokens) {
-      case .Success(let term, let tokens): return .Success((term, tokens))
+      case .Success((let term, let tokens)): return .Success((term, tokens))
       case .Failure(let failure):
         switch tokens.first {
           case .some(.FN): return parseFn(tokens.dropFirst())

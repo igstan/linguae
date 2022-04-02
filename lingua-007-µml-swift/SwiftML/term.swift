@@ -22,13 +22,13 @@ indirect enum Term<Attr> {
 
   var attr: Attr {
     switch self {
-      case let .Num(t): return t.0
-      case let .Var(t): return t.0
-      case let .Def(t): return t.0
-      case let .App(t): return t.0
-      case let .Bool(t): return t.0
-      case let .When(t): return t.0
-      case let .Let(t): return t.0
+      case let .Num(a, _): return a
+      case let .Var(a, _): return a
+      case let .Def(a, _, _): return a
+      case let .App(a, _, _): return a
+      case let .Bool(a, _): return a
+      case let .When(a, _, _, _): return a
+      case let .Let(a, _, _, _): return a
     }
   }
 

@@ -103,7 +103,7 @@ func scan(source: Stream) -> Result<(Token, Stream), String>? {
         return .Success((token, rest))
       } else {
         switch number(source) {
-          case .some(let n, let rest): return .Success((.NUM(n), rest))
+          case .some((let n, let rest)): return .Success((.NUM(n), rest))
           case .none: return .Failure("unexpected char: \(char)")
         }
       }
@@ -120,7 +120,7 @@ func scanAll(_ source: Stream) -> Result<[Token], String> {
       switch scan(source: trimmed) {
         case .none: return .Success(acc)
         case .some(.Failure(let f)): return .Failure(f)
-        case .some(.Success(let token, let rest)):
+        case .some(.Success((let token, let rest))):
           var acc = acc
           acc.append(token)
           return loop(rest, acc)
