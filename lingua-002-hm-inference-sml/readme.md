@@ -38,3 +38,33 @@ $ mlton -output infer sources.mlb
 $ ./infer
 forall abc. (c -> b) -> (a -> c) -> a -> b
 ```
+
+### Corner Case
+
+```sml
+(* Haskell
+
+  let x1 = \y -> \z -> (z y) y
+   in let x2 = \z -> x1 (x1 z)
+       in let x3 = \z -> x2 (x2 z)
+           in let x4 = \z -> x3 (x3 z) in x4 (\z -> z)
+*)
+
+let
+  val x1 = fn y => fn z => (z y) y
+in
+  let
+    val x2 = fn z => x1 (x1 z)
+  in
+    let
+      val x3 = fn z => x2 (x2 z)
+    in
+      let
+        val x4 = fn z => x3 (x3 z)
+      in
+        x4 (fn z => z)
+      end
+    end
+  end
+end
+```
