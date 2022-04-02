@@ -118,7 +118,7 @@ struct
   local
     structure Set = BinarySetFn (Type.Var.Key)
   in
-    fun freeVars (SVAR _) = raise Fail "TypeScheme VAR"
+    fun freeVars (SVAR _) = raise Fail "TypeScheme VAR" (* Why isn't this an empty set? *)
       | freeVars (FORALL (tyVars, ty)) =
         let
           val tyFreeVars = Set.fromList (Type.freeVars ty)
