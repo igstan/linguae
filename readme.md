@@ -15,5 +15,6 @@ focusing on a single concept or implementation detail.
 - [lingua-006-hm-inference-scala](lingua-006-hm-inference-scala) — Damas-Hindley-Milner type inference in Scala.
 - [lingua-007-µml-swift](lingua-007-µml-swift) — A small ML written in Apple's Swift.
 - [lingua-008-partial-evaluation](lingua-008-partial-evaluation) — A basic, yet quite impressive, partial evaluator.
+- [lingua-009-shunting-yard](lingua-009-shunting-yard) — The Shunting Yard algorithm for parsing infix operators.
 
 [0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
