@@ -21,7 +21,7 @@ object Token {
         n <- char('-').optional.map(_.isDefined)
         d <- satisfy(_.isDigit).many.map(_.mkString.toInt)
       } yield {
-        Const(if (n) -d else d)
+        Const(if n then -d else d)
       }
 
     def operator: Parser[Token] =

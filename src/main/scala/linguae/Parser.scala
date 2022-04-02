@@ -59,7 +59,7 @@ final class Parser[A](val run: String => Either[String, (A, String)]) extends An
         run(rest) match {
           case Left(error) =>
             val list = result.result()
-            if (list.isEmpty) Left(error) else Right((list, rest))
+            if list.isEmpty then Left(error) else Right((list, rest))
 
           case Right((a, rest)) =>
             result += a
@@ -105,10 +105,8 @@ object Parser {
       case st =>
         val char = st.charAt(0)
 
-        if (predicate(char)) {
-          Right((char, st.drop(1)))
-        } else {
-          Left(s"$char didn't match predicate")
-        }
+        if predicate(char)
+        then Right((char, st.drop(1)))
+        else Left(s"$char didn't match predicate")
     }
 }

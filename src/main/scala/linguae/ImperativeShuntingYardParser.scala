@@ -27,7 +27,8 @@ final case class ImperativeShuntingYardParser(operatorTable: Map[String, Fixity]
             applyOperator()
           }
 
-          if (operStack.top == "(") operStack.pop()
+          if operStack.top == "("
+          then operStack.pop()
           else sys.error("missing open parenthesis")
 
         case Token.BinOp(binOp) =>
@@ -35,16 +36,14 @@ final case class ImperativeShuntingYardParser(operatorTable: Map[String, Fixity]
           var pendingOperators = true
 
           while (pendingOperators) {
-            if (operStack.isEmpty || operStack.top == "(") {
-              pendingOperators = false
-            } else {
+            if operStack.isEmpty || operStack.top == "("
+            then pendingOperators = false
+            else {
               val topOpFixity = operatorTable(operStack.top)
 
-              if (binOpFixity.appliesAfter(topOpFixity)) {
-                applyOperator()
-              } else {
-                pendingOperators = false
-              }
+              if binOpFixity.appliesAfter(topOpFixity)
+              then applyOperator()
+              else pendingOperators = false
             }
           }
 

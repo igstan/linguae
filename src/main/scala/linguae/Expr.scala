@@ -11,7 +11,7 @@ enum Expr {
         case a @ BinOp(op, _, _) =>
           val thisFixity = operatorTable(op)
           val sa = a.pretty(operatorTable)
-          if (parentFixity.precedence > thisFixity.precedence) s"($sa)" else sa
+          if parentFixity.appliesAfter(thisFixity) then sa else s"($sa)"
       }
 
     this match {

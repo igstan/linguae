@@ -26,11 +26,9 @@ final case class FunctionalShuntingYardParser(operatorTable: Map[String, Fixity]
           val xFixity = operatorTable(opX)
           val yFixity = operatorTable(opY)
 
-          if (xFixity.appliesAfter(yFixity)) {
-            binOp(opX, tokens, restOps, applyOp(opY, exprs))
-          } else {
-            loop(tokens, opX :: ops, exprs)
-          }
+          if xFixity.appliesAfter(yFixity)
+          then binOp(opX, tokens, restOps, applyOp(opY, exprs))
+          else loop(tokens, opX :: ops, exprs)
 
         case _ =>
           loop(tokens, opX :: ops, exprs)
