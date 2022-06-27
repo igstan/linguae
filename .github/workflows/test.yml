@@ -1,0 +1,14 @@
+name: A quick test to see who owns a forked repo
+
+on: workflow_dispatch
+
+jobs:
+  just-a-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Lowercase Repo Owner Name
+        run: |
+          echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> ${GITHUB_ENV}
+          echo ${{ env.OWNER }}
+
