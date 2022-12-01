@@ -43,7 +43,7 @@ int main(int argc, const char * argv[]) {
   // 5. Disable WRITE access, which re-enables EXEC access.
   pthread_jit_write_protect_np(true);
 
-  // 6. Make sure the instruction cache is coherent.
+  // 6. Make sure the instruction cache is coherent with the data cache.
   sys_icache_invalidate(&mem, size);
 
   // 7. Cast the memory region to a function pointer
