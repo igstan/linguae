@@ -16,7 +16,7 @@ focusing on a single concept or implementation detail.
 - [lingua-007-µml-swift](lingua-007-µml-swift) — A small ML written in Apple's Swift.
 - [lingua-008-partial-evaluation](lingua-008-partial-evaluation) — A basic, yet quite impressive, partial evaluator.
 - [lingua-009-shunting-yard](lingua-009-shunting-yard) — The Shunting Yard algorithm for parsing infix operators.
-- [lingua-010-jit-hello-world-apple-silicon](lingua-010-jit-hello-world-apple-silicon) — JIT Hello World for Apple Silicon
-- [lingua-011-bidirectional-typechecking](lingua-011-bidirectional-typechecking) — A small bidirectional typechecker
+- [lingua-010-jit-hello-world-apple-silicon](lingua-010-jit-hello-world-apple-silicon) — JIT Hello World for Apple Silicon.
+- [lingua-011-bidirectional-typechecking](lingua-011-bidirectional-typechecking) — A small bidirectional typechecker.
 
 [0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
