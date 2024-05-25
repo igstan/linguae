@@ -38,7 +38,7 @@ enum Type {
 }
 
 object Bidi {
-  private type 𝚪 = Map[String, Type]
+  private type 𝝘 = Map[String, Type]
 
   private def logging[L, R](data: List[String], indent: Int)(fn: => Either[L, R]): Either[L, R] = {
     println(data.init.map(d => ("  " * indent) + d).mkString("\n"))
@@ -56,7 +56,7 @@ object Bidi {
   private def green(s: String): String =
     "\u001b[32m%s\u001b[0m".format(s)
 
-  def infer(context: 𝚪, term: STLC, indent: Int): Either[String, Type] = {
+  def infer(context: 𝝘, term: STLC, indent: Int): Either[String, Type] = {
     val debug = List(
       s"INFER",
       s"|𝝘| $context",
@@ -134,7 +134,7 @@ object Bidi {
     }
   }
 
-  def check(context: 𝚪, term: STLC, ty: Type, indent: Int): Either[String, Type] = {
+  def check(context: 𝝘, term: STLC, ty: Type, indent: Int): Either[String, Type] = {
     val debug = List(
       s"CHECK",
       s"|𝝘| $context",
