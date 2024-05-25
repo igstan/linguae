@@ -37,14 +37,6 @@ enum Type {
     }
 }
 
-/**
- * {{{
- *    𝝘 ⊢ 𝘵₁ : 𝘉𝘰𝘰𝘭   𝝘 ⊢ 𝘵₂ : 𝞽   𝝘 ⊢ 𝘵₃ : 𝞽
- *   ─────────────────────────────────────── 𝐓-𝐈𝐅
- *            𝝘 ⊢ 𝗶𝗳 𝘵₁ 𝘁𝗵𝗲𝗻 𝘵₂ 𝗲𝗹𝘀𝗲 𝘵₃
- * }}}
- */
-
 object Bidi {
   private type 𝚪 = Map[String, Type]
 
@@ -65,10 +57,6 @@ object Bidi {
     "\u001b[32m%s\u001b[0m".format(s)
 
   def infer(context: 𝚪, term: STLC, indent: Int): Either[String, Type] = {
-    // println("  " * indent + s"INFER→")
-    // println("  " * indent + s"𝝘| $context")
-    // println("  " * indent + s"𝘵| $term")
-
     val debug = List(
       s"INFER",
       s"|𝝘| $context",
