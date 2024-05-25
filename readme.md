@@ -20,6 +20,7 @@ focusing on a single concept or implementation detail.
 | [lingua-009-shunting-yard][09]                 | The Shunting Yard algorithm for parsing infix operators.                                        |
 | [lingua-010-jit-hello-world-apple-silicon][10] | JIT Hello World for Apple Silicon.                                                              |
 | [lingua-011-bidirectional-typechecking][11]    | A small bidirectional typechecker.                                                              |
+| [lingua-012-chatgpt-c++-compiler][12]          | C++ compiler written entirely by ChatGPT 4                                                      |
 
 [00]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
 [00]: lingua-000-tiger
@@ -34,3 +35,4 @@ focusing on a single concept or implementation detail.
 [09]: lingua-009-shunting-yard
 [10]: lingua-010-jit-hello-world-apple-silicon
 [11]: lingua-011-bidirectional-typechecking
+[12]: lingua-012-chatgpt-c++-compiler

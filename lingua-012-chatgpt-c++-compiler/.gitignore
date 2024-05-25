@@ -1,0 +1,6 @@
+.build/
+*.[o,s]
+*.dot
+*.pdf
+program
+!chats/**
