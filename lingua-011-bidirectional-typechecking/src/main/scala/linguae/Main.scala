@@ -197,9 +197,24 @@ object Bidi {
 }
 
 object Main {
-  def main(args: Array[String]): Unit =
-    import STLC._, Type._
+  import STLC._, Type._
 
+  def main(args: Array[String]): Unit = {
+    if (args.nonEmpty) {
+      args(0) match {
+        case "test1" => test1()
+        case "test2" => test2()
+        case "test3" => test3()
+        case other => sys.error(s"unknown test: $other")
+      }
+    } else {
+      test1()
+      test2()
+      test3()
+    }
+  }
+
+  private def test1(): Unit = {
     // The following will result in a type error because the two arms of the
     // `if` expression don't agree with each other — one has type `Bool`, the
     // other has type `Bool → Bool`.
@@ -217,5 +232,20 @@ object Main {
 
     val res = Bidi.infer(Map.empty, term, indent = 0)
 
-    println(s"res: ${res.map(_.toString).merge}")
+    println(s"RESULT: ${res.map(_.toString).merge}")
+  }
+
+  private def test2(): Unit = {
+    // Can't use `True` as a function.
+    val term = App(True, False)
+    val res = Bidi.infer(Map.empty, term, indent = 0)
+    println(s"RESULT: ${res.map(_.toString).merge}")
+  }
+
+  private def test3(): Unit = {
+    // A bool can't have function type.
+    val term = Ann(True, Fn(Bool, Bool))
+    val res = Bidi.infer(Map.empty, term, indent = 0)
+    println(s"RESULT: ${res.map(_.toString).merge}")
+  }
 }
