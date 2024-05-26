@@ -1,6 +1,6 @@
 package linguae
 
-import linguae.Type.Fn
+import scala.util.chaining._
 
 /**
  * STLC: Simply-Typed Lambda Calculus
@@ -58,21 +58,16 @@ object 𝝘 {
 
 object Bidi {
   private def logging[L, R](data: List[String], indent: Int)(fn: => Either[L, R]): Either[L, R] = {
+    def red(s: String): String = "\u001b[31m%s\u001b[0m".format(s)
+    def green(s: String): String = "\u001b[32m%s\u001b[0m".format(s)
+
     println(data.init.map(d => ("  " * indent) + d).mkString("\n"))
-    val r = fn
-    r match {
-      case Left(value) => println(("  " * indent) + s"${red(data.last)} $r")
-      case Right(value) => println(("  " * indent) + s"${green(data.last)} $r")
+
+    fn.tap {
+      case Left(v) => println(("  " * indent) + s"${red(data.last)} $v")
+      case Right(v) => println(("  " * indent) + s"${green(data.last)} $v")
     }
-    r
   }
-
-  private def red(s: String): String =
-    "\u001b[31m%s\u001b[0m".format(s)
-
-  private def green(s: String): String =
-    "\u001b[32m%s\u001b[0m".format(s)
-
 
   def infer(term: STLC): Either[String, Type] =
     infer(𝝘.empty, term, indent = 0)
