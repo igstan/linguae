@@ -10,7 +10,7 @@
 // Grab disassembly using:
 //
 // ```bash
-// cat <<CODE | gcc -xc -c -o- - | objdump --disassemble --no-leading-addr -
+// gcc -xc -c -o- - <<CODE | objdump --disassemble --no-leading-addr -
 // int add() {
 //   return 42;
 // }
