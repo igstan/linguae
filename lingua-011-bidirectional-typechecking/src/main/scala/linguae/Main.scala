@@ -254,5 +254,15 @@ object Main {
       val res = Bidi.infer(Map.empty, not, indent = 0)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
+
+    case Test5 extends Tests({
+      // Function composition. See "Figure 1" in the paper.
+      val compose = Ann(
+        Abs("f", Abs("g", Abs("b", App(Var("g"), App(Var("f"), Var("b")))))),
+        Fn(Fn(Bool, Bool), Fn(Fn(Bool, Bool), Fn(Bool, Bool)))
+      )
+      val res = Bidi.infer(Map.empty, compose, indent = 0)
+      println(s"RESULT: ${res.map(_.toString).merge}")
+    })
   }
 }
