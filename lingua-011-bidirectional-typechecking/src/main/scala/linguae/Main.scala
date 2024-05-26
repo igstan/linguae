@@ -200,6 +200,9 @@ object Main {
   def main(args: Array[String]): Unit =
     import STLC._, Type._
 
+    // The following will result in a type error because the two arms of the
+    // `if` expression don't agree with each other — one has type `Bool`, the
+    // other has type `Bool → Bool`.
     val term =
       Ann(
         Abs("b",
