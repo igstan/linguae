@@ -1,6 +1,6 @@
 package linguae
 
-import scala.util.chaining._
+import scala.util.chaining.*
 
 /**
  * STLC: Simply-Typed Lambda Calculus
@@ -144,8 +144,8 @@ object Bidi {
             case left => left
           }
 
-        case STLC.Abs(param, body) =>
-          sys.error(s"bug: shouldn't happen: $term")
+        case STLC.Abs(_, _) =>
+          Left(s"type annotation required for lambda terms: $term")
       }
     }
   }
@@ -276,6 +276,12 @@ object Main {
         Fn(Fn(Bool, Bool), Fn(Fn(Bool, Bool), Fn(Bool, Bool))),
       )
       val res = Bidi.infer(compose)
+      println(s"RESULT: ${res.map(_.toString).merge}")
+    })
+
+    case Test6 extends Tests({
+      val lambda = Abs("_", True)
+      val res = Bidi.infer(lambda)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
   }
