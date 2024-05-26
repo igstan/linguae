@@ -15,8 +15,10 @@ enum STLC {
   override def toString: String =
     this match {
       case Var(name) => name
-      case App(Var(fn), arg) => s"$fn $arg"
-      case App(fn, arg) => s"($fn) $arg"
+      case App(Var(fn), arg @ (Var(_) | True | False)) => s"$fn $arg"
+      case App(Var(fn), arg) => s"$fn ($arg)"
+      case App(fn, arg @ (Var(_) | True | False)) => s"($fn) $arg"
+      case App(fn, arg) => s"($fn) ($arg)"
       case Abs(param, body) => s"fn $param => $body"
       case If(cond, when, otherwise) => s"when $cond then $when else $otherwise"
       case Ann(term, ty) => s"($term) : $ty"
