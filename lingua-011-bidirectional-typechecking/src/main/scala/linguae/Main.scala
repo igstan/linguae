@@ -124,7 +124,7 @@ object Bidi {
             case Right(Type.Fn(p, r)) =>
               check(context, arg, p, indent + 1).map(_ => r)
             case Right(t) =>
-              Left(s"expected function, got: $t")
+              Left(s"type mismatched: expected function type; got: $t")
             case left => left
           }
 
@@ -169,7 +169,7 @@ object Bidi {
         //
         case STLC.Abs(param, body) =>
           ty match {
-            case Type.Bool => Left("wrong type for lambda")
+            case Type.Bool => Left(s"type mismatch: expected function; got: $ty")
             case fn @ Type.Fn(paramTy, ret) =>
               check(context + (param -> paramTy), body, ret, indent + 1).map(_ => fn)
           }
@@ -178,7 +178,7 @@ object Bidi {
         case STLC.True | STLC.False =>
           if ty == Type.Bool
           then Right(Type.Bool)
-          else Left(s"boolean literal was $ty")
+          else Left(s"type mismatch: expected: boolean; got: $ty")
 
         //
         //  𝝘 ⊢ 𝘵 ⇒ 𝞽
@@ -188,7 +188,7 @@ object Bidi {
         case _ =>
           infer(context, term, indent + 1) match {
             case Right(ty2) if ty == ty2 => Right(ty)
-            case Right(ty2)              => Left(s"type mismatch: $ty != $ty2")
+            case Right(ty2)              => Left(s"type mismatch: expected: $ty; got: $ty2")
             case left                    => left
           }
       }
