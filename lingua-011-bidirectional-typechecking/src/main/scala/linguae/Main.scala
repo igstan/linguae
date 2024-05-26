@@ -205,7 +205,7 @@ object Main {
         case "test1" => test1()
         case "test2" => test2()
         case "test3" => test3()
-        case other => sys.error(s"unknown test: $other")
+        case unknown => sys.error(s"unknown test: $unknown")
       }
     } else {
       test1()
