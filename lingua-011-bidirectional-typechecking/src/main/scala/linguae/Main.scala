@@ -1,5 +1,7 @@
 package linguae
 
+import linguae.Type.Fn
+
 /**
  * STLC: Simply-Typed Lambda Calculus
  */
@@ -39,9 +41,22 @@ enum Type {
     }
 }
 
-object Bidi {
-  private type 𝝘 = Map[String, Type]
+final class 𝝘(private val vals: Map[String, Type]) extends AnyVal {
+  override def toString: String =
+    vals.map({ case (k, t) => s"$k: $t" }).mkString("[", "; ", "]")
 
+  def get(k: String): Option[Type] =
+    vals.get(k)
+
+  def put(k: String, t: Type): 𝝘 =
+    𝝘(vals.updated(k, t))
+}
+
+object 𝝘 {
+  val empty: 𝝘 = 𝝘(Map.empty)
+}
+
+object Bidi {
   private def logging[L, R](data: List[String], indent: Int)(fn: => Either[L, R]): Either[L, R] = {
     println(data.init.map(d => ("  " * indent) + d).mkString("\n"))
     val r = fn
@@ -57,6 +72,10 @@ object Bidi {
 
   private def green(s: String): String =
     "\u001b[32m%s\u001b[0m".format(s)
+
+
+  def infer(term: STLC): Either[String, Type] =
+    infer(𝝘.empty, term, indent = 0)
 
   def infer(context: 𝝘, term: STLC, indent: Int): Either[String, Type] = {
     val debug = List(
@@ -173,7 +192,7 @@ object Bidi {
           ty match {
             case Type.Bool => Left(s"type mismatch: expected function; got: $ty")
             case fn @ Type.Fn(paramTy, ret) =>
-              check(context + (param -> paramTy), body, ret, indent + 1).map(_ => fn)
+              check(context.put(param, paramTy), body, ret, indent + 1).map(_ => fn)
           }
 
         // Small optimization? It wasn't present in the paper.
@@ -230,7 +249,7 @@ object Main {
           Fn(Bool, Bool),
         )
 
-      val res = Bidi.infer(Map.empty, term, indent = 0)
+      val res = Bidi.infer(term)
 
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
@@ -238,20 +257,20 @@ object Main {
     case Test2 extends Tests({
       // Can't use `True` as a function.
       val term = App(True, False)
-      val res = Bidi.infer(Map.empty, term, indent = 0)
+      val res = Bidi.infer(term)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
 
     case Test3 extends Tests({
       // A bool can't have function type.
       val term = Ann(True, Fn(Bool, Bool))
-      val res = Bidi.infer(Map.empty, term, indent = 0)
+      val res = Bidi.infer(term)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
 
     case Test4 extends Tests({
       val not = Ann(Abs("x", If(Var("x"), False, True)), Fn(Bool, Bool))
-      val res = Bidi.infer(Map.empty, not, indent = 0)
+      val res = Bidi.infer(not)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
 
@@ -259,9 +278,9 @@ object Main {
       // Function composition. See "Figure 1" in the paper.
       val compose = Ann(
         Abs("f", Abs("g", Abs("b", App(Var("g"), App(Var("f"), Var("b")))))),
-        Fn(Fn(Bool, Bool), Fn(Fn(Bool, Bool), Fn(Bool, Bool)))
+        Fn(Fn(Bool, Bool), Fn(Fn(Bool, Bool), Fn(Bool, Bool))),
       )
-      val res = Bidi.infer(Map.empty, compose, indent = 0)
+      val res = Bidi.infer(compose)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
   }
