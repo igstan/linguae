@@ -248,5 +248,11 @@ object Main {
       val res = Bidi.infer(Map.empty, term, indent = 0)
       println(s"RESULT: ${res.map(_.toString).merge}")
     })
+
+    case Test4 extends Tests({
+      val not = Ann(Abs("x", If(Var("x"), False, True)), Fn(Bool, Bool))
+      val res = Bidi.infer(Map.empty, not, indent = 0)
+      println(s"RESULT: ${res.map(_.toString).merge}")
+    })
   }
 }
