@@ -22,7 +22,7 @@ focusing on a single concept or implementation detail.
 | [lingua-011-bidirectional-typechecking][11]    | A small bidirectional typechecker.                                                              |
 | [lingua-012-chatgpt-c++-compiler][12]          | C++ compiler written entirely by ChatGPT 4                                                      |
 
-[00]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
+[0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
 [00]: lingua-000-tiger
 [01]: lingua-001-visitor-interpreter
 [02]: lingua-002-hm-inference-sml
