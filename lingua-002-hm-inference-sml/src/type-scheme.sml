@@ -28,7 +28,7 @@
  * the `then` branch and the binding used the `else` branch. If this were not
  * to happen, then unification would fail.
  *
- * For this reason, in the above example we'll have to generated three separate
+ * For this reason, in the above example we'll have to generate three separate
  * types for the let-bound `id` function:
  *
  *  - id[if]:   ∀α. α -> α
@@ -77,8 +77,8 @@
  * makes perfect sense to pass the compiler. The reason is that the inferred
  * type of `f` is too lax. It is inferred to be `∀αβ. α -> β` and later on,
  * `β` won't be unifiable with `2`. The reason for this is that `β` isn't
- * a free variable that should be replaced instantiation. It is actually a
- * type variable __constrained__ by the type of `y`, which in our case will
+ * a free variable that should be replaced during instantiation. It is actually
+ * a type variable __constrained__ by the type of `y`, which in our case will
  * be in turn constrained to be of type `int`.
  *
  * For this reason we have to be explicit about which type variables are
