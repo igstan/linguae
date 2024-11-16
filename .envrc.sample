@@ -1,0 +1,1 @@
+export RLWRAP_HOME="$PWD/.rlwrap"

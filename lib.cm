@@ -1,0 +1,8 @@
+library (0.1.0)
+  source (-)
+is
+  $BUCHAREST-ML/sml-foundation/lib.cm
+
+  src (
+    main.sml
+  )
