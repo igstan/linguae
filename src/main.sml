@@ -1,6 +1,6 @@
 (* Follows: "ML pattern match compilation (March 5, 1996).pdf" *)
 
-structure Main =
+structure Common =
   struct
     type con = { name : string, arity : int, span : int }
 
@@ -18,9 +18,14 @@ structure Main =
     val Nodec = { name = "Node", arity = 3, span = 3 }
 
     type 'rhs match = (pat * 'rhs) list
+  end
 
-    (*) Described in §3 of the paper.
-    fun naive origobj allmrules =
+(*) Described in §3 of the paper.
+structure NaiveMatcher =
+  struct
+    open Common
+
+    fun main origobj allmrules =
       let
         fun fail []                         = NONE
           | fail ((pat1, rhs1) :: rulerest) = match pat1 origobj [] rhs1 rulerest
@@ -46,24 +51,17 @@ structure Main =
         fail allmrules
       end
 
-    structure Ctors =
-      struct
+    fun test () =
+      let
         val null     = PCon ({ name = "null",  arity = 0, span = 2 }, [])
         fun cons a b = PCon ({ name = "cons", arity = 2, span = 2 }, [a, b])
-
-        fun main () =
-          let
-          in
-            (*) So... this is a bit unusual because the strutinee is a pattern
-            (*) too, whereas it should be a value.
-            naive (cons null (PVar "rest")) [
-              (null, 1),
-              (cons null          (PVar "rest"), 2),
-              (cons (PVar "head") (PVar "rest"), 3)
-            ]
-          end
+      in
+        (*) So... this is a bit unusual because the strutinee is a pattern
+        (*) too, whereas it should be a value.
+        main (cons null (PVar "rest")) [
+          (null, 1),
+          (cons null          (PVar "rest"), 2),
+          (cons (PVar "head") (PVar "rest"), 3)
+        ]
       end
-
-    fun main () =
-      Console.println "Hello!"
   end
