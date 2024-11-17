@@ -4,5 +4,7 @@ is
   $BUCHAREST-ML/sml-foundation/lib.cm
 
   src (
-    main.sml
+    common.sml
+    naive-matcher.sml
+    instrumented-matcher.sml
   )
