@@ -33,7 +33,7 @@ structure NaiveMatcher =
         and succeed work rhs rules =
           case work of
           | []                                    => SOME rhs
-          | ([], []) :: workr                     => succeed workr rhs rules
+          | ([], [])                     :: workr => succeed workr rhs rules
           | (pat1 :: patr, obj1 :: objr) :: workr => match pat1 obj1 ((patr, objr) :: workr) rhs rules
           | _                                     => raise Fail "impossible: work"
 
