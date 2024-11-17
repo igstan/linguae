@@ -1,5 +1,6 @@
 library (0.1.0)
   source (-)
+  library ($BUCHAREST-ML/sml-foundation/lib.cm)
 is
   $BUCHAREST-ML/sml-foundation/lib.cm
 
@@ -7,4 +8,5 @@ is
     common.sml
     naive-matcher.sml
     instrumented-matcher.sml
+    match-compiler.sml
   )
