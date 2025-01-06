@@ -1,0 +1,2 @@
+export RLWRAP_HOME="$PWD/.rlwrap"
+export CM_VERBOSE=false
