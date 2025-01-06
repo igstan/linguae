@@ -217,6 +217,7 @@ structure MatchCompiler =
         Decision.toString decisionTree2 {rhs=Int.toString} |> Console.println
       end
 
+    (* §7.3, Example 6, p19 *)
     fun exponential () =
       let
         val v = PVar "_"
