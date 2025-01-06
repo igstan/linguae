@@ -4,17 +4,20 @@ structure MatchCompiler =
     open Fn.Syntax infix |>
     open Common
 
-    datatype access = Obj | Sel of int * access
+    structure Access =
+      struct
+        datatype t = Obj | Sel of int * t
+
+        fun toString (Obj)           = "Obj"
+          | toString (Sel (i, rest)) = toString rest ^ "." ^ Int.toString i
+      end
 
     structure Decision =
       struct
         datatype 'rhs t =
         | Failure
         | Success of 'rhs
-        | Branch of access * con * 'rhs t * 'rhs t
-
-        fun accessShow (Obj)           = "Obj"
-          | accessShow (Sel (i, rest)) = accessShow rest ^ "." ^ Int.toString i
+        | Branch of Access.t * con * 'rhs t * 'rhs t
 
         fun toString t { rhs = action } =
           let
@@ -26,7 +29,7 @@ structure MatchCompiler =
                 | Failure     => "FAILURE"
                 | Success rhs => "SUCCESS: " ^ action rhs
                 | Branch (access, { name, arity, span }, a, b) =>
-                    indent level ^ "WHEN: " ^ accessShow access ^ " = " ^ name ^
+                    indent level ^ "WHEN: " ^ Access.toString access ^ " = " ^ name ^
                     indent level ^ "THEN: " ^ loop a { level = level + 1 } ^
                     indent level ^ "ELSE: " ^ loop b { level = level + 1 }
               end
@@ -106,7 +109,7 @@ structure MatchCompiler =
     fun compile allmrules =
       let
         fun fail dsc []                        = Failure
-          | fail dsc ((pat1, rhs1) :: ruleset) = match pat1 Obj dsc [] [] rhs1 ruleset
+          | fail dsc ((pat1, rhs1) :: ruleset) = match pat1 Access.Obj dsc [] [] rhs1 ruleset
 
         and succeed ctx [] rhs rules = Success rhs
           | succeed ctx (work1 :: workr) rhs rules =
@@ -125,7 +128,7 @@ structure MatchCompiler =
                 fun getdargs (Neg _)            = args (fn _ => Neg [])
                   | getdargs (Pos (con, dargs)) = dargs
 
-                fun getoargs () = args (fn i => Sel (i + 1, obj))
+                fun getoargs () = args (fn i => Access.Sel (i + 1, obj))
 
                 fun succeed' () =
                   succeed
