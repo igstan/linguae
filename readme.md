@@ -22,6 +22,7 @@ focusing on a single concept or implementation detail.
 | [lingua-011-bidirectional-typechecking][11]    | A small bidirectional typechecker.                                                              |
 | [lingua-012-chatgpt-c++-compiler][12]          | C++ compiler written entirely by ChatGPT 4.                                                     |
 | [lingua-013-pattern-match-compiler][13]        | A pattern match compiler based on partial evaluation.                                           |
+| [lingua-014-simple-bytecode-vm][14]            | A simple bytecode, stack-based virtual machine.                                                 |
 
 [0]: http://www.amazon.com/Modern-Compiler-Implementation-Andrew-Appel/dp/0521607647/
 [00]: lingua-000-tiger
@@ -38,3 +39,4 @@ focusing on a single concept or implementation detail.
 [11]: lingua-011-bidirectional-typechecking
 [12]: lingua-012-chatgpt-c++-compiler
 [13]: lingua-013-pattern-match-compiler
+[14]: lingua-014-simple-bytecode-vm
