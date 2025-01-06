@@ -14,6 +14,8 @@ enum STLC {
   case True
   case False
 
+  private val kw = Color.keyword
+
   override def toString: String =
     this match {
       case Var(name) => name
@@ -21,11 +23,11 @@ enum STLC {
       case App(Var(fn), arg) => s"$fn ($arg)"
       case App(fn, arg @ (Var(_) | True | False)) => s"($fn) $arg"
       case App(fn, arg) => s"($fn) ($arg)"
-      case Abs(param, body) => s"fn $param => $body"
-      case If(cond, when, otherwise) => s"when $cond then $when else $otherwise"
+      case Abs(param, body) => s"${kw("fn")} $param => $body"
+      case If(cond, when, otherwise) => s"${kw("when")} $cond ${kw("then")} $when ${kw("else")} $otherwise"
       case Ann(term, ty) => s"($term) : $ty"
-      case True => "true"
-      case False => "false"
+      case True => kw("true")
+      case False => kw("false")
     }
 }
 
